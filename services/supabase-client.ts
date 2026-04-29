@@ -128,6 +128,45 @@ export async function sendHeartbeat() {
   }
 }
 
+/**
+ * Tải file lên Supabase Storage
+ */
+export async function uploadAsset(bucket: string, path: string, body: Buffer | ArrayBuffer | string, contentType: string) {
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(path, body, {
+      contentType,
+      upsert: true
+    });
+
+  if (error) {
+    console.error(`[Storage] Lỗi tải lên ${path}:`, error.message);
+    return null;
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(path);
+
+  return publicUrl;
+}
+
+/**
+ * Cập nhật URL Đa phương tiện cho bài viết
+ */
+export async function updatePostMultimedia(postId: string, field: 'audio_url' | 'video_url', url: string) {
+  const { error } = await supabase
+    .from('posts')
+    .update({ [field]: url })
+    .eq('id', postId);
+
+  if (error) {
+    console.error(`[DB] Lỗi cập nhật multimedia cho bài ${postId}:`, error.message);
+    return false;
+  }
+  return true;
+}
+
 // --- Helper ---
 function slugify(text: string) {
   const from = "áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ·/_,:;";
@@ -141,3 +180,4 @@ function slugify(text: string) {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 }
+

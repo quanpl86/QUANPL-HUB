@@ -151,6 +151,18 @@ export async function generateVideo(notebookId: string, style: string = 'heritag
   return await client.callTool({ name: 'generate_video_overview', arguments: { notebook_url, style } });
 }
 
+export async function getVideoStatus(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  return await client.callTool({ name: 'get_video_status', arguments: { notebook_url } });
+}
+
+export async function downloadVideo(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  return await client.callTool({ name: 'download_video', arguments: { notebook_url } });
+}
+
 export async function generateDataTable(notebookId: string): Promise<any> {
   const client = await initMCPClient();
   const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
@@ -247,6 +259,8 @@ export default {
   getAudioStatus,
   downloadAudio,
   generateVideo,
+  getVideoStatus,
+  downloadVideo,
   generateDataTable,
   getDataTable,
   // System

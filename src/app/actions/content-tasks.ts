@@ -14,7 +14,9 @@ import { checkAdmin } from '@/lib/auth-utils';
 export async function createContentTask(
   topicName: string,
   notebookId: string,
-  priority: number = 5
+  priority: number = 5,
+  type: string = 'BLOG',
+  resultPostId?: string
 ) {
   if (!await checkAdmin()) throw new Error('Unauthorized');
   const supabase = await getSupabaseServer();
@@ -25,7 +27,9 @@ export async function createContentTask(
       topic_name: topicName,
       notebook_id: notebookId || null,
       priority,
-      status: 'pending'
+      status: 'pending',
+      type: type.toUpperCase(),
+      result_post_id: resultPostId || null
     }])
     .select()
     .single();
