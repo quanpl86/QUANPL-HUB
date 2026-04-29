@@ -24,7 +24,6 @@ export async function initMCPClient(): Promise<Client> {
     args,
     env: {
       ...process.env as Record<string, string>,
-      // Truyền Gemini Key nếu có (cho Deep Research)
       GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
     },
   });
@@ -51,241 +50,211 @@ export async function closeMCPClient() {
   }
 }
 
-/**
- * Chọn Notebook để làm việc
- */
-export async function selectNotebook(notebookId: string): Promise<boolean> {
+// --- NHÓM 1: TRUY VẤN & SÁNG TẠO (QUERY & CREATE) ---
+
+export async function askNotebookLM(question: string, notebookId?: string): Promise<string> {
   const client = await initMCPClient();
-
-  try {
-    const result = await client.request(
-      {
-        method: 'tools/call',
-        params: {
-          name: 'select_notebook',
-          arguments: {
-            notebook_id: notebookId,
-          },
-        },
-      },
-      {} as any
-    );
-
-    return !(result as any).isError;
-  } catch (error: any) {
-    console.error('[MCP] Lỗi chọn notebook:', error.message);
-    return false;
-  }
+  const args: any = { question };
+  if (notebookId) args.notebook_id = notebookId;
+  
+  const result = await client.callTool({ name: 'ask_question', arguments: args });
+  return (result.content?.[0] as any)?.text || '';
 }
 
-/**
- * Hỏi NotebookLM
- */
-export async function askNotebookLM(prompt: string, notebookId?: string): Promise<string> {
+export async function getChatHistory(notebookId: string): Promise<any> {
   const client = await initMCPClient();
-
-  if (notebookId) {
-    await selectNotebook(notebookId);
-  }
-
-  try {
-    console.log('[MCP] Đang gửi câu hỏi đến NotebookLM...');
-    
-    const result = await client.request(
-      {
-        method: 'tools/call',
-        params: {
-          name: 'ask_question',
-          arguments: {
-            question: prompt,
-          },
-        },
-      },
-      {} as any
-    );
-
-    const response = result as any;
-    
-    if (response.isError) {
-      throw new Error(response.content?.[0]?.text || 'Lỗi không xác định từ MCP');
-    }
-
-    return response.content?.[0]?.text || '';
-  } catch (error: any) {
-    console.error('[MCP] Lỗi ask_question:', error.message);
-    throw error;
-  }
+  const result = await client.callTool({ name: 'get_notebook_chat_history', arguments: { notebook_id: notebookId } });
+  return result;
 }
 
-/**
- * Liệt kê các nguồn trong Notebook
- */
-export async function listSources(): Promise<any[]> {
+// --- NHÓM 2: NGHIÊN CỨU CHUYÊN SÂU (GEMINI API) ---
+
+export async function deepResearch(query: string): Promise<any> {
   const client = await initMCPClient();
-
-  try {
-    const result = await client.callTool({
-      name: 'list_sources',
-      arguments: {},
-    });
-
-    if (result.content && Array.isArray(result.content)) {
-      const textContent = result.content
-        .filter((c: any) => c.type === 'text')
-        .map((c: any) => c.text)
-        .join('\n');
-
-      try {
-        return JSON.parse(textContent);
-      } catch {
-        return [];
-      }
-    }
-
-    return [];
-  } catch (error: any) {
-    console.error('[MCP] Lỗi list_sources:', error.message);
-    return [];
-  }
+  return await client.callTool({ name: 'deep_research', arguments: { query } });
 }
 
-// --- CÁC HÀM TIỆN ÍCH ĐA PHƯƠNG TIỆN (STUDIO) ---
+export async function geminiQuery(prompt: string, model: string = 'gemini-3-flash-preview'): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'gemini_query', arguments: { prompt, model } });
+}
 
-/**
- * Ra lệnh tạo Podcast (Audio Overview)
- */
-export async function generateAudioOverview(notebookId: string): Promise<any> {
+export async function getResearchStatus(interactionId: string): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'get_research_status', arguments: { interaction_id: interactionId } });
+}
+
+// --- NHÓM 3: QUẢN LÝ NOTEBOOK (NOTEBOOK MANAGEMENT) ---
+
+export async function createNotebook(name: string, sources: any[] = [], description: string = ''): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'create_notebook', arguments: { name, sources, description } });
+}
+
+export async function batchCreateNotebooks(notebooks: any[]): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'batch_create_notebooks', arguments: { notebooks } });
+}
+
+export async function selectNotebook(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'select_notebook', arguments: { notebook_id: notebookId } });
+}
+
+export async function syncNotebook(notebookId: string, directory: string, patterns: string[] = ['*.md', '*.pdf']): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'sync_notebook', arguments: { notebook_id: notebookId, directory, patterns } });
+}
+
+export async function listNotebooks(): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'list_notebooks', arguments: {} });
+}
+
+// --- NHÓM 4: QUẢN LÝ NGUỒN (SOURCE MANAGEMENT) ---
+
+export async function manageSources(notebookId: string, action: 'add' | 'remove', sources: any[]): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'manage_sources', arguments: { notebook_id: notebookId, action, sources } });
+}
+
+export async function listSources(notebookId?: string): Promise<any> {
+  const client = await initMCPClient();
+  const args = notebookId ? { notebook_id: notebookId } : {};
+  return await client.callTool({ name: 'list_sources', arguments: args });
+}
+
+// --- NHÓM 5: ĐA PHƯƠNG TIỆN STUDIO (MULTIMEDIA) ---
+
+export async function generateAudio(notebookId: string): Promise<any> {
   const client = await initMCPClient();
   const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  
-  return await client.callTool(
-    {
-      name: 'generate_audio_overview',
-      arguments: { notebook_url },
-      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
-    },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any,
-    { timeout: 600000 }
-  );
+  return await client.callTool({ name: 'generate_audio_overview', arguments: { notebook_url } });
 }
 
-/**
- * Kiểm tra trạng thái tạo Podcast
- */
 export async function getAudioStatus(notebookId: string): Promise<any> {
   const client = await initMCPClient();
   const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  
-  return await client.callTool(
-    {
-      name: 'get_audio_status',
-      arguments: { notebook_url },
-      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
-    },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
-  );
+  return await client.callTool({ name: 'get_audio_status', arguments: { notebook_url } });
 }
 
-/**
- * Tải file Audio về
- */
 export async function downloadAudio(notebookId: string): Promise<any> {
   const client = await initMCPClient();
   const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  
-  return await client.callTool(
-    {
-      name: 'download_audio',
-      arguments: { notebook_url },
-      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
-    },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
-  );
+  return await client.callTool({ name: 'download_audio', arguments: { notebook_url } });
 }
 
-/**
- * Tạo Video tóm tắt (Video Overview)
- */
-export async function generateVideoOverview(notebookId: string, style: string = 'modern'): Promise<any> {
+export async function generateVideo(notebookId: string, style: string = 'heritage'): Promise<any> {
   const client = await initMCPClient();
   const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  
-  return await client.callTool(
-    {
-      name: 'generate_video_overview',
-      arguments: { notebook_url, style },
-      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
-    },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any,
-    { timeout: 600000 }
-  );
+  return await client.callTool({ name: 'generate_video_overview', arguments: { notebook_url, style } });
 }
 
-/**
- * Trích xuất bảng dữ liệu từ nguồn Notebook (JSON)
- */
 export async function generateDataTable(notebookId: string): Promise<any> {
   const client = await initMCPClient();
   const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  
-  return await client.callTool(
-    {
-      name: 'generate_data_table',
-      arguments: { notebook_url },
-      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
-    },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
-  );
+  return await client.callTool({ name: 'generate_data_table', arguments: { notebook_url } });
 }
 
-// --- CÁC HÀM QUẢN TRỊ & HỆ THỐNG (ADMIN) ---
+export async function getDataTable(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  return await client.callTool({ name: 'get_data_table', arguments: { notebook_url } });
+}
 
-/**
- * Kiểm tra sức khỏe hệ thống (Deep Health Check)
- */
+// --- NHÓM 6: QUẢN LÝ FILE (FILES API) ---
+
+export async function uploadDocument(path: string): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'upload_document', arguments: { path } });
+}
+
+export async function queryDocument(fileId: string, query: string): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'query_document', arguments: { file_id: fileId, query } });
+}
+
+export async function deleteDocument(fileId: string): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'delete_document', arguments: { file_id: fileId } });
+}
+
+// --- NHÓM 7: HỆ THỐNG & QUẢN TRỊ (SYSTEM & ADMIN) ---
+
 export async function getHealth(): Promise<any> {
   const client = await initMCPClient();
-  return await client.callTool(
-    { name: 'get_health', arguments: {} },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
-  );
+  return await client.callTool({ name: 'get_health', arguments: {} });
 }
 
-/**
- * Lấy hạn mức (Quota) sử dụng
- */
 export async function getQuota(): Promise<any> {
   const client = await initMCPClient();
-  return await client.callTool(
-    { name: 'get_quota', arguments: {} },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
-  );
+  return await client.callTool({ name: 'get_quota', arguments: {} });
 }
 
-/**
- * Lấy lịch sử truy vấn của MCP
- */
 export async function getQueryHistory(): Promise<any> {
   const client = await initMCPClient();
-  return await client.callTool(
-    { name: 'get_query_history', arguments: {} },
-    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
-  );
+  return await client.callTool({ name: 'get_query_history', arguments: {} });
 }
 
-// Export mặc định object chứa tất cả các hàm
+export async function setupAuth(): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'setup_auth', arguments: {} });
+}
+
+export async function cleanupData(): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'cleanup_data', arguments: {} });
+}
+
+// --- NHÓM 8: WEBHOOK & PHÁP LÝ (WEBHOOK & COMPLIANCE) ---
+
+export async function configureWebhook(url: string, events: string[]): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'configure_webhook', arguments: { url, events } });
+}
+
+export async function complianceReport(format: 'json' | 'csv' | 'html' = 'json'): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool({ name: 'compliance_report', arguments: { format } });
+}
+
+// --- EXPORT DEFAULT ---
+
 export default {
   initMCPClient,
   closeMCPClient,
+  // Content & Research
   askNotebookLM,
+  getChatHistory,
+  deepResearch,
+  geminiQuery,
+  getResearchStatus,
+  // Notebooks
+  createNotebook,
+  batchCreateNotebooks,
   selectNotebook,
+  syncNotebook,
+  listNotebooks,
+  // Sources & Files
+  manageSources,
   listSources,
-  generateAudioOverview,
+  uploadDocument,
+  queryDocument,
+  deleteDocument,
+  // Multimedia Studio
+  generateAudio,
   getAudioStatus,
   downloadAudio,
-  generateVideoOverview,
+  generateVideo,
   generateDataTable,
+  getDataTable,
+  // System
   getHealth,
   getQuota,
-  getQueryHistory
+  getQueryHistory,
+  setupAuth,
+  cleanupData,
+  // Webhook & Compliance
+  configureWebhook,
+  complianceReport
 };
