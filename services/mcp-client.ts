@@ -58,7 +58,8 @@ export async function askNotebookLM(question: string, notebookId?: string): Prom
   if (notebookId) args.notebook_id = notebookId;
   
   const result = await client.callTool({ name: 'ask_question', arguments: args });
-  return (result.content?.[0] as any)?.text || '';
+  const content = result.content as any[];
+  return content?.[0]?.text || '';
 }
 
 export async function getChatHistory(notebookId: string): Promise<any> {
