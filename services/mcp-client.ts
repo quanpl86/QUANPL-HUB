@@ -41,6 +41,17 @@ export async function initMCPClient(): Promise<Client> {
 }
 
 /**
+ * Đóng kết nối MCP
+ */
+export async function closeMCPClient() {
+  if (mcpClient) {
+    await mcpClient.close();
+    mcpClient = null;
+    console.log('[MCP] Đã đóng kết nối.');
+  }
+}
+
+/**
  * Chọn Notebook để làm việc
  */
 export async function selectNotebook(notebookId: string): Promise<boolean> {
@@ -52,56 +63,54 @@ export async function selectNotebook(notebookId: string): Promise<boolean> {
         method: 'tools/call',
         params: {
           name: 'select_notebook',
-          arguments: { id: notebookId },
-          _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
-        }
+          arguments: {
+            notebook_id: notebookId,
+          },
+        },
       },
-      { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
-    ) as any;
+      {} as any
+    );
 
-    console.log(`[MCP] Đã chọn notebook: ${notebookId}`);
-    return true;
+    return !(result as any).isError;
   } catch (error: any) {
-    console.error(`[MCP] Lỗi chọn notebook ${notebookId}:`, error.message);
+    console.error('[MCP] Lỗi chọn notebook:', error.message);
     return false;
   }
 }
 
 /**
- * Hỏi NotebookLM AI viết bài dựa trên tri thức trong notebook
+ * Hỏi NotebookLM
  */
-export async function askNotebookLM(question: string, notebookId?: string): Promise<string> {
+export async function askNotebookLM(prompt: string, notebookId?: string): Promise<string> {
   const client = await initMCPClient();
 
-  // Tạo URL trực tiếp nếu có ID
-  const notebook_url = notebookId ? `https://notebooklm.google.com/notebook/${notebookId}` : undefined;
+  if (notebookId) {
+    await selectNotebook(notebookId);
+  }
 
   try {
+    console.log('[MCP] Đang gửi câu hỏi đến NotebookLM...');
+    
     const result = await client.request(
       {
         method: 'tools/call',
         params: {
           name: 'ask_question',
-          arguments: { 
-            question,
-            ...(notebook_url ? { notebook_url } : {})
+          arguments: {
+            question: prompt,
           },
-          _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
-        }
+        },
       },
-      { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any,
-      { timeout: 900000 } // Tăng timeout lên 15 phút để thoải mái gõ và đợi bài viết dài
-    ) as any;
+      {} as any
+    );
 
-    // Trích xuất text content từ kết quả MCP
-    if (result.content && Array.isArray(result.content)) {
-      return result.content
-        .filter((c: any) => c.type === 'text')
-        .map((c: any) => c.text)
-        .join('\n');
+    const response = result as any;
+    
+    if (response.isError) {
+      throw new Error(response.content?.[0]?.text || 'Lỗi không xác định từ MCP');
     }
 
-    return String(result.content || '');
+    return response.content?.[0]?.text || '';
   } catch (error: any) {
     console.error('[MCP] Lỗi ask_question:', error.message);
     throw error;
@@ -109,39 +118,7 @@ export async function askNotebookLM(question: string, notebookId?: string): Prom
 }
 
 /**
- * Lấy danh sách notebooks có sẵn
- */
-export async function listNotebooks(): Promise<any[]> {
-  const client = await initMCPClient();
-
-  try {
-    const result = await client.callTool({
-      name: 'list_notebooks',
-      arguments: {},
-    });
-
-    if (result.content && Array.isArray(result.content)) {
-      const textContent = result.content
-        .filter((c: any) => c.type === 'text')
-        .map((c: any) => c.text)
-        .join('\n');
-
-      try {
-        return JSON.parse(textContent);
-      } catch {
-        return [];
-      }
-    }
-
-    return [];
-  } catch (error: any) {
-    console.error('[MCP] Lỗi list_notebooks:', error.message);
-    return [];
-  }
-}
-
-/**
- * Lấy danh sách sources trong notebook hiện tại
+ * Liệt kê các nguồn trong Notebook
  */
 export async function listSources(): Promise<any[]> {
   const client = await initMCPClient();
@@ -172,21 +149,10 @@ export async function listSources(): Promise<any[]> {
   }
 }
 
-/**
- * Đóng kết nối MCP
- */
-export async function closeMCPClient() {
-  if (mcpClient) {
-    await mcpClient.close();
-    mcpClient = null;
-    console.log('[MCP] Đã đóng kết nối.');
-  }
-}
-
-// --- CÁC HÀM TIỆN ÍCH MỚI (MULTIMEDIA & DATA) ---
+// --- CÁC HÀM TIỆN ÍCH ĐA PHƯƠNG TIỆN (STUDIO) ---
 
 /**
- * Ra lệnh tạo Podcast (Audio Overview) cho Notebook
+ * Ra lệnh tạo Podcast (Audio Overview)
  */
 export async function generateAudioOverview(notebookId: string): Promise<any> {
   const client = await initMCPClient();
@@ -272,3 +238,54 @@ export async function generateDataTable(notebookId: string): Promise<any> {
   );
 }
 
+// --- CÁC HÀM QUẢN TRỊ & HỆ THỐNG (ADMIN) ---
+
+/**
+ * Kiểm tra sức khỏe hệ thống (Deep Health Check)
+ */
+export async function getHealth(): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool(
+    { name: 'get_health', arguments: {} },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
+  );
+}
+
+/**
+ * Lấy hạn mức (Quota) sử dụng
+ */
+export async function getQuota(): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool(
+    { name: 'get_quota', arguments: {} },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
+  );
+}
+
+/**
+ * Lấy lịch sử truy vấn của MCP
+ */
+export async function getQueryHistory(): Promise<any> {
+  const client = await initMCPClient();
+  return await client.callTool(
+    { name: 'get_query_history', arguments: {} },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
+  );
+}
+
+// Export mặc định object chứa tất cả các hàm
+export default {
+  initMCPClient,
+  closeMCPClient,
+  askNotebookLM,
+  selectNotebook,
+  listSources,
+  generateAudioOverview,
+  getAudioStatus,
+  downloadAudio,
+  generateVideoOverview,
+  generateDataTable,
+  getHealth,
+  getQuota,
+  getQueryHistory
+};
