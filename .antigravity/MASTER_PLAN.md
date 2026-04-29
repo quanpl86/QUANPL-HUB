@@ -22,8 +22,8 @@ Bản kế hoạch chiến lược nhằm kích hoạt toàn bộ sức mạnh c
 
 ## 🖥️ GIAI ĐOẠN 4: ADMIN STUDIO DASHBOARD
 - [x] Xây dựng giao diện "Multimedia Studio" trong trang quản trị Next.js.
-- [ ] Thêm nút bấm điều khiển: "Tạo Podcast", "Tạo Video", "Nghiên cứu sâu".
-- [ ] Hiển thị tiến trình xử lý Task Real-time (Sử dụng Supabase Realtime).
+- [x] Thêm nút bấm điều khiển: "Tạo Podcast", "Tạo Video", "Nghiên cứu sâu".
+- [x] Hiển thị tiến trình xử lý Task Real-time (Sử dụng Supabase Realtime).
 
 ## 💎 GIAI ĐOẠN 5: TRẢI NGHIỆM ĐỘC GIẢ PREMIUM
 - [ ] Tích hợp Audio Player (Trình phát Podcast) vào bài viết.
@@ -42,7 +42,7 @@ Bản kế hoạch chiến lược nhằm kích hoạt toàn bộ sức mạnh c
 | Nền tảng | Hoàn tất | 100% | Đã thiết lập Webhook bảo mật |
 | Multimedia | Hoàn tất | 100% | Đã hỗ trợ tạo & lưu trữ Audio/Video |
 | Nghiên cứu | Hoàn tất | 100% | Đã tích hợp Deep Research & Data Table |
-| Dashboard | Đang chạy | 30% | Đã xây dựng Multimedia Studio UI |
+| Dashboard | Hoàn tất | 100% | Đã tích hợp Multimedia Studio & Realtime |
 | UX/UI | Chờ | 0% | Frontend components |
 | Local Control | Chờ | 0% | App điều hành trên Mac |
 

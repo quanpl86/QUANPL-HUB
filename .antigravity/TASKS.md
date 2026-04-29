@@ -22,7 +22,7 @@ Tài liệu này dùng để điều phối hoạt động của AI Agent bám s
 
 ## 🖥️ GIAI ĐOẠN 4: UI ADMIN STUDIO
 - [x] **Task 4.1:** Tạo Component `MultimediaStudio` trong trang Admin.
-- [ ] **Task 4.2:** Kết nối Supabase Realtime để hiển thị tiến độ "AI đang làm việc" mà không cần F5 trang.
+- [x] **Task 4.2:** Kết nối Supabase Realtime để hiển thị tiến độ "AI đang làm việc" mà không cần F5 trang.
 - [ ] **Task 4.3:** Thêm chức năng xem trước (Preview) Audio/Video ngay trong Admin.
 
 ## 💎 GIAI ĐOẠN 5: FRONTEND PREMIUM COMPONENTS

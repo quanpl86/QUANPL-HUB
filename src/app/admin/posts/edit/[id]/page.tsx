@@ -8,9 +8,10 @@ import { updatePost } from '@/app/actions/posts';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, Loader2, Eye, Maximize } from 'lucide-react';
-import Link from 'next/link';
 import { PreviewModal } from '@/components/admin/PreviewModal';
+import { MultimediaStudio } from '@/components/admin/MultimediaStudio';
+import { ArrowLeft, Loader2, Eye, Maximize, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 // --- Smart Auto-resize Textarea Component ---
 const AutoResizeTextarea = ({ defaultValue, name, placeholder, className, rows = 1 }: any) => {
@@ -188,6 +189,15 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
           <div className="flex flex-col gap-2">
             <label className="font-mono text-[10px] text-brand-orange uppercase">Nội dung chi tiết</label>
             <CyberEditor content={content} onChange={setContent} />
+          </div>
+
+          {/* MULTIMEDIA STUDIO INTEGRATION */}
+          <div className="pt-6 border-t border-brand-orange/10">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles size={16} className="text-brand-orange" />
+              <h2 className="font-orbitron font-bold text-xs uppercase tracking-widest text-brand-orange">AI Multimedia Studio</h2>
+            </div>
+            <MultimediaStudio post={post} onTaskCreated={() => router.refresh()} />
           </div>
         </div>
 

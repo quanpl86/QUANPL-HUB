@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getSupabaseServer } from '@/lib/supabase-server';
 
 /**
  * API Webhook nhận thông báo từ AI Worker
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     console.log(`[Webhook] Nhận cập nhật cho Task ${taskId}: ${status}`);
 
-    const supabase = await createClient();
+    const supabase = await getSupabaseServer();
 
     // Cập nhật trạng thái Task trong Database
     const { error: updateError } = await supabase

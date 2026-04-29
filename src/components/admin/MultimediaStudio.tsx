@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createContentTask } from '@/app/actions/content-tasks';
+import { supabase } from '@/lib/supabase';
 
 interface Post {
   id: string;
@@ -25,6 +26,49 @@ interface Props {
 export function MultimediaStudio({ post, onTaskCreated }: Props) {
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
+  const [currentTasks, setCurrentTasks] = useState<any[]>([]);
+
+  // Task 4.2: Theo dõi tiến độ AI thời gian thực
+  React.useEffect(() => {
+    // 1. Lấy danh sách task hiện có cho bài này
+    const fetchTasks = async () => {
+      const { data } = await supabase
+        .from('content_tasks')
+        .select('*')
+        .eq('result_post_id', post.id)
+        .in('type', ['AUDIO', 'VIDEO'])
+        .order('created_at', { ascending: false });
+      if (data) setCurrentTasks(data);
+    };
+    fetchTasks();
+
+    // 2. Đăng ký kênh Realtime
+    const channel = supabase
+      .channel(`multimedia-tasks-${post.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'content_tasks',
+          filter: `result_post_id=eq.${post.id}`
+        },
+        (payload) => {
+          console.log('[Realtime] Task update received:', payload);
+          fetchTasks(); // Refresh danh sách khi có thay đổi
+          if (payload.new && (payload.new as any).status === 'completed') {
+            toast.success('Hệ thống AI đã hoàn tất yêu cầu!');
+            // Reload trang nhẹ để lấy URL mới (hoặc có thể dùng callback để update post state)
+            window.location.reload(); 
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [post.id]);
 
   const handleGenerate = async (type: 'AUDIO' | 'VIDEO') => {
     if (type === 'AUDIO') setIsGeneratingAudio(true);
