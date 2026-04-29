@@ -1,0 +1,82 @@
+import React from 'react';
+import { getSupabaseServer } from '@/lib/supabase-server';
+import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
+import { CyberButton } from '@/components/ui/CyberButton';
+import Link from 'next/link';
+import { Plus, Edit2, ExternalLink } from 'lucide-react';
+import { DeleteButton } from '@/components/admin/DeleteButton';
+import { deletePost } from '@/app/actions/posts';
+import { SeoAdvisor } from '@/components/admin/SeoAdvisor';
+
+export default async function AdminPostsPage() {
+  const supabase = await getSupabaseServer();
+  const { data: posts } = await supabase
+    .from('posts')
+    .select('*, categories(name)')
+    .order('created_at', { ascending: false });
+
+  return (
+    <div className="max-w-[1400px] mx-auto">
+      <div className="mb-10 flex justify-between items-end">
+        <div>
+          <h1 className="cyber-h1 text-3xl mb-2">DANH SÁCH <span className="cyber-text-gradient">BÀI ĐĂNG</span></h1>
+          <p className="font-mono text-muted text-xs uppercase tracking-widest">// KHO_NỘI_DUNG_TOÀN_CẦU //</p>
+        </div>
+        <Link href="/admin/posts/new">
+          <CyberButton variant="primary" className="flex items-center gap-2">
+            <Plus size={16} />
+            Khởi tạo bài viết mới
+          </CyberButton>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {posts?.map((post) => (
+          <div key={post.id} className="group relative bg-cyber-black/40 border border-brand-orange/10 p-5 hover:border-brand-orange/40 transition-all flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex gap-6 items-center flex-1">
+              {post.image_url ? (
+                <img src={post.image_url} alt="" className="w-24 h-16 object-cover border border-brand-orange/20" />
+              ) : (
+                <div className="w-24 h-16 bg-brand-orange/5 border border-dashed border-brand-orange/20 flex items-center justify-center">
+                  <span className="font-mono text-[8px] text-brand-orange/40">TRỐNG</span>
+                </div>
+              )}
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h3 className="font-orbitron font-bold text-foreground text-base">{post.title}</h3>
+                  <span className={`font-mono text-[9px] px-2 py-0.5 border ${post.is_published ? 'border-green-500/30 text-green-400 bg-green-500/5' : 'border-brand-orange/30 text-brand-orange/60 bg-brand-orange/5'}`}>
+                    {post.is_published ? 'CÔNG KHAI' : 'BẢN NHÁP'}
+                  </span>
+                  <SeoAdvisor post={post} />
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-mono text-[10px] text-brand-orange/60 uppercase">[{post.categories?.name || 'Chưa phân loại'}]</span>
+                  <span className="font-mono text-[10px] text-muted uppercase">{new Date(post.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Link href={`/posts/${post.slug}`} target="_blank" className="text-muted hover:text-blue-400 transition-colors">
+                <ExternalLink size={18} />
+              </Link>
+              <Link href={`/admin/posts/edit/${post.id}`} className="text-muted hover:text-brand-orange transition-colors">
+                <Edit2 size={18} />
+              </Link>
+              <DeleteButton id={post.id} onDelete={deletePost} label="bài viết" />
+            </div>
+          </div>
+        ))}
+
+        {posts?.length === 0 && (
+          <div className="text-center py-32 border border-dashed border-brand-orange/20">
+            <p className="font-mono text-muted text-xs uppercase tracking-[0.2em]">// KHÔNG_CÓ_DỮ_LIỆU_BÀI_ĐĂNG //</p>
+            <Link href="/admin/posts/new" className="mt-4 inline-block text-brand-orange font-orbitron text-[10px] uppercase hover:underline">
+              Bắt đầu bài đăng đầu tiên của bạn
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

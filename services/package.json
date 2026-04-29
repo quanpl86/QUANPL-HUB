@@ -1,0 +1,23 @@
+{
+  "name": "quan-pl-hub-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local Worker for QUAN-PL HUB Content OS — polls Supabase tasks and processes via NotebookLM MCP",
+  "type": "module",
+  "scripts": {
+    "start": "npx tsx worker.ts",
+    "dev": "npx tsx --watch worker.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@pan-sec/notebooklm-mcp": "^2026.3.2",
+    "@supabase/supabase-js": "^2.104.1",
+    "dotenv": "^17.4.2",
+    "nodemailer": "^8.0.7"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^8.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.0.0"
+  }
+}
