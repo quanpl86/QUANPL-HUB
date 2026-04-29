@@ -182,3 +182,93 @@ export async function closeMCPClient() {
     console.log('[MCP] Đã đóng kết nối.');
   }
 }
+
+// --- CÁC HÀM TIỆN ÍCH MỚI (MULTIMEDIA & DATA) ---
+
+/**
+ * Ra lệnh tạo Podcast (Audio Overview) cho Notebook
+ */
+export async function generateAudioOverview(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  
+  return await client.callTool(
+    {
+      name: 'generate_audio_overview',
+      arguments: { notebook_url },
+      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
+    },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any,
+    { timeout: 600000 }
+  );
+}
+
+/**
+ * Kiểm tra trạng thái tạo Podcast
+ */
+export async function getAudioStatus(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  
+  return await client.callTool(
+    {
+      name: 'get_audio_status',
+      arguments: { notebook_url },
+      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
+    },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
+  );
+}
+
+/**
+ * Tải file Audio về
+ */
+export async function downloadAudio(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  
+  return await client.callTool(
+    {
+      name: 'download_audio',
+      arguments: { notebook_url },
+      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
+    },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
+  );
+}
+
+/**
+ * Tạo Video tóm tắt (Video Overview)
+ */
+export async function generateVideoOverview(notebookId: string, style: string = 'modern'): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  
+  return await client.callTool(
+    {
+      name: 'generate_video_overview',
+      arguments: { notebook_url, style },
+      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
+    },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any,
+    { timeout: 600000 }
+  );
+}
+
+/**
+ * Trích xuất bảng dữ liệu từ nguồn Notebook (JSON)
+ */
+export async function generateDataTable(notebookId: string): Promise<any> {
+  const client = await initMCPClient();
+  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
+  
+  return await client.callTool(
+    {
+      name: 'generate_data_table',
+      arguments: { notebook_url },
+      _meta: { authToken: process.env.NLMCP_AUTH_TOKEN }
+    },
+    { parse: (data: any) => data, safeParse: (data: any) => ({ success: true, data }) } as any
+  );
+}
+
