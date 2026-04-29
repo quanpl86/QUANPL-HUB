@@ -8,7 +8,8 @@ Tài liệu tổng hợp các thông số kỹ thuật, cấu hình và sơ đ�
 1.  **Frontend/CMS:** Next.js (Deploy trên Netlify).
 2.  **Database/Realtime:** Supabase.
 3.  **Content Brain:** Google NotebookLM (Thông qua MCP Server).
-4.  **Worker:** Chạy tại Local (MacBook/VPS) — "Cánh tay nối dài" điều khiển AI.
+4.  **Worker:** Chạy tại Local (MacBook/VPS).
+5.  **Local Control Center:** Dashboard quản trị chạy trên `localhost:3001`.
 
 ---
 

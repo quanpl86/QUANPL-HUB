@@ -30,6 +30,12 @@ Tài liệu này dùng để điều phối hoạt động của AI Agent bám s
 - [ ] **Task 5.2:** Xây dựng `VideoPlayer` hỗ trợ Lazy Loading.
 - [ ] **Task 5.3:** Thiết kế bảng dữ liệu (Data Table) hiển thị từ JSON.
 
+## 🖥️ GIAI ĐOẠN 6: LOCAL CONTROL CENTER (DASHBOARD TRÊN MAC)
+- [ ] **Task 6.1:** Khởi tạo App Local (Next.js hoặc Electron nhẹ) chạy trên port 3001.
+- [ ] **Task 6.2:** Xây dựng UI theo dõi tiến độ Worker bằng Supabase Realtime.
+- [ ] **Task 6.3:** Implement `fs-watch` để tự động đẩy tài liệu từ một thư mục chỉ định lên NotebookLM.
+- [ ] **Task 6.4:** Nút "One-click Re-auth" để xử lý nhanh lỗi mất Session Google.
+
 ---
 ### 🤖 HƯỚNG DẪN CHO AI AGENT:
 1. Đọc file này trước khi bắt đầu bất kỳ Task nào.

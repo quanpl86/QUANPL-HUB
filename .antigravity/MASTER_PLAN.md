@@ -30,6 +30,11 @@ Bản kế hoạch chiến lược nhằm kích hoạt toàn bộ sức mạnh c
 - [ ] Tích hợp Video Player phong cách Heritage.
 - [ ] Hiển thị bảng dữ liệu tương tác từ JSON trích xuất.
 
+## 🖥️ GIAI ĐOẠN 6: LOCAL CONTROL CENTER (DASHBOARD ĐIỀU HÀNH)
+- [ ] Xây dựng App Local (localhost:3001) để giám sát Worker.
+- [ ] Giao diện theo dõi Log và tiến độ AI Real-time.
+- [ ] Tích hợp Local File Watcher để tự động hóa việc đẩy tài liệu từ Mac lên AI.
+
 ---
 ### 📊 BẢNG THEO DÕI TIẾN ĐỘ TỔNG THỂ
 | Giai đoạn | Trạng thái | Hoàn thành | Ghi chú |
@@ -39,6 +44,7 @@ Bản kế hoạch chiến lược nhằm kích hoạt toàn bộ sức mạnh c
 | Nghiên cứu | Chờ | 0% | Cần Gemini API Key |
 | Dashboard | Chờ | 0% | Thiết kế UI Admin |
 | UX/UI | Chờ | 0% | Frontend components |
+| Local Control | Chờ | 0% | App điều hành trên Mac |
 
 ---
 *Cập nhật lần cuối: 30/04/2026 bởi Antigravity Agent.*
