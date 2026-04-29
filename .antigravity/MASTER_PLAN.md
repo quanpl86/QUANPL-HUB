@@ -26,13 +26,14 @@ Bản kế hoạch chiến lược nhằm kích hoạt toàn bộ sức mạnh c
 - [x] Hiển thị tiến trình xử lý Task Real-time (Sử dụng Supabase Realtime).
 
 ## 💎 GIAI ĐOẠN 5: TRẢI NGHIỆM ĐỘC GIẢ PREMIUM
-- [ ] Tích hợp Audio Player (Trình phát Podcast) vào bài viết.
-- [ ] Tích hợp Video Player phong cách Heritage.
-- [ ] Hiển thị bảng dữ liệu tương tác từ JSON trích xuất.
+- [x] Tích hợp Audio Player (Trình phát Podcast) vào bài viết.
+- [x] Tích hợp Video Player phong cách Heritage.
+- [x] Hiển thị bảng dữ liệu tương tác từ JSON trích xuất.
 
 ## 🖥️ GIAI ĐOẠN 6: LOCAL CONTROL CENTER (DASHBOARD ĐIỀU HÀNH)
-- [ ] Xây dựng App Local (localhost:3001) để giám sát Worker.
-- [ ] Giao diện theo dõi Log và tiến độ AI Real-time.
+- [x] Xây dựng App Local (localhost:3001) để giám sát Worker.
+- [x] Giao diện theo dõi Log và tiến độ AI Real-time.
+- [ ] Tính năng "Neural Sync": Tự động đồng bộ file từ Mac lên Cloud.
 - [ ] Tích hợp Local File Watcher để tự động hóa việc đẩy tài liệu từ Mac lên AI.
 
 ---
@@ -43,8 +44,8 @@ Bản kế hoạch chiến lược nhằm kích hoạt toàn bộ sức mạnh c
 | Multimedia | Hoàn tất | 100% | Đã hỗ trợ tạo & lưu trữ Audio/Video |
 | Nghiên cứu | Hoàn tất | 100% | Đã tích hợp Deep Research & Data Table |
 | Dashboard | Hoàn tất | 100% | Đã tích hợp Multimedia Studio & Realtime |
-| UX/UI | Chờ | 0% | Frontend components |
-| Local Control | Chờ | 0% | App điều hành trên Mac |
+| UX/UI | Hoàn tất | 100% | Đã có Podcast & Video Player |
+| Local Control | Đang chạy | 80% | Dashboard đã chạy trên 3001 |
 
 ---
 *Cập nhật lần cuối: 30/04/2026 bởi Antigravity Agent.*

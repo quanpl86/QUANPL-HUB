@@ -40,6 +40,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 import { LikeButton } from '@/components/blog/LikeButton';
 import { CommentSection } from '@/components/blog/CommentSection';
+import { PremiumMultimedia } from '@/components/blog/PremiumMultimedia';
 import { headers } from 'next/headers';
 
 export default async function PostPage({ params }: PostPageProps) {
@@ -157,13 +158,20 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="max-w-4xl mx-auto">
           {/* Post Excerpt/Lead */}
           {post.excerpt && (
-            <div className="mb-24 relative group">
+            <div className="mb-12 relative group">
               <div className="absolute -left-12 top-0 bottom-0 w-2 bg-brand-orange/60 shadow-[0_0_20px_rgba(255,87,34,0.2)] transform -skew-x-12 transition-all group-hover:w-3"></div>
               <p className="text-3xl md:text-4xl font-sans text-foreground/80 leading-relaxed font-light pl-6 tracking-wide italic">
                 {post.excerpt}
               </p>
             </div>
           )}
+
+          {/* PREMIUM MULTIMEDIA EXPERIENCE */}
+          <PremiumMultimedia 
+            audioUrl={post.audio_url} 
+            videoUrl={post.video_url} 
+            title={post.title} 
+          />
 
           {/* Dynamic Content from Tiptap v3 / Markdown */}
           <section 
