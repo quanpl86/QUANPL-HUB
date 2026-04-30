@@ -6,16 +6,23 @@
   "type": "module",
   "scripts": {
     "start": "npx tsx worker.ts",
-    "dev": "npx tsx --watch worker.ts"
+    "dev": "npx tsx --watch worker.ts",
+    "auth": "npx tsx scripts/recover-auth.ts",
+    "dashboard": "npx tsx api.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
     "@pan-sec/notebooklm-mcp": "^2026.3.2",
     "@supabase/supabase-js": "^2.104.1",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "marked": "^18.0.2",
     "nodemailer": "^8.0.7"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/nodemailer": "^8.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.0.0"

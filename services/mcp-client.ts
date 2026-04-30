@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 
 /**
  * MCP Client — Cầu nối đến NotebookLM MCP Server
@@ -19,13 +20,21 @@ export async function initMCPClient(): Promise<Client> {
 
   console.log(`[MCP] Khởi động MCP Server: ${serverCommand}`);
 
+  // Cấu hình môi trường cho server MCP
+  // Pantheon-Security MCP thường dùng ADMIN_TOKEN hoặc AUTH_TOKEN
+  const mcpEnv = {
+    ...process.env as Record<string, string>,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+    AUTH_TOKEN: process.env.NLMCP_AUTH_TOKEN || '',
+    ADMIN_TOKEN: process.env.NLMCP_AUTH_TOKEN || '',
+    NLMCP_ADMIN_TOKEN: process.env.NLMCP_AUTH_TOKEN || '',
+    NLMCP_AUTH_TOKEN: process.env.NLMCP_AUTH_TOKEN || '',
+  };
+
   const transport = new StdioClientTransport({
     command,
     args,
-    env: {
-      ...process.env as Record<string, string>,
-      GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-    },
+    env: mcpEnv,
   });
 
   mcpClient = new Client(
@@ -50,185 +59,206 @@ export async function closeMCPClient() {
   }
 }
 
+/**
+ * Helper để gọi Tool (Sử dụng low-level request để chèn _meta.authToken cho Pantheon-Security)
+ */
+async function callMcpTool(name: string, args: any = {}, timeout: number = 900000) {
+  const client = await initMCPClient();
+  const token = process.env.NLMCP_AUTH_TOKEN;
+
+  if (!token) {
+    console.warn(`[MCP] ⚠️ Cảnh báo: Không tìm thấy NLMCP_AUTH_TOKEN trong .env`);
+  } else {
+    // Log vết (ẩn phần lớn token)
+    console.log(`[MCP] 🔐 Đang gọi Tool: ${name} (Auth: ${token.substring(0, 4)}...${token.substring(token.length - 4)})`);
+  }
+
+  // Sử dụng low-level request để chèn _meta.authToken theo yêu cầu của Pantheon-Security MCP
+  const result = await client.request(
+    {
+      method: "tools/call",
+      params: {
+        name,
+        arguments: args,
+        _meta: {
+          authToken: token
+        }
+      }
+    },
+    CallToolResultSchema,
+    { timeout } // Sử dụng timeout tùy chỉnh
+  );
+
+  // Kiểm tra lỗi cấp độ Tool (Lỗi hệ thống MCP)
+  if (result.isError) {
+    const errorText = (result.content as any[])?.[0]?.text || 'Lỗi không xác định từ MCP Server';
+    throw new Error(errorText);
+  }
+
+  // Kiểm tra lỗi cấp độ Application (Lỗi JSON trả về từ Tool)
+  const text = (result.content as any[])?.[0]?.text || '';
+  if (text.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed.success === false || parsed.error) {
+        throw new Error(parsed.error || 'Lỗi thực thi Tool (JSON)');
+      }
+    } catch (e: any) {
+      if (e.message.includes('Lỗi thực thi Tool')) throw e;
+      // Không phải JSON lỗi, cứ để nó đi tiếp
+    }
+  }
+
+  return result;
+}
+
 // --- NHÓM 1: TRUY VẤN & SÁNG TẠO (QUERY & CREATE) ---
 
 export async function askNotebookLM(question: string, notebookId?: string): Promise<string> {
-  const client = await initMCPClient();
   const args: any = { question };
   if (notebookId) args.notebook_id = notebookId;
-  
-  const result = await client.callTool({ name: 'ask_question', arguments: args });
+  const result = await callMcpTool('ask_question', args);
   const content = result.content as any[];
   return content?.[0]?.text || '';
 }
 
 export async function getChatHistory(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const result = await client.callTool({ name: 'get_notebook_chat_history', arguments: { notebook_id: notebookId } });
-  return result;
+  return await callMcpTool('get_notebook_chat_history', { notebook_id: notebookId });
 }
 
 // --- NHÓM 2: NGHIÊN CỨU CHUYÊN SÂU (GEMINI API) ---
 
 export async function deepResearch(query: string): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'deep_research', arguments: { query } });
+  return await callMcpTool('deep_research', { query });
 }
 
 export async function geminiQuery(prompt: string, model: string = 'gemini-3-flash-preview'): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'gemini_query', arguments: { prompt, model } });
+  return await callMcpTool('gemini_query', { prompt, model });
 }
 
 export async function getResearchStatus(interactionId: string): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'get_research_status', arguments: { interaction_id: interactionId } });
+  return await callMcpTool('get_research_status', { interaction_id: interactionId });
 }
 
 // --- NHÓM 3: QUẢN LÝ NOTEBOOK (NOTEBOOK MANAGEMENT) ---
 
 export async function createNotebook(name: string, sources: any[] = [], description: string = ''): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'create_notebook', arguments: { name, sources, description } });
+  return await callMcpTool('create_notebook', { name, sources, description });
 }
 
 export async function batchCreateNotebooks(notebooks: any[]): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'batch_create_notebooks', arguments: { notebooks } });
+  return await callMcpTool('batch_create_notebooks', { notebooks });
 }
 
-export async function selectNotebook(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'select_notebook', arguments: { notebook_id: notebookId } });
+export async function selectNotebook(id: string): Promise<any> {
+  return await callMcpTool('select_notebook', { id });
 }
 
 export async function syncNotebook(notebookId: string, directory: string, patterns: string[] = ['*.md', '*.pdf']): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'sync_notebook', arguments: { notebook_id: notebookId, directory, patterns } });
+  return await callMcpTool('sync_notebook', { notebook_id: notebookId, directory, patterns });
 }
 
 export async function listNotebooks(): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'list_notebooks', arguments: {} });
+  return await callMcpTool('list_notebooks', {});
 }
 
 // --- NHÓM 4: QUẢN LÝ NGUỒN (SOURCE MANAGEMENT) ---
 
 export async function manageSources(notebookId: string, action: 'add' | 'remove', sources: any[]): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'manage_sources', arguments: { notebook_id: notebookId, action, sources } });
+  return await callMcpTool('manage_sources', { notebook_id: notebookId, action, sources });
 }
 
 export async function listSources(notebookId?: string): Promise<any> {
-  const client = await initMCPClient();
   const args = notebookId ? { notebook_id: notebookId } : {};
-  return await client.callTool({ name: 'list_sources', arguments: args });
+  return await callMcpTool('list_sources', args);
 }
 
 // --- NHÓM 5: ĐA PHƯƠNG TIỆN STUDIO (MULTIMEDIA) ---
 
 export async function generateAudio(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'generate_audio_overview', arguments: { notebook_url } });
+  return await callMcpTool('generate_audio_overview', { notebook_id: notebookId }, 2400000); // 40 phút
 }
 
 export async function getAudioStatus(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'get_audio_status', arguments: { notebook_url } });
+  const result = await callMcpTool('get_audio_status', { notebook_id: notebookId });
+  const text = (result.content as any[])?.[0]?.text || '{}';
+  try { return JSON.parse(text); } catch (e) { return { status: 'unknown', raw: text }; }
 }
 
 export async function downloadAudio(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'download_audio', arguments: { notebook_url } });
+  const result = await callMcpTool('download_audio', { notebook_id: notebookId });
+  const text = (result.content as any[])?.[0]?.text || '{}';
+  try { return JSON.parse(text); } catch (e) { return { status: 'error', raw: text }; }
 }
 
 export async function generateVideo(notebookId: string, style: string = 'heritage'): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'generate_video_overview', arguments: { notebook_url, style } });
+  return await callMcpTool('generate_video_overview', { notebook_id: notebookId, style }, 2400000); // 40 phút
 }
 
 export async function getVideoStatus(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'get_video_status', arguments: { notebook_url } });
+  const result = await callMcpTool('get_video_status', { notebook_id: notebookId });
+  const text = (result.content as any[])?.[0]?.text || '{}';
+  try { return JSON.parse(text); } catch (e) { return { status: 'unknown', raw: text }; }
 }
 
 export async function downloadVideo(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'download_video', arguments: { notebook_url } });
+  const result = await callMcpTool('download_video', { notebook_id: notebookId });
+  const text = (result.content as any[])?.[0]?.text || '{}';
+  try { return JSON.parse(text); } catch (e) { return { status: 'error', raw: text }; }
 }
 
 export async function generateDataTable(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'generate_data_table', arguments: { notebook_url } });
+  return await callMcpTool('generate_data_table', { notebook_id: notebookId }, 1800000); // 30 phút
 }
 
 export async function getDataTable(notebookId: string): Promise<any> {
-  const client = await initMCPClient();
-  const notebook_url = `https://notebooklm.google.com/notebook/${notebookId}`;
-  return await client.callTool({ name: 'get_data_table', arguments: { notebook_url } });
+  return await callMcpTool('get_data_table', { notebook_id: notebookId });
 }
 
 // --- NHÓM 6: QUẢN LÝ FILE (FILES API) ---
 
 export async function uploadDocument(path: string): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'upload_document', arguments: { path } });
+  return await callMcpTool('upload_document', { path });
 }
 
 export async function queryDocument(fileId: string, query: string): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'query_document', arguments: { file_id: fileId, query } });
+  return await callMcpTool('query_document', { file_id: fileId, query });
 }
 
 export async function deleteDocument(fileId: string): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'delete_document', arguments: { file_id: fileId } });
+  return await callMcpTool('delete_document', { file_id: fileId });
 }
 
 // --- NHÓM 7: HỆ THỐNG & QUẢN TRỊ (SYSTEM & ADMIN) ---
 
 export async function getHealth(): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'get_health', arguments: {} });
+  return await callMcpTool('get_health', {});
 }
 
 export async function getQuota(): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'get_quota', arguments: {} });
+  return await callMcpTool('get_quota', {});
 }
 
 export async function getQueryHistory(): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'get_query_history', arguments: {} });
+  return await callMcpTool('get_query_history', {});
 }
 
 export async function setupAuth(): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'setup_auth', arguments: {} });
+  return await callMcpTool('setup_auth', { show_browser: true });
 }
 
 export async function cleanupData(): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'cleanup_data', arguments: {} });
+  return await callMcpTool('cleanup_data', {});
 }
 
 // --- NHÓM 8: WEBHOOK & PHÁP LÝ (WEBHOOK & COMPLIANCE) ---
 
 export async function configureWebhook(url: string, events: string[]): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'configure_webhook', arguments: { url, events } });
+  return await callMcpTool('configure_webhook', { url, events });
 }
 
 export async function complianceReport(format: 'json' | 'csv' | 'html' = 'json'): Promise<any> {
-  const client = await initMCPClient();
-  return await client.callTool({ name: 'compliance_report', arguments: { format } });
+  return await callMcpTool('compliance_report', { format });
 }
 
 // --- EXPORT DEFAULT ---

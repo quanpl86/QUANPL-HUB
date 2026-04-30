@@ -16,7 +16,8 @@ export async function createContentTask(
   notebookId: string,
   priority: number = 5,
   type: string = 'BLOG',
-  resultPostId?: string
+  resultPostId?: string,
+  metadata: any = {}
 ) {
   if (!await checkAdmin()) throw new Error('Unauthorized');
   const supabase = await getSupabaseServer();
@@ -29,7 +30,8 @@ export async function createContentTask(
       priority,
       status: 'pending',
       type: type.toUpperCase(),
-      result_post_id: resultPostId || null
+      result_post_id: resultPostId || null,
+      metadata
     }])
     .select()
     .single();
@@ -124,8 +126,7 @@ export async function deleteTask(taskId: string) {
   const { error } = await supabase
     .from('content_tasks')
     .delete()
-    .eq('id', taskId)
-    .in('status', ['pending', 'cancelled']);
+    .eq('id', taskId);
 
   if (error) {
     console.error('Error deleting task:', error);
@@ -137,19 +138,27 @@ export async function deleteTask(taskId: string) {
 }
 
 /**
- * Lấy danh sách Notebook IDs đã cấu hình
+ * Lấy danh sách NotebookLM đã đồng bộ từ Cloud
  */
-export async function getNotebookConfigs() {
+export async function getAutomationNotebooks() {
   if (!await checkAdmin()) throw new Error('Unauthorized');
   const supabase = await getSupabaseServer();
 
-  const { data } = await supabase
-    .from('automation_settings')
-    .select('key_name, key_value')
-    .like('key_name', 'NOTEBOOK_%');
+  const { data, error } = await supabase
+    .from('automation_notebooks')
+    .select('*')
+    .order('name', { ascending: true });
 
+  if (error) {
+    console.error('Error fetching notebooks:', error);
+    return [];
+  }
   return data || [];
 }
+
+/**
+ * Lấy danh sách Notebook IDs đã cấu hình (Legacy)
+ */
 
 /**
  * Kiểm tra Worker có đang online không (dựa trên heartbeat)

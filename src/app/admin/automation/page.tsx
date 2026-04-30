@@ -4,6 +4,7 @@ import React, { useState, useEffect, useTransition, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Radio, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 // Import các sub-components
 import { AutomationStats } from '@/components/admin/automation/AutomationStats';
@@ -24,7 +25,7 @@ import {
   getMCPNodes 
 } from '@/app/actions/automation';
 import { generateContentOutline, runFullContentPipelineFromOutline } from '@/app/actions/ai_workflow';
-import { getContentTasks, getNotebookConfigs, getWorkerStatus } from '@/app/actions/content-tasks';
+import { getContentTasks, getAutomationNotebooks, getWorkerStatus } from '@/app/actions/content-tasks';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -56,6 +57,24 @@ export default function AutomationPage() {
   const [notebookConfigs, setNotebookConfigs] = useState<any[]>([]);
   const [workerStatus, setWorkerStatus] = useState<{ online: boolean; lastSeen: string | null }>({ online: false, lastSeen: null });
 
+  // Callback để refresh Hybrid Mode data
+  const refreshContentTasks = useCallback(async () => {
+    try {
+      const [tasksData, wStatus, logsData, nbConfigs] = await Promise.all([
+        getContentTasks(),
+        getWorkerStatus(),
+        getAutomationLogs(20),
+        getAutomationNotebooks()
+      ]);
+      setContentTasks(tasksData || []);
+      setWorkerStatus(wStatus);
+      setLogs(logsData || []);
+      setNotebookConfigs(nbConfigs || []);
+    } catch (error) {
+      console.error('Failed to refresh tasks:', error);
+    }
+  }, []);
+
   // Load data on mount
   useEffect(() => {
     async function loadData() {
@@ -66,7 +85,7 @@ export default function AutomationPage() {
           getMCPKnowledgeFiles(),
           getMCPNodes(),
           getContentTasks(),
-          getNotebookConfigs(),
+          getAutomationNotebooks(),
           getWorkerStatus()
         ]);
         setSettings(settingsData || []);
@@ -84,23 +103,23 @@ export default function AutomationPage() {
       }
     }
     loadData();
-  }, []);
 
-  // Callback để refresh Hybrid Mode data
-  const refreshContentTasks = useCallback(async () => {
-    try {
-      const [tasksData, wStatus, logsData] = await Promise.all([
-        getContentTasks(),
-        getWorkerStatus(),
-        getAutomationLogs(20)
-      ]);
-      setContentTasks(tasksData || []);
-      setWorkerStatus(wStatus);
-      setLogs(logsData || []);
-    } catch (error) {
-      console.error('Failed to refresh tasks:', error);
-    }
-  }, []);
+    // Task 4.2: Đăng ký Realtime để cập nhật Task tự động
+    const channel = supabase.channel('automation-tasks-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'content_tasks' },
+        () => {
+          console.log('[Realtime] Cập nhật tiến trình AI...');
+          refreshContentTasks();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refreshContentTasks]);
 
   const handleUpdateSetting = async (key: string, value: string) => {
     startTransition(async () => {

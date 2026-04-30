@@ -7,9 +7,11 @@
 
 import 'dotenv/config';
 import nodemailer from 'nodemailer';
-import { fetchPendingTasks, updateTaskStatus, insertDraftPost, sendHeartbeat } from './supabase-client.js';
+import { fetchPendingTasks, updateTaskStatus, insertDraftPost, sendHeartbeat, uploadAsset, updatePostMultimedia } from './supabase-client.js';
 import mcp, { initMCPClient, selectNotebook, askNotebookLM, closeMCPClient } from './mcp-client.js';
 import { buildContentPrompt, parseNotebookResponse } from './prompt-templates.js';
+import { marked } from 'marked';
+import fs from 'fs';
 
 // ============================================
 // CONFIG
@@ -17,6 +19,8 @@ import { buildContentPrompt, parseNotebookResponse } from './prompt-templates.js
 const POLL_INTERVAL = parseInt(process.env.WORKER_POLL_INTERVAL_MS || '30000');
 const WORKER_ID = process.env.WORKER_ID || 'local-worker';
 const DEFAULT_NOTEBOOK = process.env.NOTEBOOK_DEFAULT_ID || '';
+
+console.log(`[Worker] 🌐 Kết nối Supabase: ${process.env.SUPABASE_URL}`);
 
 let isProcessing = false;
 let cycleCount = 0;
@@ -39,6 +43,10 @@ async function main() {
   }
 
   await sendHeartbeat();
+  
+  // Chạy ngay lần đầu
+  pollAndProcess();
+  
   setInterval(pollAndProcess, POLL_INTERVAL);
   setInterval(sendHeartbeat, 60000);
 }
@@ -48,6 +56,7 @@ async function main() {
 // ============================================
 async function pollAndProcess() {
   if (isProcessing) return;
+  console.log(`[${new Date().toLocaleTimeString()}] ⚡ Đang quét hàng đợi...`);
 
   try {
     const tasks = await fetchPendingTasks();
@@ -109,17 +118,45 @@ async function processTask(task: any) {
  * Task 1.1: Viết bài Blog
  */
 async function handleBlogTask(task: any) {
-  const { id, topic_name, notebook_id } = task;
-  const targetNotebook = notebook_id || DEFAULT_NOTEBOOK;
-
-  await selectNotebook(targetNotebook);
-  const prompt = buildContentPrompt(topic_name);
-  const rawResponse = await askNotebookLM(prompt, targetNotebook);
+  const { id, topic_name, notebook_id, metadata } = task;
+  const notebookId = task.notebook_id || process.env.NOTEBOOK_DEFAULT_ID;
+  console.log(`[Worker] 🚀 BẮT ĐẦU XỬ LÝ BLOG: "${task.topic_name}"`);
+  console.log(`[Worker] 📂 Sử dụng Notebook ID: ${notebookId}`);
   
+  await selectNotebook(notebookId);
+  const prompt = buildContentPrompt(topic_name, metadata?.prompt);
+  const rawResponse = await askNotebookLM(prompt, notebookId);
+  const responseStr = String(rawResponse).toLowerCase();
+  
+  // KIỂM TRA THÔNG MINH: Nếu là JSON thành công thì không báo lỗi
+  let isActuallySuccess = false;
+  if (rawResponse.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(rawResponse);
+      if (parsed.success === true || (parsed.data && parsed.success !== false)) {
+        isActuallySuccess = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!isActuallySuccess) {
+    if (!rawResponse || responseStr.includes('failed') || responseStr.includes('error') || responseStr.includes('timeout')) {
+        throw new Error(`AI không phản hồi hoặc gặp lỗi: ${rawResponse}`);
+    }
+  }
+
   const parsed = parseNotebookResponse(String(rawResponse));
+  let markdownContent = parsed?.content || String(rawResponse);
+  
+  // SỬA LỖI: Tự động thêm xuống dòng nếu tiêu đề dính liền nội dung
+  // Tìm các đoạn ## Tiêu đề (không có xuống dòng sau đó) và chèn thêm \n\n
+  markdownContent = markdownContent.replace(/^(#{1,6}\s+.*?)(\s*\n\s*[^\s#])/gm, '$1\n\n$2');
+  
+  const htmlContent = await marked.parse(markdownContent);
+  
   const post = await insertDraftPost({
     title: parsed?.title || topic_name,
-    content: parsed?.content || String(rawResponse),
+    content: htmlContent,
     excerpt: parsed?.seo?.excerpt || '',
     meta_title: parsed?.seo?.meta_title || parsed?.title || topic_name,
     meta_description: parsed?.seo?.meta_description || '',
@@ -142,11 +179,12 @@ async function handleBlogTask(task: any) {
  * GIAI ĐOẠN 3: Nghiên cứu sâu + Viết bài
  */
 async function handleDeepResearchTask(task: any) {
-  const { id, topic_name, notebook_id } = task;
-  const ts = () => new Date().toLocaleTimeString('vi-VN');
-  const targetNotebook = notebook_id || DEFAULT_NOTEBOOK;
+  const { id, topic_name, notebook_id, metadata } = task;
+  const targetNotebook = notebook_id || process.env.NOTEBOOK_DEFAULT_ID;
 
-  console.log(`[Worker] 🔬 Bắt đầu Deep Research cho chủ đề: "${topic_name}"...`);
+  console.log(`[Worker] 🔬 BẮT ĐẦU DEEP RESEARCH: "${topic_name}"`);
+  console.log(`[Worker] 📂 Sử dụng Notebook ID: ${targetNotebook}`);
+  
   await updateTaskStatus(id, 'processing', `Đang thực hiện Deep Research trên Web...`);
   
   // 1. Thực hiện nghiên cứu qua Gemini
@@ -170,8 +208,26 @@ async function handleDeepResearchTask(task: any) {
   // 3. Viết bài dựa trên tri thức mới
   console.log(`[Worker] ✍️ Đang soạn bài viết chuyên sâu...`);
   await selectNotebook(targetNotebook);
-  const prompt = buildContentPrompt(topic_name);
+  const prompt = buildContentPrompt(topic_name, metadata?.prompt);
   const rawResponse = await askNotebookLM(prompt, targetNotebook);
+  const responseStr = String(rawResponse).toLowerCase();
+  
+  // KIỂM TRA THÔNG MINH: Nếu là JSON thành công thì không báo lỗi
+  let isActuallySuccess = false;
+  if (rawResponse.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(rawResponse);
+      if (parsed.success === true || (parsed.data && parsed.success !== false)) {
+        isActuallySuccess = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!isActuallySuccess) {
+    if (!rawResponse || responseStr.includes('failed') || responseStr.includes('error') || responseStr.includes('timeout')) {
+        throw new Error(`AI không phản hồi hoặc gặp lỗi (Deep Research): ${rawResponse}`);
+    }
+  }
   
   // 4. Trích xuất bảng dữ liệu (Task 3.3)
   console.log(`[Worker] 📊 Đang trích xuất bảng dữ liệu so sánh...`);
@@ -187,10 +243,17 @@ async function handleDeepResearchTask(task: any) {
   }
 
   const parsed = parseNotebookResponse(String(rawResponse));
-  const { insertDraftPost } = await import('./supabase-client.js');
+  let markdownBody = parsed?.content || String(rawResponse);
+  
+  // SỬA LỖI: Tự động thêm xuống dòng nếu tiêu đề dính liền nội dung
+  markdownBody = markdownBody.replace(/^(#{1,6}\s+.*?)(\s*\n\s*[^\s#])/gm, '$1\n\n$2');
+  
+  const fullMarkdown = markdownBody + tableHtml;
+  const htmlContent = await marked.parse(fullMarkdown);
+
   const post = await insertDraftPost({
     title: parsed?.title || topic_name,
-    content: (parsed?.content || String(rawResponse)) + tableHtml,
+    content: htmlContent,
     excerpt: parsed?.seo?.excerpt || '',
     source_task_id: id,
   });
@@ -214,18 +277,22 @@ async function handleAudioTask(task: any) {
   
   let isReady = false;
   let attempts = 0;
+  const maxAttempts = 120; // Chờ tối đa 30 phút cho audio cực dài
   
-  while (!isReady && attempts < 20) {
+  while (!isReady && attempts < maxAttempts) {
     attempts++;
-    console.log(`[Worker] ⏳ Đang đợi AI thu âm... (Lần ${attempts}/20)`);
-    await new Promise(r => setTimeout(r, 30000));
-
     const status = await mcp.getAudioStatus(targetNotebook);
-    if (status?.status === 'completed' || status?.status === 'ready') {
+    const currentStatus = (status?.status || '').toLowerCase();
+    
+    if (currentStatus === 'completed' || currentStatus === 'ready') {
       isReady = true;
-    } else if (status?.status === 'error') {
+      break;
+    } else if (currentStatus === 'error' || currentStatus === 'failed') {
       throw new Error('AI báo lỗi khi thu âm.');
     }
+    
+    console.log(`[Worker] ⏳ Đang đợi AI thu âm... (Lần ${attempts}/20)`);
+    await new Promise(r => setTimeout(r, 15000)); // Giảm xuống 15s cho nhanh
   }
 
   if (!isReady) throw new Error('Hết thời gian chờ AI thu âm.');
@@ -240,8 +307,6 @@ async function handleAudioTask(task: any) {
   console.log(`[Worker] ☁️ Đang chuyển tiếp Audio lên Supabase Storage...`);
   const response = await fetch(audioUrl);
   const arrayBuffer = await response.arrayBuffer();
-  
-  const { uploadAsset, updatePostMultimedia } = await import('./supabase-client.js');
   const fileName = `podcast-${id}-${Date.now()}.mp3`;
   const publicUrl = await uploadAsset('multimedia', `podcasts/${fileName}`, arrayBuffer, 'audio/mpeg');
 
@@ -294,8 +359,6 @@ async function handleVideoTask(task: any) {
   console.log(`[Worker] ☁️ Đang chuyển tiếp Video lên Supabase Storage...`);
   const response = await fetch(videoUrl);
   const arrayBuffer = await response.arrayBuffer();
-  
-  const { uploadAsset, updatePostMultimedia } = await import('./supabase-client.js');
   const fileName = `video-${id}-${Date.now()}.mp4`;
   const publicUrl = await uploadAsset('multimedia', `videos/${fileName}`, arrayBuffer, 'video/mp4');
 

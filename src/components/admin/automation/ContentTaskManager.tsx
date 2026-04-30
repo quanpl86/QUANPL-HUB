@@ -29,7 +29,7 @@ interface ContentTask {
 
 interface Props {
   tasks: ContentTask[];
-  notebooks: { key_name: string; key_value: string }[];
+  notebooks: { id: string; name: string; description?: string }[];
   workerStatus: { online: boolean; lastSeen: string | null };
   onRefresh: () => void;
 }
@@ -49,14 +49,15 @@ const itemVariants = {
 };
 
 export function ContentTaskManager({ tasks, notebooks, workerStatus, onRefresh }: Props) {
+  console.log('[ContentTaskManager] Notebooks count:', notebooks?.length);
   const [showForm, setShowForm] = useState(false);
   const [topic, setTopic] = useState('');
+  const [prompt, setPrompt] = useState('');
   const [notebookId, setNotebookId] = useState('');
   const [priority, setPriority] = useState(5);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
 
-  const defaultNotebook = notebooks.find(n => n.key_name === 'NOTEBOOK_DEFAULT_ID')?.key_value || '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,10 +65,18 @@ export function ContentTaskManager({ tasks, notebooks, workerStatus, onRefresh }
 
     setIsSubmitting(true);
     try {
-      const result = await createContentTask(topic, notebookId || defaultNotebook, priority);
+      const result = await createContentTask(
+        topic, 
+        notebookId, 
+        priority,
+        'BLOG',
+        undefined,
+        { prompt }
+      );
       if (result.success) {
         toast.success('Đã tạo đơn hàng AI thành công!');
         setTopic('');
+        setPrompt('');
         setPriority(5);
         setShowForm(false);
         onRefresh();
@@ -184,19 +193,39 @@ export function ContentTaskManager({ tasks, notebooks, workerStatus, onRefresh }
                 />
               </div>
 
+              {/* Custom Prompt */}
+              <div>
+                <label className="font-mono text-[9px] uppercase tracking-widest text-[var(--muted)] font-bold block mb-2">
+                  Yêu cầu bổ sung (Prompt)
+                </label>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="VD: Viết theo phong cách chuyên gia, tập trung vào code LabVIEW..."
+                  rows={3}
+                  className="w-full bg-[var(--background)] border-2 border-[var(--card-border)] focus:border-brand-orange p-3 font-mono text-xs text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)]/50 resize-none"
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Notebook */}
                 <div>
                   <label className="font-mono text-[9px] uppercase tracking-widest text-[var(--muted)] font-bold block mb-2">
-                    NotebookLM ID
+                    Nguồn tri thức (NotebookLM) *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={notebookId}
                     onChange={(e) => setNotebookId(e.target.value)}
-                    placeholder={defaultNotebook || 'Nhập Notebook ID hoặc để trống (dùng mặc định)'}
-                    className="w-full bg-[var(--background)] border-2 border-[var(--card-border)] focus:border-brand-orange p-3 font-mono text-xs text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)]/50"
-                  />
+                    className="w-full bg-[var(--background)] border-2 border-[var(--card-border)] focus:border-brand-orange p-3 font-mono text-xs text-[var(--foreground)] outline-none transition-colors"
+                    required
+                  >
+                    <option value="" disabled>-- Chọn Notebook Tri Thức --</option>
+                    {notebooks.map(nb => (
+                      <option key={nb.id} value={nb.id}>
+                        {nb.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Priority */}
@@ -298,7 +327,7 @@ export function ContentTaskManager({ tasks, notebooks, workerStatus, onRefresh }
                         </span>
                         {task.notebook_id && (
                           <span className="font-mono text-[8px] text-[var(--muted)] uppercase">
-                            NB: {task.notebook_id.substring(0, 12)}...
+                            NB: {notebooks.find(n => n.id === task.notebook_id)?.name || task.notebook_id.substring(0, 12)}
                           </span>
                         )}
                       </div>
@@ -312,6 +341,16 @@ export function ContentTaskManager({ tasks, notebooks, workerStatus, onRefresh }
                       <span className="font-mono text-[8px] text-[var(--muted)]">
                         {new Date(task.created_at).toLocaleDateString('vi-VN')}
                       </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(task.id);
+                        }}
+                        className="p-1 hover:text-red-500 transition-colors"
+                        title="Xóa yêu cầu"
+                      >
+                        <Trash2 size={12} />
+                      </button>
                       <ChevronDown
                         size={12}
                         className={`text-[var(--muted)] transition-transform ${isExpanded ? 'rotate-180' : ''}`}

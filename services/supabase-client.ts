@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 /**
@@ -163,6 +166,28 @@ export async function updatePostMultimedia(postId: string, field: 'audio_url' | 
   if (error) {
     console.error(`[DB] Lỗi cập nhật multimedia cho bài ${postId}:`, error.message);
     return false;
+  }
+  return true;
+}
+
+/**
+ * Đồng bộ danh sách NotebookLM từ Local lên Supabase
+ */
+export async function syncNotebooksToSupabase(notebooks: any[]) {
+  const records = notebooks.map(nb => ({
+    id: nb.id,
+    name: nb.name,
+    description: nb.description || '',
+    updated_at: new Date().toISOString()
+  }));
+
+  const { error } = await supabase
+    .from('automation_notebooks')
+    .upsert(records, { onConflict: 'id' });
+
+  if (error) {
+    console.error('[DB] Lỗi đồng bộ Notebooks:', error.message);
+    throw error;
   }
   return true;
 }

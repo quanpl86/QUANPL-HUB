@@ -75,13 +75,10 @@ export function MultimediaStudio({ post, onTaskCreated }: Props) {
     else setIsGeneratingVideo(true);
 
     try {
-      // Gọi action để tạo task multimedia
-      // Note: createContentTask cần được update để nhận tham số 'type' và 'result_post_id'
-      // Ở đây tạm dùng metadata để truyền thông tin
       const result = await createContentTask(
         `[${type}] ${post.title}`, 
         post.notebook_id || '', 
-        8, // Ưu tiên cao cho multimedia
+        8, 
         type,
         post.id
       );
@@ -100,9 +97,88 @@ export function MultimediaStudio({ post, onTaskCreated }: Props) {
     }
   };
 
+  const cleanupTasks = async () => {
+    if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tiến trình của bài viết này?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('content_tasks')
+        .delete()
+        .eq('result_post_id', post.id);
+
+      if (error) throw error;
+      toast.success('Đã dọn dẹp hàng đợi.');
+      setCurrentTasks([]);
+    } catch (err) {
+      toast.error('Không thể dọn dẹp.');
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* PODCAST STUDIO CARD */}
+    <div className="space-y-6">
+      {/* HEADER & STATUS */}
+      <div className="flex items-center justify-between p-4 bg-brand-orange/5 border-2 border-brand-orange/20 cyber-cut-sm">
+        <div className="flex items-center gap-3">
+          <Sparkles className="w-5 h-5 text-brand-orange animate-pulse" />
+          <h2 className="text-sm font-orbitron font-bold tracking-widest uppercase text-brand-orange">
+            AI Multimedia Studio
+          </h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={cleanupTasks}
+            className="text-[10px] font-mono font-bold text-slate-500 hover:text-red-500 transition-colors uppercase"
+          >
+            [ DỌN DẸP HÀNG ĐỢI ]
+          </button>
+          <div className="h-4 w-px bg-brand-orange/20" />
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
+            <span className="text-[10px] font-mono text-green-500 uppercase font-bold">Realtime</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ACTIVE TASKS PROGRESS */}
+      {currentTasks.length > 0 && (
+        <div className="space-y-3">
+          {currentTasks.map((task) => (
+            <motion.div 
+              key={task.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`p-4 border-l-4 font-mono text-[10px] ${
+                task.status === 'completed' ? 'border-green-500 bg-green-500/5' :
+                task.status === 'failed' ? 'border-red-500 bg-red-500/5' :
+                'border-brand-orange bg-brand-orange/5'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold uppercase tracking-wider">
+                  {task.status === 'processing' ? '⚡ Đang xử lý:' : task.status === 'completed' ? '✅ Hoàn tất:' : '❌ Thất bại:'} {task.topic_name}
+                </span>
+                <span className="opacity-50">{new Date(task.created_at).toLocaleTimeString()}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {task.status === 'processing' && <Loader2 size={12} className="animate-spin text-brand-orange" />}
+                <p className="opacity-80 italic truncate">{task.logs || 'Đang khởi tạo luồng công việc...'}</p>
+              </div>
+              {task.status === 'processing' && (
+                <div className="mt-3 h-1 bg-brand-orange/10 overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-brand-orange"
+                    animate={{ x: ['-100%', '100%'] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                  />
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* PODCAST STUDIO CARD */}
       <motion.div 
         whileHover={{ y: -2 }}
         className="p-6 border-2 border-[var(--card-border)] bg-[var(--card-bg)] relative overflow-hidden group"
@@ -220,6 +296,7 @@ export function MultimediaStudio({ post, onTaskCreated }: Props) {
           )}
         </div>
       </motion.div>
+      </div>
     </div>
   );
 }
