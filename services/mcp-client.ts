@@ -154,6 +154,13 @@ export async function selectNotebook(id: string): Promise<any> {
   return await callMcpTool('select_notebook', { id });
 }
 
+export async function updateNotebook(id: string, name?: string, description?: string): Promise<any> {
+  const args: any = { id };
+  if (name) args.name = name;
+  if (description) args.description = description;
+  return await callMcpTool('update_notebook', args);
+}
+
 export async function syncNotebook(notebookId: string, directory: string, patterns: string[] = ['*.md', '*.pdf']): Promise<any> {
   return await callMcpTool('sync_notebook', { notebook_id: notebookId, directory, patterns });
 }
@@ -276,6 +283,7 @@ export default {
   createNotebook,
   batchCreateNotebooks,
   selectNotebook,
+  updateNotebook,
   syncNotebook,
   listNotebooks,
   // Sources & Files
