@@ -54,6 +54,13 @@ export const SeoAdvisor = ({ post }: { post: Post }) => {
       status: post.image_url ? 'success' : 'error',
       message: post.image_url ? 'Đã phát hiện hình ảnh đại diện chất lượng.' : 'Thiếu ảnh đại diện. Bài viết có hình ảnh tăng 80% khả năng được click.',
       suggestion: 'Luôn thêm ảnh đại diện sắc nét, liên quan đến nội dung bài viết.'
+    },
+    {
+      label: 'Alt Text Nội dung',
+      value: (post as any).content?.includes('alt=') ? 'Đã phát hiện' : 'Cần kiểm tra',
+      status: (post as any).content?.includes('alt=') ? 'success' : 'warning',
+      message: (post as any).content?.includes('alt=') ? 'Các hình ảnh trong bài viết đã có thuộc tính mô tả (alt).' : 'Một số hình ảnh trong nội dung có thể thiếu mô tả (alt).',
+      suggestion: 'Đảm bảo mọi hình ảnh chèn trong bài viết đều có thẻ Alt để tối ưu tìm kiếm hình ảnh và hỗ trợ người khiếm thị.'
     }
   ];
 

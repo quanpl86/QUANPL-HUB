@@ -23,7 +23,7 @@ export async function submitComment(formData: FormData) {
       user_name: userName || 'Ẩn danh',
       user_email: userEmail,
       content: content,
-      status: 'approved'
+      status: 'pending'
     });
 
   if (error) {

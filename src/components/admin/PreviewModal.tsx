@@ -3,6 +3,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Eye, Monitor, Smartphone, Layout } from 'lucide-react';
+import Image from 'next/image';
+import { sanitize } from '@/lib/sanitize';
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -87,7 +89,12 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
                 {/* Hero Header */}
                 <div className="relative h-[50vh] min-h-[300px] w-full overflow-hidden border-b border-brand-orange/10 bg-[#0a0a0a]">
                   {data.image_url ? (
-                    <img src={data.image_url} alt="" className="w-full h-full object-cover opacity-50" />
+                    <Image 
+                      src={data.image_url} 
+                      alt={data.title || 'Preview Image'} 
+                      fill
+                      className="object-cover opacity-50" 
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center opacity-10">
                       <Layout size={120} className="text-brand-orange" />
@@ -133,7 +140,7 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
                         prose-p:font-sans prose-p:text-lg prose-p:leading-[1.8] prose-p:text-slate-300
                         prose-strong:text-brand-orange prose-a:text-brand-orange
                         prose-blockquote:border-brand-orange prose-blockquote:bg-brand-orange/5"
-                      dangerouslySetInnerHTML={{ __html: data.content || '<p class="text-muted italic opacity-50 uppercase tracking-widest text-sm">// ĐANG_CHỜ_TRUYỀN_TẢI_NỘI_DUNG //</p>' }}
+                      dangerouslySetInnerHTML={{ __html: sanitize(data.content || '<p class="text-muted italic opacity-50 uppercase tracking-widest text-sm">// ĐANG_CHỜ_TRUYỀN_TẢI_NỘI_DUNG //</p>') }}
                     />
                   </div>
                 </div>

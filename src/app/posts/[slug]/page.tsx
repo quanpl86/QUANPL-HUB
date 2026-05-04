@@ -3,6 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
+import Image from 'next/image';
+import { sanitize } from '@/lib/sanitize';
 
 interface PostPageProps {
   params: { slug: string };
@@ -107,10 +109,12 @@ export default async function PostPage({ params }: PostPageProps) {
       {/* Hero Header Full-width */}
       <div className="relative h-[80vh] min-h-[600px] w-full overflow-hidden border-b border-brand-orange/20 bg-cyber-black">
         {post.image_url ? (
-          <img 
+          <Image 
             src={post.image_url} 
             alt={post.title} 
-            className="w-full h-full object-cover opacity-60 dark:opacity-50"
+            fill
+            priority
+            className="object-cover opacity-60 dark:opacity-50"
           />
         ) : (
           <div className="w-full h-full bg-cyber-black flex items-center justify-center">
@@ -176,7 +180,7 @@ export default async function PostPage({ params }: PostPageProps) {
           {/* Dynamic Content from Tiptap v3 / Markdown */}
           <section 
             className="king-dragon-content prose prose-brand max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitize(post.content || '') }}
           />
 
           {/* Interactions Section */}

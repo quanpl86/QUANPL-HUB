@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { CyberEditor } from '@/components/admin/editor/CyberEditor';
 import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
 import { CyberButton } from '@/components/ui/CyberButton';
 import { createPost } from '@/app/actions/posts';
@@ -10,6 +9,12 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Eye, Loader2 } from 'lucide-react';
 import { PreviewModal } from '@/components/admin/PreviewModal';
+import dynamic from 'next/dynamic';
+
+const CyberEditor = dynamic(() => import('@/components/admin/editor/CyberEditor').then(mod => mod.CyberEditor), {
+  ssr: false,
+  loading: () => <div className="h-[400px] w-full bg-cyber-black/20 animate-pulse border border-brand-orange/10 flex items-center justify-center font-mono text-xs text-brand-orange">ĐANG_TẢI_TRÌNH_SOẠN_THẢO...</div>
+});
 
 export default function NewPostPage() {
   const formRef = useRef<HTMLFormElement>(null);

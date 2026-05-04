@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, SlidersHorizontal, X } from 'lucide-react';
-import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
+import { Calendar, Search, Filter, SlidersHorizontal, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar } from 'lucide-react';
+import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface Category {
@@ -152,7 +152,15 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'TÃ
               <Link key={post.id} href={`/posts/${post.slug}`} className="group">
                 <StaticCyberCard className="h-full border-brand-orange/5 hover:border-brand-orange/20 transition-all duration-500">
                   <div className="aspect-[16/9] overflow-hidden bg-brand-orange/5 relative">
-                    {post.image_url && <img src={post.image_url} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />}
+                    {post.image_url && (
+                      <Image 
+                        src={post.image_url} 
+                        alt={post.title} 
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                      />
+                    )}
                     <div className="absolute top-0 right-0 p-2">
                        <span className="text-[8px] font-mono bg-brand-orange/20 text-brand-orange px-2 py-0.5">CÃ”NG KHAI</span>
                     </div>
