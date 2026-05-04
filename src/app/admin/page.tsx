@@ -196,7 +196,7 @@ export default async function AdminDashboard() {
           <CyberCard className="p-6 bg-cyber-black/80">
             <h2 className="font-orbitron font-bold text-xs mb-5 uppercase tracking-[0.2em] text-brand-orange">Nhật_ký_hệ_thống</h2>
             <div className="font-mono text-[11px] space-y-3 text-foreground/80 font-medium uppercase">
-              <p className="leading-relaxed"><span className="text-brand-orange font-bold">[20:55:01]</span> <span className="text-green-400">Đăng_nhập:</span> Quản trị viên QuanPL đã kết nối</p>
+              <p className="leading-relaxed"><span className="text-brand-orange font-bold">[20:55:01]</span> <span className="text-green-400">Đăng_nhập:</span> Quản trị viên KING DRAGON đã kết nối</p>
               <p className="leading-relaxed"><span className="text-brand-orange font-bold">[20:54:12]</span> Đồng_bộ: Đã triển khai Ma trận Cấp bậc V2</p>
               <p className="leading-relaxed"><span className="text-brand-orange font-bold">[20:50:33]</span> Ổn_định: Mọi mô-đun đang hoạt động</p>
             </div>

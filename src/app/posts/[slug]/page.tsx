@@ -86,14 +86,14 @@ export default async function PostPage({ params }: PostPageProps) {
     image: post.image_url,
     author: {
       '@type': 'Person',
-      name: post.profiles?.full_name || 'QuanPL',
+      name: post.profiles?.full_name || 'KING DRAGON',
     },
     publisher: {
       '@type': 'Organization',
-      name: 'QUAN-PL BLOG-HUB',
+      name: 'KING DRAGON HUB',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://quanpl-hub.com/logo.png'
+        url: 'https://kingdragonhub.com/logo.png'
       }
     },
     datePublished: post.created_at,
@@ -114,7 +114,7 @@ export default async function PostPage({ params }: PostPageProps) {
           />
         ) : (
           <div className="w-full h-full bg-cyber-black flex items-center justify-center">
-            <div className="cyber-glow-text opacity-5 font-orbitron text-[15vw] select-none uppercase tracking-tighter">QUAN-PL</div>
+            <div className="cyber-glow-text opacity-5 font-orbitron text-[15vw] select-none uppercase tracking-tighter">KING DRAGON</div>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
@@ -144,7 +144,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 <div className="flex flex-col">
                   <span className="text-[10px] font-mono text-brand-orange/80 dark:text-brand-orange/60 tracking-[0.3em] mb-1 font-black">AUTHORISED BY:</span>
                   <span className="text-sm font-orbitron text-foreground tracking-widest uppercase font-bold">
-                    {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'QUAN PL ADMIN'}
+                    {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON ADMIN'}
                   </span>
                 </div>
               </div>

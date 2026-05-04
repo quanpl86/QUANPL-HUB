@@ -4,6 +4,12 @@
  * NotebookLM AI chỉ trả lời dựa trên nguồn tri thức trong Notebook (zero-hallucination).
  * Prompt phải ép NotebookLM trả về JSON nghiêm ngặt để Worker bóc tách được.
  */
+import pino from 'pino';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  transport: { target: 'pino-pretty', options: { colorize: true } }
+});
 
 /**
  * Prompt chính: Yêu cầu NotebookLM viết bài blog chi tiết
@@ -21,8 +27,8 @@ ${customSection}
 **YÊU CẦU NỘI DUNG:**
 1. Ngôn ngữ: Tiếng Việt, văn phong chuyên nghiệp, học thuật nhưng dễ tiếp cận.
 2. Cấu trúc: Sử dụng Markdown (H2, H3) để phân cấp nội dung rõ ràng. 
-   **BẮT BUỘC: Luôn có 2 dấu xuống dòng (\\n\\n) sau mỗi tiêu đề và giữa các đoạn văn.**
-3. Độ dài: Tối thiểu 1500 từ, khai thác sâu các khía cạnh kỹ thuật từ Notebook.
+   **BẮT BUỘC: Luôn có 2 dấu xuống dòng (\\n\\n) trước và sau mỗi tiêu đề (H2, H3) hoặc đoạn văn.**
+3. Từ khóa (SEO): Phân bổ tự nhiên các từ khóa liên quan đến chủ đề.
 4. Minh họa: Sử dụng các ví dụ thực tế hoặc code block nếu cần.
 5. Tuyệt đối: Chỉ sử dụng thông tin có trong nguồn tri thức của Notebook.
 
@@ -66,6 +72,19 @@ Trả lời theo cấu trúc:
 4. **Nguồn tham khảo:** Ghi rõ dữ liệu lấy từ nguồn nào trong Notebook
 
 Trả lời bằng Tiếng Việt.
+`.trim();
+}
+
+/**
+ * Prompt chuyên sâu: Phục vụ cho tính năng Deep Research
+ */
+export function buildDeepResearchPrompt(topic: string): string {
+  return `
+Hãy thực hiện nghiên cứu chuyên sâu về chủ đề: "${topic}". 
+Yêu cầu: 
+1. Tìm kiếm và tổng hợp các thông tin cốt lõi, số liệu thống kê, và các phân tích chuyên môn. 
+2. Kết quả trả về phải là một báo cáo chi tiết, có cấu trúc rõ ràng (Dùng Markdown).
+3. Đảm bảo văn phong khách quan, học thuật.
 `.trim();
 }
 
@@ -117,7 +136,7 @@ export function parseNotebookResponse(response: string): {
         const titleMatch = answerStr.match(/\"title\"\s*:\s*\"(.*?)\"/);
         const title = titleMatch ? titleMatch[1] : '';
         
-        const contentMatch = answerStr.match(/\"content\"\s*:\s*\"([\s\S]*?)\"\s*,\s*\"seo\"/);
+        const contentMatch = answerStr.match(/\"content\"\s*:\s*\"([\s\S]*?)\"\s*(?:,\s*\"[a-zA-Z0-9_]+\"\s*:|\})/);
         let content = contentMatch ? contentMatch[1] : answerStr;
         content = content.replace(/\\n/g, '\n').replace(/\\"/g, '"');
         
@@ -170,14 +189,12 @@ export function parseNotebookResponse(response: string): {
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       const jsonCandidate = cleaned.substring(firstBrace, lastBrace + 1);
       try {
-        // Thử parse và xử lý lồng nhau
-        const raw = JSON.parse(jsonCandidate.replace(/\n/g, ' ').replace(/\r/g, ''));
+        const raw = JSON.parse(jsonCandidate);
         return extractData(raw);
       } catch (e3) {
-        try {
-          const raw = JSON.parse(jsonCandidate);
-          return extractData(raw);
-        } catch (e4) { }
+        // Nếu parse thất bại do JSON chứa unescaped newlines (đặc trưng của Markdown),
+        // KHÔNG ĐƯỢC XÓA NEWLINES. Hãy ném thẳng chuỗi vào extractData để Cứu Cánh Regex xử lý!
+        return extractData(jsonCandidate);
       }
     }
 

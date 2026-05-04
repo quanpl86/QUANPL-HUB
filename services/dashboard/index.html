@@ -1,259 +1,417 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Command Center | QUAN-PL HUB</title>
+    <title>Platinum Command Center | KING DRAGON HUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="./lucide.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at top right, #0d0d1a, #0a0a1a, #050505);
+            --text-main: #e9ecef;
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.04);
+        }
+
+        .light {
+            --bg-gradient: radial-gradient(circle at top right, #f8fafc, #f1f5f9, #e2e8f0);
+            --text-main: #1e293b;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.05);
+            --glass-hover: rgba(255, 255, 255, 0.9);
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at top right, #1a1a2e, #16213e, #0f3460);
-            color: #e9ecef;
+            background: var(--bg-gradient);
+            color: var(--text-main);
             min-height: 100vh;
             overflow-x: hidden;
+            transition: background 0.5s ease, color 0.3s ease;
         }
+
         .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
             border-radius: 1.5rem;
+            transition: all 0.3s ease;
         }
+
+        .glass:hover {
+            background: var(--glass-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .light .glass:hover {
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
         .neo-button {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
-            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2);
         }
+
         .neo-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 210, 255, 0.5);
+            box-shadow: 0 8px 25px rgba(0, 210, 255, 0.4);
         }
+
         .status-pulse {
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.5); opacity: 0.5; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .notebook-card {
-            transition: all 0.4s ease;
-        }
-        .notebook-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: #00d2ff;
-        }
-        .sync-log-entry {
-            border-left: 3px solid #3b82f6;
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from { transform: translateX(-10px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+
+        .neon-text-blue { text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); }
+        .neon-text-purple { text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
+        .neon-text-green { text-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
+        
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="p-6 lg:p-10">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="flex justify-between items-center mb-10">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
             <div>
-                <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">MCP Command Center</h1>
-                <p class="text-gray-400 mt-2">Hệ điều hành nội dung AI & NotebookLM</p>
+                <h1 class="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-purple-400">Command Center</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-2 font-medium tracking-widest uppercase text-[10px]">Content OS Platinum v2.6 • Theme Orchestrator Edition</p>
             </div>
             <div class="flex gap-4">
-                <button onclick="refreshAuth()" class="glass px-5 py-2.5 flex items-center gap-2 hover:bg-white/10 transition-all">
-                    <i data-lucide="shield-check" class="text-green-400"></i>
-                    <span>Auth Status</span>
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" class="glass p-3 flex items-center justify-center hover:bg-white/10 transition-all border-orange-500/20" title="Toggle Theme">
+                    <i id="theme-icon" data-lucide="moon" class="text-orange-400 w-5 h-5"></i>
                 </button>
-                <div class="glass px-5 py-2.5 flex items-center gap-2">
-                    <i data-lucide="cpu" class="text-blue-400"></i>
-                    <span id="health-status">Checking System...</span>
+
+                <div class="glass px-6 py-3 flex items-center gap-3 border-emerald-500/20">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full status-pulse"></div>
+                    <span id="health-status" class="text-emerald-500 dark:text-emerald-400 text-sm font-bold">System Healthy</span>
                 </div>
+                <button onclick="reAuth()" aria-label="Refresh Authentication" class="glass px-6 py-3 flex items-center gap-2 hover:bg-white/10 transition-all border-blue-500/20">
+                    <i data-lucide="shield-check" class="text-blue-500 dark:text-blue-400 w-5 h-5"></i>
+                    <span class="text-sm font-semibold">Auth Manager</span>
+                </button>
             </div>
         </header>
 
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div class="glass p-6">
+        <!-- Stats Grid Platinum -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <!-- Success Rate Card -->
+            <div class="glass p-7 border-emerald-500/20">
                 <div class="flex justify-between items-start mb-4">
-                    <div class="bg-blue-500/20 p-3 rounded-xl">
-                        <i data-lucide="book-open" class="text-blue-400"></i>
+                    <div class="bg-emerald-500/10 p-3 rounded-2xl">
+                        <i data-lucide="activity" class="text-emerald-500 dark:text-emerald-400 w-6 h-6"></i>
                     </div>
-                    <span class="text-2xl font-bold" id="notebook-count">0</span>
+                    <div class="text-right">
+                        <span id="worker-success-rate" class="text-3xl font-black text-emerald-500 dark:text-emerald-400 neon-text-green">0%</span>
+                        <p id="worker-success-detail" class="text-[10px] text-emerald-600 dark:text-emerald-500 font-bold uppercase mt-1">0/0 Tasks</p>
+                    </div>
                 </div>
-                <h3 class="text-gray-400">Notebooks Active</h3>
+                <h3 class="text-gray-500 dark:text-gray-400 font-semibold">Success Efficiency</h3>
             </div>
-            <div class="glass p-6">
+
+            <!-- Active Tasks Card -->
+            <div class="glass p-7 border-orange-500/20">
                 <div class="flex justify-between items-start mb-4">
-                    <div class="bg-cyan-500/20 p-3 rounded-xl">
-                        <i data-lucide="database" class="text-cyan-400"></i>
+                    <div class="bg-orange-500/10 p-3 rounded-2xl">
+                        <i data-lucide="zap" class="text-orange-500 dark:text-orange-400 w-6 h-6"></i>
                     </div>
-                    <span class="text-2xl font-bold" id="quota-usage">--</span>
+                    <div class="text-right">
+                        <span id="worker-active-tasks" class="text-3xl font-black text-orange-500 dark:text-orange-400">0</span>
+                        <p class="text-[10px] text-orange-600 dark:text-orange-500 font-bold uppercase mt-1">Parallel Processes</p>
+                    </div>
                 </div>
-                <h3 class="text-gray-400">Quota (Gemini 1.5)</h3>
+                <h3 class="text-gray-500 dark:text-gray-400 font-semibold">Live Concurrency</h3>
             </div>
-            <div class="glass p-6">
+
+            <!-- Worker Health Card -->
+            <div class="glass p-7 border-purple-500/20">
                 <div class="flex justify-between items-start mb-4">
-                    <div class="bg-orange-500/20 p-3 rounded-xl">
-                        <i data-lucide="brain-circuit" class="text-orange-400"></i>
+                    <div class="bg-purple-500/10 p-3 rounded-2xl">
+                        <i data-lucide="cpu" class="text-purple-500 dark:text-purple-400 w-6 h-6"></i>
                     </div>
-                    <span class="text-green-400 text-sm flex items-center gap-1">
-                        <span class="w-2 h-2 bg-green-500 rounded-full status-pulse"></span>
-                        ACTIVE
-                    </span>
+                    <div class="text-right">
+                        <span id="worker-status-tag" class="text-xl font-black text-purple-500 dark:text-purple-400">OFFLINE</span>
+                        <p id="worker-uptime" class="text-[10px] text-purple-600 dark:text-purple-500 font-bold uppercase mt-1">Uptime: 0m</p>
+                    </div>
                 </div>
-                <h3 class="text-gray-400">Neural Sync</h3>
+                <h3 class="text-gray-500 dark:text-gray-400 font-semibold">Engine Stability</h3>
             </div>
-            <div class="glass p-6 border-blue-500/30">
+
+            <!-- Library Card -->
+            <div class="glass p-7 border-blue-500/20">
                 <div class="flex justify-between items-start mb-4">
-                    <div class="bg-purple-500/20 p-3 rounded-xl">
-                        <i data-lucide="zap" class="text-purple-400"></i>
+                    <div class="bg-blue-500/10 p-3 rounded-2xl">
+                        <i data-lucide="database" class="text-blue-500 dark:text-blue-400 w-6 h-6"></i>
                     </div>
-                    <span class="text-green-400 text-sm flex items-center gap-1">
-                        <span class="w-2 h-2 bg-green-500 rounded-full status-pulse"></span>
-                        LIVE
-                    </span>
+                    <div class="text-right">
+                        <span id="notebook-count" class="text-3xl font-black text-blue-500 dark:text-blue-400">0</span>
+                        <p class="text-[10px] text-blue-600 dark:text-blue-500 font-bold uppercase mt-1">Library Sync</p>
+                    </div>
                 </div>
-                <h3 class="text-gray-400">MCP Worker Status</h3>
+                <h3 class="text-gray-500 dark:text-gray-400 font-semibold">Knowledge Base</h3>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <!-- Sidebar/Actions -->
-            <div class="lg:col-span-1 space-y-6">
-                <button onclick="openCreateModal()" class="neo-button w-full py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 mb-4">
-                    <i data-lucide="plus-circle"></i>
-                    Tạo Notebook Mới
+        <!-- Main Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Sidebar Actions -->
+            <div class="lg:col-span-3 space-y-6">
+                <button onclick="openCreateModal()" aria-label="Create New Notebook" class="neo-button w-full py-5 rounded-3xl font-bold text-lg flex items-center justify-center gap-3 mb-2 text-white">
+                    <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                    Tạo Notebook
                 </button>
 
-                <!-- Sync Status Box -->
                 <div class="glass p-6 space-y-4">
-                    <h2 class="font-bold text-lg mb-2 flex items-center gap-2 text-orange-400">
-                        <i data-lucide="folder-sync" class="w-5 h-5"></i>
-                        Neural Sync
+                    <h2 class="font-bold text-lg flex items-center gap-3 text-cyan-600 dark:text-cyan-400">
+                        <i data-lucide="command" class="w-5 h-5"></i>
+                        Control Panel
                     </h2>
-                    <p class="text-xs text-gray-400">Đường dẫn Local:</p>
-                    <div class="bg-black/20 p-3 rounded-xl text-[10px] font-mono text-blue-300 break-all mb-4">
-                        /storage/notebooks
+                    <div class="space-y-2">
+                        <button onclick="syncAll()" aria-label="Sync Library" class="w-full text-left p-4 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all flex items-center gap-4 group">
+                            <i data-lucide="refresh-cw" class="w-5 h-5 text-cyan-600 dark:text-cyan-400 group-hover:rotate-180 transition-transform duration-500"></i>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold">Sync Library</span>
+                                <span class="text-[8px] text-gray-500 uppercase font-mono tracking-tighter">Force Google Scrape</span>
+                            </div>
+                        </button>
+                        <button onclick="openLocalFolder()" aria-label="Open Storage" class="w-full text-left p-4 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all flex items-center gap-4 group">
+                            <i data-lucide="folder" class="w-5 h-5 text-orange-500 dark:text-orange-400"></i>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold">Open Storage</span>
+                                <span class="text-[8px] text-gray-500 uppercase font-mono tracking-tighter">Local Sync Path</span>
+                            </div>
+                        </button>
                     </div>
-                    <button onclick="openLocalFolder()" class="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="folder-up" class="w-4 h-4"></i>
-                        Mở thư mục Sync
-                    </button>
                 </div>
 
-                <div class="glass p-6 space-y-4">
-                    <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
-                        <i data-lucide="terminal" class="w-5 h-5"></i>
-                        Hành động nhanh
-                    </h2>
-                    <button onclick="reAuth()" class="w-full text-left p-3 rounded-xl hover:bg-white/5 transition-all flex items-center gap-3">
-                        <i data-lucide="key" class="w-4 h-4 text-orange-400"></i>
-                        Làm mới xác thực
-                    </button>
-                    <button onclick="syncAll()" class="w-full text-left p-3 rounded-xl hover:bg-white/5 transition-all flex items-center gap-3">
-                        <i data-lucide="refresh-cw" class="w-4 h-4 text-cyan-400"></i>
-                        Đồng bộ thư viện
-                    </button>
-                </div>
-
-                <!-- Sync Log Area -->
+                <!-- Event Stream -->
                 <div class="glass p-6">
-                    <h2 class="font-bold text-lg mb-4 flex items-center gap-2">
-                        <i data-lucide="scroll" class="w-5 h-5"></i>
-                        Sync Logs
+                    <h2 class="font-bold text-lg mb-4 flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                        <i data-lucide="scroll-text" class="w-5 h-5"></i>
+                        Event Stream
                     </h2>
-                    <div id="sync-logs" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 text-xs">
-                        <p class="text-gray-500 italic">Đang đợi sự kiện...</p>
+                    <div id="sync-logs" class="space-y-3 max-h-[300px] overflow-y-auto pr-3">
+                        <div class="flex flex-col items-center justify-center py-10 opacity-20">
+                            <i data-lucide="radio" class="w-8 h-8 mb-2"></i>
+                            <p class="text-[10px] uppercase font-bold tracking-widest">Listening...</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Notebook List -->
-            <div class="lg:col-span-3">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-white">Thư viện NotebookLM</h2>
-                    <div class="flex gap-2">
-                        <input type="text" placeholder="Tìm kiếm notebook..." class="glass bg-transparent px-4 py-2 text-sm focus:outline-none focus:border-blue-500 w-64">
+            <!-- Content Area -->
+            <div class="lg:col-span-9 space-y-8">
+                <!-- Notebook Grid -->
+                <div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <h2 class="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Active Knowledge</h2>
+                        <div class="relative group w-full sm:w-auto">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors"></i>
+                            <input type="text" placeholder="Filter library..." class="glass bg-transparent pl-12 pr-6 py-3 text-sm focus:outline-none focus:border-blue-500/50 w-full sm:w-72 text-gray-800 dark:text-white">
+                        </div>
+                    </div>
+                    <div id="notebook-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 min-h-[200px]">
+                        <!-- Dynamic Content -->
                     </div>
                 </div>
-                <div id="notebook-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="lg:col-span-2 flex flex-col items-center justify-center py-20 opacity-50">
-                        <i data-lucide="loader" class="w-10 h-10 animate-spin mb-4"></i>
-                        <p>Đang tải dữ liệu từ MCP Server...</p>
+
+                <!-- Queue Monitor -->
+                <div class="glass p-8 border-black/5 dark:border-white/5">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-xl font-bold flex items-center gap-3 text-gray-800 dark:text-white">
+                            <i data-lucide="layers" class="text-blue-500 dark:text-blue-400"></i>
+                            Task Queue Monitor
+                        </h2>
+                        <div class="flex gap-4 text-[10px] font-bold uppercase opacity-50 text-gray-600 dark:text-gray-400">
+                            <span class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-500 rounded-full status-pulse"></span> Processing</span>
+                            <span class="flex items-center gap-2"><span class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full"></span> Pending</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-[10px] uppercase text-gray-500 border-b border-black/5 dark:border-white/5">
+                                    <th class="pb-4 font-black">ID / Topic</th>
+                                    <th class="pb-4 font-black">Type</th>
+                                    <th class="pb-4 font-black">Status</th>
+                                    <th class="pb-4 font-black text-right">Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="task-queue" class="text-sm">
+                                <tr>
+                                    <td colspan="4" class="py-10 text-center text-gray-500 dark:text-gray-600 italic">Connecting to Supabase...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Tạo Notebook -->
-    <div id="create-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="glass max-w-md w-full p-8 shadow-2xl border border-blue-500/30">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i data-lucide="plus" class="text-blue-400"></i>
-                Tạo Notebook Mới
+    <!-- Modal Create -->
+    <div id="create-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-6">
+        <div class="glass max-w-lg w-full p-10 shadow-2xl border border-blue-500/20">
+            <h2 class="text-3xl font-black mb-8 flex items-center gap-4 text-gray-800 dark:text-white">
+                <i data-lucide="plus-square" class="text-blue-500 dark:text-blue-400"></i>
+                New Notebook
             </h2>
-            <div class="space-y-4">
+            <div class="space-y-6">
                 <div>
-                    <label class="block text-gray-400 text-sm mb-2">Tên Notebook</label>
-                    <input id="new-nb-name" type="text" class="w-full glass bg-transparent px-4 py-3 focus:outline-none focus:border-blue-500" placeholder="Ví dụ: Robotics Heritage">
+                    <label class="block text-gray-500 text-[10px] font-bold uppercase mb-2 ml-1">Notebook Title</label>
+                    <input id="new-nb-name" type="text" class="w-full glass bg-black/5 dark:bg-white/5 px-6 py-4 focus:outline-none focus:border-blue-500/50 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-700" placeholder="e.g. AI Ethics Deep Dive">
                 </div>
                 <div>
-                    <label class="block text-gray-400 text-sm mb-2">Mô tả (Không bắt buộc)</label>
-                    <textarea id="new-nb-desc" class="w-full glass bg-transparent px-4 py-3 focus:outline-none focus:border-blue-500 h-24"></textarea>
+                    <label class="block text-gray-500 text-[10px] font-bold uppercase mb-2 ml-1">Context / Description</label>
+                    <textarea id="new-nb-desc" class="w-full glass bg-black/5 dark:bg-white/5 px-6 py-4 focus:outline-none focus:border-blue-500/50 h-32 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-700" placeholder="Optional context for the AI..."></textarea>
                 </div>
-                <div class="flex gap-4 mt-8">
-                    <button onclick="closeCreateModal()" class="flex-1 py-3 text-gray-400 hover:text-white transition-all">Hủy</button>
-                    <button id="create-nb-btn" onclick="submitCreateNotebook()" class="flex-1 neo-button py-3 rounded-xl font-bold">Xác nhận tạo</button>
+                <div class="flex gap-6 mt-10">
+                    <button onclick="closeCreateModal()" class="flex-1 py-4 text-gray-500 font-bold hover:text-gray-800 dark:hover:text-white transition-all uppercase text-xs tracking-widest">Cancel</button>
+                    <button id="create-nb-btn" onclick="submitCreateNotebook()" class="flex-1 neo-button py-4 rounded-2xl font-black uppercase text-xs tracking-widest text-white">Construct</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Theme Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+                document.getElementById('theme-icon').setAttribute('data-lucide', 'sun');
+            } else {
+                document.documentElement.classList.remove('light');
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('theme-icon').setAttribute('data-lucide', 'sun');
+            } else {
+                document.documentElement.classList.remove('light');
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('theme-icon').setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
         lucide.createIcons();
+        initTheme();
+
         const API_BASE = 'http://localhost:3005/api';
+        const WORKER_BASE = 'http://localhost:3030';
+
+        async function fetchWorkerMetrics() {
+            try {
+                const res = await fetch(`${WORKER_BASE}/metrics`);
+                if (!res.ok) throw new Error('Worker metrics unavailable');
+                const data = await res.json();
+                
+                document.getElementById('worker-success-rate').innerText = data.performance.rate;
+                document.getElementById('worker-success-detail').innerText = `${data.performance.success} / ${data.performance.total} TASKS`;
+                document.getElementById('worker-active-tasks').innerText = data.system.active_tasks;
+                document.getElementById('worker-uptime').innerText = `Uptime: ${data.uptime_minutes}m`;
+
+                const statusTag = document.getElementById('worker-status-tag');
+                if (data.system.is_circuit_open) {
+                    statusTag.innerText = 'CIRCUIT OPEN';
+                    statusTag.className = 'text-xl font-black text-red-500';
+                } else {
+                    statusTag.innerText = 'LIVE PLATINUM';
+                    statusTag.className = 'text-xl font-black text-purple-500 dark:text-purple-400 neon-text-purple';
+                }
+            } catch (err) {
+                document.getElementById('worker-status-tag').innerText = 'OFFLINE';
+                document.getElementById('worker-status-tag').className = 'text-xl font-black text-gray-400 dark:text-gray-700';
+            }
+        }
 
         async function fetchNotebooks() {
             const grid = document.getElementById('notebook-grid');
             try {
-                const res = await fetch(`${API_BASE}/notebooks`);
-                const response = await res.json();
-                const notebooks = response.data || [];
+                const [nbRes, statusRes] = await Promise.all([
+                    fetch(`${API_BASE}/notebooks`),
+                    fetch(`${API_BASE}/notebooks/multimedia`)
+                ]);
+                
+                const nbData = await nbRes.json();
+                const statuses = await statusRes.json();
+                const notebooks = nbData.data || [];
+                const statusList = Array.isArray(statuses) ? statuses : [];
+                
                 document.getElementById('notebook-count').innerText = notebooks.length;
                 
                 if (notebooks.length === 0) {
-                    grid.innerHTML = '<p class="lg:col-span-3 text-center py-10 text-gray-500 italic">Thư viện trống.</p>';
+                    grid.innerHTML = '<div class="col-span-full py-20 text-center opacity-30 italic text-gray-500 dark:text-gray-400">Knowledge base is empty</div>';
                     return;
                 }
 
-                grid.innerHTML = notebooks.map(nb => `
-                    <div class="glass p-6 notebook-card cursor-pointer">
-                        <div class="flex justify-between items-start mb-4">
-                            <h3 class="font-bold text-xl">${nb.name || 'Untitled'}</h3>
-                            <div class="bg-blue-500/10 p-2 rounded-lg">
-                                <i data-lucide="external-link" class="w-4 h-4 text-blue-400"></i>
+                grid.innerHTML = notebooks.map(nb => {
+                    const meta = statusList.find(s => s.notebook_id === nb.id);
+                    const hasAudio = !!meta?.audio_url;
+                    const hasVideo = !!meta?.video_url;
+
+                    return `
+                    <div class="glass p-6 group relative overflow-hidden flex flex-col border-black/5 dark:border-white/5 hover:border-blue-500/30">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="bg-blue-500/10 p-2.5 rounded-xl group-hover:bg-blue-500/20 transition-colors">
+                                <i data-lucide="book" class="w-5 h-5 text-blue-500 dark:text-blue-400"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                ${hasAudio ? '<div class="bg-emerald-500/20 p-1.5 rounded-lg border border-emerald-500/30" title="Podcast Ready"><i data-lucide="headphones" class="w-3 h-3 text-emerald-500 dark:text-emerald-400"></i></div>' : ''}
+                                ${hasVideo ? '<div class="bg-purple-500/20 p-1.5 rounded-lg border border-purple-500/30" title="Video Ready"><i data-lucide="film" class="w-3 h-3 text-purple-500 dark:text-purple-400"></i></div>' : ''}
                             </div>
                         </div>
-                        <p class="text-gray-400 text-sm mb-6 line-clamp-2">${nb.description || 'Không có mô tả.'}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-blue-300 font-mono">${(nb.id || '').substring(0, 8)}...</span>
-                            <div class="flex gap-2">
-                                <button class="px-3 py-1.5 rounded-lg border border-white/10 text-xs hover:bg-white/5">Mở Local</button>
-                                <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-xs hover:bg-blue-500/30">Chọn dùng</button>
+                        <h3 class="font-bold text-lg mb-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors line-clamp-1 text-gray-800 dark:text-white">${nb.name || 'Untitled'}</h3>
+                        <p class="text-gray-500 dark:text-gray-400 text-[10px] mb-6 line-clamp-2 uppercase font-bold tracking-wider">${nb.description || 'General Knowledge'}</p>
+                        
+                        <div class="mt-auto pt-6 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                            <span class="text-[8px] font-mono text-gray-400 dark:text-gray-600 uppercase tracking-tighter">${(nb.id || '').substring(0, 16)}</span>
+                            <div class="flex gap-1">
+                                <div class="w-1.5 h-1.5 rounded-full ${hasAudio ? 'bg-emerald-500' : 'bg-black/10 dark:bg-white/10'}"></div>
+                                <div class="w-1.5 h-1.5 rounded-full ${hasVideo ? 'bg-purple-500' : 'bg-black/10 dark:bg-white/10'}"></div>
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
                 lucide.createIcons();
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error('Notebooks fetch failed', err); }
         }
 
         async function fetchSyncLogs() {
@@ -264,34 +422,88 @@
                 if (logs.length === 0) return;
 
                 logContainer.innerHTML = logs.map(log => {
-                    const colorClass = log.type === 'success' ? 'text-green-400' : (log.type === 'error' ? 'text-red-400' : 'text-blue-300');
-                    const time = new Date(log.timestamp).toLocaleTimeString();
+                    const color = log.type === 'success' ? 'emerald' : (log.type === 'error' ? 'red' : 'blue');
+                    const time = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     return `
-                        <div class="sync-log-entry bg-white/5 p-2 rounded-lg border-l-2 ${log.type === 'success' ? 'border-green-500' : 'border-blue-500'}">
+                        <div class="p-3 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border-l-2 border-${color}-500/50 mb-2 animate-in slide-in-from-left-2 duration-300">
                             <div class="flex justify-between mb-1">
-                                <span class="opacity-40 text-[9px]">${time}</span>
-                                <span class="uppercase text-[9px] ${colorClass}">${log.type}</span>
+                                <span class="text-[8px] font-bold text-${color}-600 dark:text-${color}-400 uppercase tracking-widest">${log.type}</span>
+                                <span class="text-[8px] opacity-30 font-mono text-gray-500 dark:text-gray-400">${time}</span>
                             </div>
-                            <p class="text-gray-200">${log.message}</p>
+                            <p class="text-[11px] text-gray-600 dark:text-gray-400 font-medium leading-relaxed">${log.message}</p>
                         </div>
                     `;
                 }).join('');
             } catch (err) {}
         }
 
-        async function openLocalFolder() {
-            await fetch(`${API_BASE}/sync/open`, { method: 'POST' });
+        async function fetchTaskQueue() {
+            const queueBody = document.getElementById('task-queue');
+            try {
+                const res = await fetch(`${API_BASE}/tasks/active`);
+                if (!res.ok) throw new Error('Task queue unavailable');
+                const tasks = await res.json();
+                
+                if (!tasks || tasks.length === 0) {
+                    queueBody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-gray-500 dark:text-gray-600 italic">No active tasks in queue</td></tr>';
+                    return;
+                }
+
+                queueBody.innerHTML = tasks.map(task => {
+                    const statusColor = task.status === 'processing' ? 'text-orange-500 dark:text-orange-400' : 'text-gray-500';
+                    const pulseClass = task.status === 'processing' ? 'status-pulse' : '';
+                    return `
+                        <tr class="border-b border-black/5 dark:border-white/5 group hover:bg-black/[0.01] dark:hover:bg-white/[0.01] transition-colors">
+                            <td class="py-4">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-800 dark:text-white">${task.topic_name || 'Untitled'}</span>
+                                    <span class="text-[8px] font-mono text-gray-400 dark:text-gray-600 tracking-tighter">${task.id}</span>
+                                </div>
+                            </td>
+                            <td class="py-4"><span class="bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-1 rounded text-[9px] font-bold uppercase">${task.type}</span></td>
+                            <td class="py-4">
+                                <div class="flex items-center gap-2 ${statusColor}">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-current ${pulseClass}"></div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest">${task.status}</span>
+                                </div>
+                            </td>
+                            <td class="py-4 text-right text-[10px] text-gray-500 dark:text-gray-600 font-mono">${new Date(task.updated_at).toLocaleTimeString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                queueBody.innerHTML = '<tr><td colspan="4" class="py-10 text-center text-red-500/50 italic">Failed to fetch task queue</td></tr>';
+            }
+        }
+
+        async function syncAll() {
+            const btn = event?.currentTarget;
+            if (btn) btn.disabled = true;
+            try {
+                const res = await fetch(`${API_BASE}/sync-supabase`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) alert('Sync sequence successful.');
+            } catch (err) { alert('Sync fail: ' + err.message); }
+            finally { if (btn) btn.disabled = false; }
+        }
+
+        async function reAuth() {
+            if (!confirm('Open browser for authentication?')) return;
+            try {
+                await fetch(`${API_BASE}/auth/setup`, { method: 'POST' });
+                alert('Authentication browser should be open on the server.');
+            } catch (err) { alert('Auth fail: ' + err.message); }
         }
 
         async function checkHealth() {
             try {
                 const res = await fetch(`${API_BASE}/health`);
+                if (!res.ok) throw new Error();
                 document.getElementById('health-status').innerText = 'System Healthy';
-                document.getElementById('health-status').classList.add('text-green-400');
+                document.getElementById('health-status').className = 'text-emerald-500 text-sm font-bold';
             } catch (err) {
                 document.getElementById('health-status').innerText = 'System Offline';
-                document.getElementById('health-status').classList.remove('text-green-400');
-                document.getElementById('health-status').classList.add('text-red-400');
+                document.getElementById('health-status').className = 'text-red-500 text-sm font-bold';
             }
         }
 
@@ -302,36 +514,32 @@
             const name = document.getElementById('new-nb-name').value;
             const description = document.getElementById('new-nb-desc').value;
             const btn = document.getElementById('create-nb-btn');
-            
-            if (!name) return alert('Vui lòng nhập tên Notebook');
-            
-            btn.disabled = true;
-            btn.innerText = 'Đang tạo...';
-
+            if (!name) return alert('Please enter a name');
+            btn.disabled = true; btn.innerText = 'Constructing...';
             try {
-                const res = await fetch(`${API_BASE}/notebooks`, {
+                await fetch(`${API_BASE}/notebooks`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, description })
                 });
-                const data = await res.json();
                 closeCreateModal();
                 fetchNotebooks();
-            } catch (err) {
-                alert('Lỗi: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'Xác nhận tạo';
-            }
+            } catch (err) { alert('Error: ' + err.message); }
+            finally { btn.disabled = false; btn.innerText = 'Construct'; }
         }
 
-        // Khởi chạy
+        // Initialize Masterpiece
         checkHealth();
+        fetchWorkerMetrics();
         fetchNotebooks();
         fetchSyncLogs();
+        fetchTaskQueue();
         
-        setInterval(fetchNotebooks, 15000);
-        setInterval(fetchSyncLogs, 3000);
+        // Polling Strategy
+        setInterval(fetchWorkerMetrics, 5000);
+        setInterval(fetchTaskQueue, 5000);
+        setInterval(fetchSyncLogs, 4000);
+        setInterval(fetchNotebooks, 30000);
         setInterval(checkHealth, 10000);
     </script>
 </body>

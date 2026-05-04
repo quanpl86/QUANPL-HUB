@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "QUAN-PL CONTROL CENTER",
+  title: "KING DRAGON CONTROL CENTER",
   description: "Autonomous AI Worker Command Center",
 };
 

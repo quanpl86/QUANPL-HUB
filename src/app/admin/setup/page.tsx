@@ -27,7 +27,7 @@ export default function AdminSetupPage() {
   
   // State cho các cài đặt
   const [settings, setSettings] = useState({
-    site_title: 'QUAN-PL HUB',
+    site_title: 'KING DRAGON HUB',
     site_tagline: 'LÀM CHỦ CÔNG NGHỆ - GÌN GIỮ BẢN SẮC',
     site_description: 'Hệ sinh thái tri thức cá nhân về STEM, AI và Công nghệ.',
     favicon_url: '',

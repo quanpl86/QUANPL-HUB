@@ -24,7 +24,7 @@ export async function seedDemoPosts() {
       category_id: catMap['Artificial Intelligence'],
       author_id: user.id,
       is_published: true,
-      meta_title: 'Future of Generative AI in Creative Industries | QUAN-PL HUB',
+      meta_title: 'Future of Generative AI in Creative Industries | KING DRAGON HUB',
       meta_description: 'Discover how Generative AI is revolutionizing design, art, and the creative industry. Learn how to stay ahead in the AI era.',
       keywords: ['AI', 'Generative AI', 'Creative Industry', 'Machine Learning', 'Design Future']
     },

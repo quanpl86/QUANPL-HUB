@@ -1,8 +1,10 @@
 import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 
+export const revalidate = 3600; // Revalidate every hour
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://quanpl-hub.com';
+  const baseUrl = 'https://kingdragonhub.com';
 
   // Lấy danh sách các slug bài viết (giả định)
   const { data: posts } = await supabase.from('posts').select('slug, updated_at').eq('is_published', true);

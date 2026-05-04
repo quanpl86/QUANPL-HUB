@@ -65,6 +65,7 @@ export async function createPost(formData: FormData, content: string) {
   }
 
   revalidatePath('/admin/posts');
+  revalidatePath('/sitemap.xml');
   revalidatePath('/');
   return { success: true, slug: data.slug };
 }
@@ -109,6 +110,7 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   }
 
   revalidatePath('/admin/posts');
+  revalidatePath('/sitemap.xml');
   revalidatePath(`/posts/${formData.get('slug')}`); // Revalidate bài viết cụ thể
   revalidatePath('/');
   return { success: true };
@@ -129,6 +131,7 @@ export async function deletePost(id: number) {
   }
 
   revalidatePath('/admin/posts');
+  revalidatePath('/sitemap.xml');
   revalidatePath('/');
 }
 

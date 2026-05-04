@@ -25,8 +25,8 @@ export default function SetupPage() {
         <div className="bg-cyber-black/40 border border-brand-orange/20 p-4 mb-8 text-left">
           <p className="font-mono text-[10px] text-brand-orange uppercase mb-2">Tài khoản sẽ khởi tạo:</p>
           <ul className="font-mono text-[9px] text-muted space-y-1">
-            <li>- quanpl@quanpl.hub (ADMIN)</li>
-            <li>- user1@quanpl.hub (USER)</li>
+            <li>- admin@kingdragon.hub (ADMIN)</li>
+            <li>- user1@kingdragon.hub (USER)</li>
           </ul>
         </div>
 

@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/login/'],
     },
-    sitemap: 'https://quanpl-hub.com/sitemap.xml',
+    sitemap: 'https://kingdragonhub.com/sitemap.xml',
   };
 }

@@ -17,7 +17,7 @@ export const HeroSection = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [settings, setSettings] = useState<any>({
     site_tagline: 'LÀM CHỦ \nCÔNG NGHỆ',
-    site_description: 'Chào mừng bạn đến với hệ sinh thái QUANPL HUB. Tại đây, bạn sẽ tìm thấy sức mạnh của công nghệ hiện đại nhất nhưng vẫn đậm chất cá nhân và chiều sâu bản sắc. Đây là nơi hội tụ của tương lai và những giá trị cốt lõi.'
+    site_description: 'Chào mừng bạn đến với hệ sinh thái KING DRAGON HUB. Tại đây, bạn sẽ tìm thấy sức mạnh của công nghệ hiện đại nhất nhưng vẫn đậm chất cá nhân và chiều sâu bản sắc. Đây là nơi hội tụ của tương lai và những giá trị cốt lõi.'
   });
 
   useEffect(() => {

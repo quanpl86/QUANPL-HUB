@@ -11,7 +11,7 @@ import { getSiteSettings } from '@/app/actions/settings';
 
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [siteTitle, setSiteTitle] = useState('QUANPL-HUB');
+  const [siteTitle, setSiteTitle] = useState('KING DRAGON HUB');
   const router = useRouter();
 
   useEffect(() => {

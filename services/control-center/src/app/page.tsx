@@ -85,7 +85,7 @@ export default function DashboardPage() {
         <div className="flex justify-between items-end border-b-2 border-brand-orange/10 pb-6">
           <div>
             <h1 className="font-orbitron text-3xl font-black cyber-text-gradient tracking-tighter">CONTROL CENTER</h1>
-            <p className="font-mono text-[9px] text-muted uppercase tracking-[0.4em] mt-1">// QUAN-PL AUTONOMOUS CONTENT OS v2.4 //</p>
+            <p className="font-mono text-[9px] text-muted uppercase tracking-[0.4em] mt-1">// KING DRAGON AUTONOMOUS CONTENT OS v2.4 //</p>
           </div>
           <div className="flex items-center gap-6 font-mono text-[10px] text-muted uppercase">
             <div className="flex items-center gap-2">

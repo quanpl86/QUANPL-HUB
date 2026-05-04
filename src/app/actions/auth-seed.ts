@@ -7,12 +7,12 @@ export async function seedInitialUsers() {
 
   const users = [
     {
-      email: 'quanpl@quanpl.hub',
-      password: 'quan12345678900',
-      data: { full_name: 'Quân PL Admin', role: 'admin' }
+      email: 'admin@kingdragon.hub',
+      password: 'kingdragon12345678900',
+      data: { full_name: 'KING DRAGON Admin', role: 'admin' }
     },
     {
-      email: 'user1@quanpl.hub',
+      email: 'user1@kingdragon.hub',
       password: '123456',
       data: { full_name: 'User One', role: 'user' }
     }

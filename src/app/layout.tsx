@@ -16,24 +16,24 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: 'QUAN-PL BLOG-HUB | Đỉnh Cao Trí Tuệ & Công Nghệ',
-    template: '%s | QUAN-PL BLOG-HUB'
+    default: 'KING DRAGON HUB | Đỉnh Cao Trí Tuệ & Công Nghệ',
+    template: '%s | KING DRAGON HUB'
   },
   description: 'Nền tảng chia sẻ kiến thức chuyên sâu về Lập trình, AI, Robotics và Phát triển bản thân. Matrix thông tin dành cho những nhà khai phá.',
-  keywords: ['quanpl', 'coding', 'robotics', 'ai', 'technology', 'blog hub'],
-  authors: [{ name: 'QuanPL' }],
-  creator: 'QuanPL',
+  keywords: ['kingdragon', 'coding', 'robotics', 'ai', 'technology', 'blog hub'],
+  authors: [{ name: 'KING DRAGON' }],
+  creator: 'KING DRAGON',
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
-    url: 'https://quanpl-hub.com',
-    title: 'QUAN-PL BLOG-HUB',
+    url: 'https://kingdragonhub.com',
+    title: 'KING DRAGON HUB',
     description: 'Matrix thông tin dành cho những nhà khai phá.',
-    siteName: 'QUAN-PL BLOG-HUB',
+    siteName: 'KING DRAGON HUB',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'QUAN-PL BLOG-HUB',
+    title: 'KING DRAGON HUB',
     description: 'Matrix thông tin dành cho những nhà khai phá.',
   },
   robots: {

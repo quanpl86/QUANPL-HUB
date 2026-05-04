@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Lấy theme từ localStorage hoặc hệ thống
-    const savedTheme = localStorage.getItem('quanpl-theme') as Theme;
+    const savedTheme = localStorage.getItem('kingdragon-theme') as Theme;
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initialTheme = savedTheme || systemTheme;
     
@@ -29,7 +29,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(t);
-    localStorage.setItem('quanpl-theme', t);
+    localStorage.setItem('kingdragon-theme', t);
   };
 
   const setTheme = (t: Theme) => {

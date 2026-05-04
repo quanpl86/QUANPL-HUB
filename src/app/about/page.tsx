@@ -10,7 +10,7 @@ export default function AboutPage() {
         ABOUT <span className="cyber-text-gradient">D.ARCHITECT</span>
       </h1>
       <p className="font-mono text-slate-400 mb-12 text-center max-w-lg uppercase tracking-widest">
-        // PROTOCOL_NAME: QUAN-PL // ROLE: TECH_EVANGELIST //
+        // PROTOCOL_NAME: KING DRAGON // ROLE: TECH_EVANGELIST //
       </p>
       <Link href="/">
         <button className="brutalist-border px-8 py-3 bg-brand-orange text-cyber-black font-orbitron font-bold uppercase hover:scale-105 transition-all">

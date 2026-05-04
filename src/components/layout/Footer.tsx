@@ -28,7 +28,7 @@ export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const renderLogo = () => {
-    const siteTitle = settings?.site_title || 'QUANPL HUB';
+    const siteTitle = settings?.site_title || 'KING DRAGON HUB';
     const parts = siteTitle.split(/[\s-]+/);
     if (parts.length >= 2) {
       const firstPart = parts.slice(0, -1).join('-');
@@ -113,7 +113,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-brand-orange/10 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-            © {currentYear} <span className="text-brand-orange font-bold">QUANPL-HUB</span>. TOÀN BỘ BẢN QUYỀN ĐƯỢC BẢO LƯU.
+            © {currentYear} <span className="text-brand-orange font-bold">KING DRAGON HUB</span>. TOÀN BỘ BẢN QUYỀN ĐƯỢC BẢO LƯU.
           </p>
           <div className="flex gap-8 font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
             <span className="hover:text-brand-orange cursor-pointer transition-colors">CHÍNH SÁCH BẢO MẬT</span>

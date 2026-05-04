@@ -77,7 +77,7 @@ export function PremiumMultimedia({ audioUrl, videoUrl, title }: Props) {
                   <source src={audioUrl} type="audio/mpeg" />
                 </audio>
                 <p className="font-mono text-[9px] text-muted uppercase tracking-widest">
-                  // BẢN TIN ÂM THANH ĐƯỢC TỰ ĐỘNG TẠO BỞI QUAN-PL AI AGENT //
+                  // BẢN TIN ÂM THANH ĐƯỢC TỰ ĐỘNG TẠO BỞI KING DRAGON AI AGENT //
                 </p>
               </div>
             </div>

@@ -119,7 +119,7 @@ export const SeoAdvisor = ({ post }: { post: Post }) => {
                           {post.meta_title || post.title}
                         </div>
                         <div className="text-[#006621] text-sm mb-1 flex items-center gap-1">
-                          quanpl-hub.com <span className="text-[10px]">▼</span>
+                          kingdragonhub.com <span className="text-[10px]">▼</span>
                         </div>
                         <div className="text-[#545454] text-sm leading-snug line-clamp-2">
                           <span className="text-slate-400">{new Date().toLocaleDateString()} — </span>
