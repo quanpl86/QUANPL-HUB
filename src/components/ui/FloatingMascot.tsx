@@ -46,25 +46,25 @@ export const FloatingMascot = () => {
 
           <button
             onClick={scrollToTop}
-            className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
+            className="relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
           >
             {/* Background Glow */}
             <div className="absolute inset-0 bg-brand-orange/20 rounded-full blur-xl group-hover:bg-brand-orange/40 transition-all duration-300"></div>
             
             {/* Mascot Image */}
-            <div className="relative w-full h-full p-2">
+            <div className="relative w-full h-full p-1.5">
               <Image
                 src="/images/mascot.png"
                 alt="King Dragon Mascot"
                 fill
+                sizes="(max-width: 768px) 48px, 56px"
                 className="object-contain"
-                priority
               />
             </div>
 
             {/* Small Arrow Indicator */}
-            <div className="absolute -top-1 -right-1 bg-brand-orange text-cyber-black p-1 rounded-full border-2 border-cyber-black shadow-lg">
-              <ChevronUp size={14} strokeWidth={3} />
+            <div className="absolute -top-1 -right-1 bg-brand-orange text-cyber-black p-0.5 rounded-full border-2 border-cyber-black shadow-lg">
+              <ChevronUp size={12} strokeWidth={3} />
             </div>
           </button>
         </motion.div>

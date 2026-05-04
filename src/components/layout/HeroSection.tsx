@@ -196,6 +196,7 @@ export const HeroSection = () => {
                   src="/images/mascot.png"
                   alt="King Dragon Mascot Core"
                   fill
+                  sizes="(max-width: 768px) 320px, (max-width: 1024px) 480px, 480px"
                   className="object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.4)]"
                   priority
                 />

@@ -132,17 +132,37 @@ body {
   color: var(--foreground) !important;
   font-family: var(--font-space-grotesk), sans-serif !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 700 !important;
 }
 
-.king-dragon-content h1 { color: #f97316 !important; border-bottom: 2px solid rgba(249, 115, 22, 0.2); padding-bottom: 0.5rem; margin-top: 4rem !important; }
-.king-dragon-content h2 { color: #f97316 !important; margin-top: 3rem !important; }
+.king-dragon-content h1 { 
+  @apply text-3xl md:text-4xl lg:text-5xl mb-8;
+  color: #f97316 !important; 
+  border-bottom: 2px solid rgba(249, 115, 22, 0.2); 
+  padding-bottom: 0.5rem; 
+  margin-top: 4rem !important; 
+}
+
+.king-dragon-content h2 { 
+  @apply text-2xl md:text-3xl lg:text-4xl mb-6;
+  color: #f97316 !important; 
+  margin-top: 3rem !important; 
+}
+
+.king-dragon-content h3 {
+  @apply text-xl md:text-2xl lg:text-3xl mb-4;
+  color: #f97316 !important;
+  margin-top: 2rem !important;
+}
 
 .king-dragon-content p, 
 .king-dragon-content li {
+  @apply text-base md:text-lg lg:text-xl;
   color: var(--foreground) !important;
   opacity: 0.9 !important;
   line-height: 1.8 !important;
+  margin-bottom: 1.5rem !important;
 }
 
 .king-dragon-content li::marker {

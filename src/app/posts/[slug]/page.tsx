@@ -126,9 +126,7 @@ export default async function PostPage({ params }: PostPageProps) {
             className="object-cover opacity-60 dark:opacity-50"
           />
         ) : (
-          <div className="w-full h-full bg-cyber-black flex items-center justify-center">
-            <div className="cyber-glow-text opacity-5 font-orbitron text-[15vw] select-none uppercase tracking-tighter">KING DRAGON</div>
-          </div>
+          <div className="w-full h-full bg-cyber-black" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         
@@ -137,17 +135,17 @@ export default async function PostPage({ params }: PostPageProps) {
           <div className="container mx-auto px-6 pb-24">
             <div className="max-w-5xl">
               <div className="flex items-center gap-8 mb-12 animate-fade-in-up">
-                <span className="px-6 py-2 bg-brand-orange text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-sm shadow-[0_5px_15px_rgba(249,115,22,0.4)]">
+                <span className="px-6 py-2 bg-brand-orange text-white tech-mono rounded-sm shadow-[0_5px_15px_rgba(249,115,22,0.4)]">
                   {(Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED'}
                 </span>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-[1px] bg-brand-orange/40"></div>
-                  <span className="text-[11px] font-mono text-foreground font-bold tracking-[0.4em]">
+                  <span className="tech-mono text-foreground">
                     {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'NEURAL_LINK_PENDING'}
                   </span>
                 </div>
               </div>
-              <h1 className="font-orbitron font-bold text-6xl md:text-8xl text-foreground mb-10 leading-[1] drop-shadow-[0_10px_30px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] uppercase tracking-tight">
+              <h1 className="cyber-h1 !text-5xl md:!text-7xl lg:!text-8xl mb-10 drop-shadow-[0_10px_30px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
                 {post.title}
               </h1>
               <div className="flex items-center gap-6 mt-12 group">
@@ -155,8 +153,8 @@ export default async function PostPage({ params }: PostPageProps) {
                   <span className="font-orbitron text-brand-orange font-bold text-lg">Q</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-mono text-brand-orange/80 dark:text-brand-orange/60 tracking-[0.3em] mb-1 font-black">AUTHORISED BY:</span>
-                  <span className="text-sm font-orbitron text-foreground tracking-widest uppercase font-bold">
+                  <span className="tech-mono text-brand-orange/80 dark:text-brand-orange/60 mb-1">AUTHORISED BY:</span>
+                  <span className="cyber-h3 !text-sm tracking-widest">
                     {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON ADMIN'}
                   </span>
                 </div>
@@ -173,7 +171,7 @@ export default async function PostPage({ params }: PostPageProps) {
           {post.excerpt && (
             <div className="mb-12 relative group">
               <div className="absolute -left-12 top-0 bottom-0 w-2 bg-brand-orange/60 shadow-[0_0_20px_rgba(255,87,34,0.2)] transform -skew-x-12 transition-all group-hover:w-3"></div>
-              <p className="text-3xl md:text-4xl font-sans text-foreground/80 leading-relaxed font-light pl-6 tracking-wide italic">
+              <p className="body-lg !text-xl md:!text-2xl lg:!text-3xl text-foreground/80 font-light pl-6 tracking-wide italic">
                 {post.excerpt}
               </p>
             </div>
@@ -217,9 +215,9 @@ export default async function PostPage({ params }: PostPageProps) {
           )}
           
           {/* Footer Metadata */}
-          <footer className="mt-32 pt-12 border-t border-brand-orange/10 flex flex-wrap gap-12 justify-between items-center text-foreground/70 dark:text-muted font-mono text-[11px] uppercase tracking-[0.2em]">
+          <footer className="mt-32 pt-12 border-t border-brand-orange/10 flex flex-wrap gap-12 justify-between items-center text-foreground/70 dark:text-muted tech-mono !text-[11px]">
             <div className="flex flex-col gap-2">
-              <span className="text-brand-orange/80 dark:text-brand-orange/60 font-bold">SOURCE_ENCRYPTION_HASH:</span>
+              <span className="text-brand-orange/80 dark:text-brand-orange/60">SOURCE_ENCRYPTION_HASH:</span>
               <span className="text-foreground/50 dark:opacity-50 break-all">{slug.toUpperCase()}_v3.22.4_SYNCED</span>
             </div>
             <div className="flex items-center gap-6">

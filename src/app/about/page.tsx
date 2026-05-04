@@ -32,6 +32,7 @@ export default function AboutPage() {
                   src="/images/mascot.png"
                   alt="King Dragon Mascot"
                   fill
+                  sizes="(max-width: 768px) 288px, 450px"
                   className="object-contain drop-shadow-[0_0_30px_rgba(249,115,22,0.3)]"
                   priority
                 />

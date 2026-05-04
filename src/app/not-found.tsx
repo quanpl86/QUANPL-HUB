@@ -35,13 +35,15 @@ export default function NotFound() {
               repeat: Infinity, 
               ease: "easeInOut" 
             }}
-            className="w-full h-full"
+            className="w-full h-full relative"
           >
             <Image
               src="/images/mascot.png"
               alt="Lost Mascot"
               fill
+              sizes="(max-width: 768px) 256px, 320px"
               className="object-contain grayscale contrast-125 group-hover:grayscale-0 transition-all duration-500"
+              priority
             />
           </motion.div>
           
