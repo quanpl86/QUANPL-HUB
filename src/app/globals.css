@@ -20,8 +20,8 @@
   --card-bg: #ffffff;
   --card-border: rgba(15, 23, 42, 0.1);
   --card-shadow: rgba(15, 23, 42, 0.1);
-  --muted: #475569; /* Slate 600 - Đậm hơn để dễ đọc */
-  --grid-color: rgba(249, 115, 22, 0.1); /* Lưới đậm hơn cho nền sáng */
+  --muted: #334155; /* Slate 700 - Tăng tương phản cho nền sáng */
+  --grid-color: rgba(249, 115, 22, 0.15); /* Lưới rõ hơn cho nền sáng */
 }
 
 .dark {

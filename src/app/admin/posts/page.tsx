@@ -18,14 +18,14 @@ export default async function AdminPostsPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto">
-      <div className="mb-10 flex justify-between items-end">
+      <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="cyber-h1 text-3xl mb-2">DANH SÁCH <span className="cyber-text-gradient">BÀI ĐĂNG</span></h1>
-          <p className="font-mono text-muted text-xs uppercase tracking-widest">// KHO_NỘI_DUNG_TOÀN_CẦU //</p>
+          <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">DANH SÁCH <span className="cyber-text-gradient">BÀI ĐĂNG</span></h1>
+          <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-black animate-pulse">// KHO_NỘI_DUNG_TOÀN_CẦU //</p>
         </div>
         <Link href="/admin/posts/new">
-          <CyberButton variant="primary" className="flex items-center gap-2">
-            <Plus size={16} />
+          <CyberButton variant="primary" className="flex items-center gap-3">
+            <Plus size={18} />
             Khởi tạo bài viết mới
           </CyberButton>
         </Link>
@@ -33,7 +33,7 @@ export default async function AdminPostsPage() {
 
       <div className="grid grid-cols-1 gap-4">
         {posts?.map((post) => (
-          <div key={post.id} className="group relative bg-cyber-black/40 border border-brand-orange/10 p-5 hover:border-brand-orange/40 transition-all flex flex-col md:flex-row justify-between items-center gap-6">
+          <div key={post.id} className="group relative bg-cyber-black/5 dark:bg-cyber-black/40 border border-brand-orange/20 dark:border-brand-orange/10 p-5 hover:border-brand-orange/40 transition-all flex flex-col md:flex-row justify-between items-center gap-6 cyber-cut-sm">
             <div className="flex gap-6 items-center flex-1">
               {post.image_url ? (
                 <div className="relative w-24 h-16 shrink-0">
@@ -50,16 +50,16 @@ export default async function AdminPostsPage() {
                 </div>
               )}
               <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="font-orbitron font-bold text-foreground text-base">{post.title}</h3>
-                  <span className={`font-mono text-[9px] px-2 py-0.5 border ${post.is_published ? 'border-green-500/30 text-green-400 bg-green-500/5' : 'border-brand-orange/30 text-brand-orange/60 bg-brand-orange/5'}`}>
+                <div className="flex flex-wrap items-center gap-4 mb-2">
+                  <h3 className="font-orbitron font-bold text-foreground text-lg group-hover:text-brand-orange transition-colors">{post.title}</h3>
+                  <span className={`tech-mono text-[10px] px-3 py-1 border cyber-cut-sm font-black ${post.is_published ? 'border-green-500/30 text-green-600 dark:text-green-400 bg-green-500/5' : 'border-brand-orange/30 text-brand-orange bg-brand-orange/5'}`}>
                     {post.is_published ? 'CÔNG KHAI' : 'BẢN NHÁP'}
                   </span>
                   <SeoAdvisor post={post} />
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-mono text-[10px] text-brand-orange/60 uppercase">[{post.categories?.name || 'Chưa phân loại'}]</span>
-                  <span className="font-mono text-[10px] text-muted uppercase">{new Date(post.created_at).toLocaleDateString()}</span>
+                <div className="flex items-center gap-5">
+                  <span className="tech-mono text-xs text-brand-orange font-black uppercase">[{post.categories?.name || 'Chưa phân loại'}]</span>
+                  <span className="tech-mono text-xs text-muted font-bold uppercase">{new Date(post.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>

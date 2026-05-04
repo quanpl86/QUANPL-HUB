@@ -18,9 +18,9 @@ export default async function CategoriesPage() {
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-10">
-        <h1 className="cyber-h1 text-3xl mb-2">MA TRẬN <span className="cyber-text-gradient">DANH MỤC</span></h1>
-        <p className="font-mono text-muted text-xs uppercase tracking-widest">// MÔ-ĐUN_ĐỊNH_NGHĨA_KIẾN_TRÚC //</p>
+      <div className="mb-12">
+        <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">MA TRẬN <span className="cyber-text-gradient">DANH MỤC</span></h1>
+        <p className="tech-mono text-brand-orange/60 text-[11px] uppercase tracking-[0.3em] font-bold animate-pulse">// MÔ-ĐUN_ĐỊNH_NGHĨA_KIẾN_TRÚC //</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -37,13 +37,13 @@ export default async function CategoriesPage() {
             <div key={cat.id} className="group relative bg-cyber-black/40 border border-brand-orange/10 p-4 hover:border-brand-orange/40 transition-all flex justify-between items-start">
               <div>
                 {cat.subjects && (
-                  <span className="font-mono text-[9px] text-brand-orange/60 uppercase tracking-tighter mb-1 block">
+                  <span className="tech-mono text-[10px] text-brand-orange dark:text-brand-orange/60 uppercase tracking-tight mb-2 block font-black">
                     [{cat.subjects.name}]
                   </span>
                 )}
-                <h3 className="font-orbitron font-bold text-brand-orange text-sm mb-1">{cat.name}</h3>
-                <p className="font-mono text-[10px] text-muted line-clamp-2 uppercase">{cat.description || 'Chưa có mô tả'}</p>
-                <code className="mt-2 block font-mono text-[9px] text-brand-orange/40">ĐƯỜNG DẪN: {cat.slug}</code>
+                <h3 className="font-orbitron font-bold text-brand-orange text-base mb-2">{cat.name}</h3>
+                <p className="tech-mono text-[11px] text-foreground dark:text-muted line-clamp-2 uppercase tracking-wide leading-relaxed font-bold">{cat.description || 'Chưa có mô tả'}</p>
+                <code className="mt-3 block tech-mono text-[10px] text-brand-orange dark:text-brand-orange/40 bg-brand-orange/[0.05] dark:bg-brand-orange/5 p-1 px-2 cyber-cut-sm border border-brand-orange/10">SLUG: {cat.slug}</code>
               </div>
               <DeleteButton id={cat.id} onDelete={deleteCategory} label="danh mục" />
             </div>

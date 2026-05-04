@@ -28,10 +28,10 @@ export default async function FieldsPage() {
         <div className="flex flex-col gap-4">
           <h2 className="font-orbitron font-bold text-sm mb-2 uppercase tracking-widest">Miền Đang Hoạt Động</h2>
           {fields?.map((field) => (
-            <div key={field.id} className="group relative bg-cyber-black/40 border border-brand-orange/10 p-4 hover:border-brand-orange/40 transition-all flex justify-between items-start">
+            <div key={field.id} className="group relative bg-cyber-black/5 dark:bg-cyber-black/40 border border-brand-orange/20 dark:border-brand-orange/10 p-4 hover:border-brand-orange/40 transition-all flex justify-between items-start cyber-cut-sm">
               <div>
-                <h3 className="font-orbitron font-bold text-brand-orange text-sm mb-1">{field.name}</h3>
-                <p className="font-mono text-[10px] text-muted line-clamp-2 uppercase">{field.description || 'Không có mô tả'}</p>
+                <h3 className="font-orbitron font-bold text-brand-orange text-base mb-1">{field.name}</h3>
+                <p className="tech-mono text-[11px] text-foreground dark:text-muted line-clamp-2 uppercase font-bold">{field.description || 'Không có mô tả'}</p>
               </div>
               <DeleteButton id={field.id} onDelete={deleteField} label="lĩnh vực" />
             </div>

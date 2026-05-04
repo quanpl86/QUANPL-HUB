@@ -20,9 +20,9 @@ export default async function CommentsAdminPage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="mb-10">
-        <h1 className="cyber-h1 text-3xl mb-2">QUẢN LÝ <span className="cyber-text-gradient">BÌNH LUẬN</span></h1>
-        <p className="font-mono text-muted text-xs uppercase tracking-widest">// TRUNG_TÂM_KIỂM_DUYỆT_NỘI_DUNG //</p>
+      <div className="mb-12">
+        <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">QUẢN LÝ <span className="cyber-text-gradient">BÌNH LUẬN</span></h1>
+        <p className="tech-mono text-brand-orange/60 text-[11px] uppercase tracking-[0.3em] font-bold animate-pulse">// TRUNG_TÂM_KIỂM_DUYỆT_NỘI_DUNG //</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
@@ -36,22 +36,22 @@ export default async function CommentsAdminPage() {
                       {comment.user_name?.charAt(0) || 'G'}
                     </div>
                     <div>
-                      <h3 className="font-orbitron font-bold text-foreground text-sm">{comment.user_name}</h3>
-                      <p className="font-mono text-[10px] text-muted uppercase tracking-widest">{comment.user_email || 'ẨN DANH'}</p>
+                      <h3 className="font-orbitron font-bold text-foreground text-base tracking-wide">{comment.user_name}</h3>
+                      <p className="tech-mono text-[11px] text-muted uppercase tracking-[0.1em]">{comment.user_email || 'ẨN DANH'}</p>
                     </div>
                     {comment.parent_id && (
-                      <span className="font-mono text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 uppercase tracking-tighter">
+                      <span className="tech-mono text-[10px] bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-500/20 px-3 py-1 uppercase font-bold cyber-cut-sm">
                         PHẢN HỒI
                       </span>
                     )}
-                    <div className="ml-auto md:ml-4">
-                      <div className="flex-1 bg-cyber-gray/30 border border-brand-orange/10 p-2 md:p-3 font-mono text-[9px] uppercase text-brand-orange/60 truncate">
+                    <div className="ml-auto md:ml-6">
+                      <div className="bg-brand-orange/[0.05] dark:bg-cyber-gray/30 border border-brand-orange/20 dark:border-brand-orange/10 p-3 md:p-4 tech-mono text-[11px] uppercase text-brand-orange dark:text-brand-orange/60 cyber-cut-sm font-bold">
                         <a 
                           href={`/posts/${comment.posts.slug}#comment-${comment.id}`} 
                           target="_blank" 
-                          className="hover:text-brand-orange transition-colors"
+                          className="hover:text-brand-orange transition-colors flex items-center gap-2"
                         >
-                          BÀI VIẾT: {comment.posts?.title}
+                          BÀI VIẾT: <span className="text-foreground truncate max-w-[200px]">{comment.posts?.title}</span>
                         </a>
                       </div>
                     </div>
@@ -63,12 +63,12 @@ export default async function CommentsAdminPage() {
                     </p>
                   </div>
                   
-                  <div className="mt-4 flex items-center gap-4">
-                    <span className="font-mono text-[10px] text-muted uppercase">
+                  <div className="mt-6 flex flex-wrap items-center gap-6 pt-4 border-t border-black/5 dark:border-white/5">
+                    <span className="tech-mono text-[11px] text-muted uppercase font-bold">
                       NGÀY GỬI: {new Date(comment.created_at).toLocaleString('vi-VN')}
                     </span>
-                    <span className="w-1 h-1 bg-brand-orange/40 rounded-full"></span>
-                    <span className={`font-mono text-[10px] uppercase ${comment.status === 'approved' ? 'text-green-400' : 'text-yellow-400'}`}>
+                    <span className="w-1.5 h-1.5 bg-brand-orange/40 rounded-full animate-pulse"></span>
+                    <span className={`tech-mono text-[11px] font-black uppercase ${comment.status === 'approved' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                       TRẠNG THÁI: {comment.status}
                     </span>
                   </div>

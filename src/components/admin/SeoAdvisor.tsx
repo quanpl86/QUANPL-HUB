@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Brain, CheckCircle2, AlertTriangle, XCircle, Info, Lightbulb, Zap, Search } from 'lucide-react';
 import { CyberCard } from '../ui/CyberCard';
 
@@ -16,6 +17,11 @@ interface Post {
 
 export const SeoAdvisor = ({ post }: { post: Post }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Phân tích chi tiết bằng Tiếng Việt
   const analysis = [
@@ -66,6 +72,133 @@ export const SeoAdvisor = ({ post }: { post: Post }) => {
 
   const score = Math.round((analysis.filter(a => a.status === 'success').length / analysis.length) * 100);
 
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">
+      <div className="w-full max-w-5xl my-auto relative animate-in fade-in zoom-in duration-200">
+        <CyberCard className="p-6 md:p-10 border-brand-orange shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-white dark:bg-cyber-black">
+          <div className="flex justify-between items-start mb-8 border-b-2 border-brand-orange/20 pb-6">
+            <div>
+              <h2 className="font-orbitron font-bold text-xl md:text-2xl text-foreground uppercase tracking-wider flex items-center gap-3">
+                <Brain className="text-brand-orange" size={28} />
+                AI_SEO_ADVISOR <span className="text-brand-orange font-black text-sm hidden md:inline ml-2">// PHÂN TÍCH: {post.title}</span>
+              </h2>
+            </div>
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="text-muted hover:text-brand-orange transition-all p-2 hover:bg-brand-orange/10 cyber-cut-sm"
+            >
+              <XCircle size={28} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1 flex flex-col items-center justify-center p-8 bg-brand-orange/[0.03] dark:bg-cyber-black/40 border-2 border-brand-orange/20 cyber-cut-sm h-fit">
+              <div className="relative w-40 h-40 flex items-center justify-center mb-6">
+                 <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-brand-orange/20" />
+                    <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="12" fill="transparent" 
+                      strokeDasharray={439.8} strokeDashoffset={439.8 - (439.8 * score) / 100}
+                      className={`${score >= 80 ? 'text-green-500' : 'text-brand-orange'} transition-all duration-1000 ease-out`}
+                      strokeLinecap="round"
+                    />
+                 </svg>
+                 <div className="absolute flex flex-col items-center">
+                    <span className="font-orbitron font-black text-4xl">{score}%</span>
+                    <span className="tech-mono text-[10px] text-brand-orange font-bold uppercase">Điểm SEO</span>
+                 </div>
+              </div>
+              <h3 className="font-orbitron font-bold text-xs uppercase tracking-widest text-center border-t border-brand-orange/20 pt-4 w-full">CHỈ SỐ ĐỒNG NHẤT</h3>
+              <p className="mt-4 tech-mono text-[11px] text-muted text-center font-bold italic leading-relaxed">
+                "AI (Perplexity, ChatGPT) dựa vào siêu dữ liệu có cấu trúc để trích xuất nội dung."
+              </p>
+            </div>
+
+            <div className="lg:col-span-2 space-y-6 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
+               <div className="p-6 bg-slate-50 dark:bg-cyber-black/20 rounded-lg border-2 border-slate-200 dark:border-brand-orange/10">
+                  <div className="flex items-center gap-2 mb-4 border-b border-slate-200 dark:border-brand-orange/10 pb-2">
+                    <Search size={16} className="text-brand-orange" />
+                    <span className="text-[11px] font-orbitron font-bold text-muted uppercase tracking-wider">Xem trước trên Google Search</span>
+                  </div>
+                  <div className="font-sans">
+                    <div className="text-[#1a0dab] dark:text-blue-400 text-xl hover:underline cursor-pointer mb-1 truncate font-medium">
+                      {post.meta_title || post.title}
+                    </div>
+                    <div className="text-[#006621] dark:text-green-400 text-sm mb-1 flex items-center gap-1">
+                      kingdragonhub.com <span className="text-[10px]">▼</span>
+                    </div>
+                    <div className="text-[#4d5156] dark:text-gray-400 text-sm leading-relaxed line-clamp-2">
+                      <span className="font-bold">{new Date().toLocaleDateString()} — </span>
+                      {post.meta_description || post.excerpt || 'Vui lòng cung cấp mô tả meta để xem trước cách bài viết của bạn hiển thị trên kết quả tìm kiếm...'}
+                    </div>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-1 gap-4">
+                 {analysis.map((item, idx) => (
+                  <div key={idx} className={`p-5 border-2 border-l-8 ${
+                    item.status === 'success' ? 'border-green-500/20 border-l-green-500 bg-green-500/[0.03]' :
+                    item.status === 'warning' ? 'border-brand-orange/20 border-l-brand-orange bg-brand-orange/[0.03]' :
+                    'border-red-500/20 border-l-red-500 bg-red-500/[0.03]'
+                  } cyber-cut-sm`}>
+                    <div className="flex justify-between items-center mb-3">
+                       <span className="font-orbitron font-bold text-xs uppercase tracking-wider">{item.label}</span>
+                       {item.status === 'success' ? <CheckCircle2 size={18} className="text-green-500" /> :
+                        item.status === 'warning' ? <AlertTriangle size={18} className="text-brand-orange" /> :
+                        <XCircle size={18} className="text-red-500" />}
+                    </div>
+                    <p className="tech-mono text-[13px] text-foreground mb-4 leading-relaxed font-bold">{item.message}</p>
+                    
+                    <div className="bg-white dark:bg-cyber-black/40 p-4 flex gap-4 items-start border-2 border-brand-orange/10">
+                       <Lightbulb size={18} className="text-brand-orange shrink-0" />
+                       <p className="tech-mono text-[11px] text-foreground uppercase leading-relaxed font-black">
+                          <span className="text-brand-orange">GỢI Ý:</span> {item.suggestion}
+                       </p>
+                    </div>
+                  </div>
+                 ))}
+               </div>
+
+               <div className="p-6 bg-blue-50 dark:bg-blue-900/10 border-2 border-blue-500/30 border-dashed cyber-cut-sm">
+                  <div className="flex items-center gap-3 mb-5">
+                     <Zap size={20} className="text-blue-600 dark:text-blue-400" />
+                     <span className="font-orbitron font-bold text-sm text-blue-700 dark:text-blue-400 uppercase tracking-widest">GIAO THỨC TỐI ƯU HÓA AI</span>
+                  </div>
+                  <ul className="space-y-4">
+                    {[
+                      'Sử dụng các từ khóa liên quan về mặt ngữ nghĩa trong 10% đầu tiên của nội dung.',
+                      'Đảm bảo các thẻ tiêu đề (H1, H2, H3) tạo thành một hệ thống phân cấp logic.',
+                      'Trích dẫn các nguồn uy tín để tăng độ tin cậy đối với các LLMs.',
+                      'Cung cấp dữ liệu cụ thể và các con số để AI dễ dàng trích xuất thông tin.',
+                    ].map((tip, i) => (
+                      <li key={i} className="tech-mono text-[12px] text-blue-900 dark:text-blue-300 font-black uppercase flex gap-4 items-start">
+                        <span className="text-blue-600 dark:text-blue-400 shrink-0">{'>'}</span> 
+                        <span className="leading-relaxed">{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+               </div>
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-col md:flex-row justify-end gap-4 border-t-2 border-brand-orange/10 pt-8">
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="px-8 py-3 tech-mono text-xs text-muted hover:text-brand-orange uppercase transition-all font-bold"
+            >
+              [ ĐÓNG PHÂN TÍCH ]
+            </button>
+            <button 
+              onClick={() => window.location.href = `/admin/posts/edit/${post.id}`}
+              className="px-10 py-3 bg-brand-orange text-white font-orbitron font-black text-xs uppercase cyber-cut-sm hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] transition-all"
+            >
+              Cập nhật ngay
+            </button>
+          </div>
+        </CyberCard>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <button 
@@ -80,126 +213,7 @@ export const SeoAdvisor = ({ post }: { post: Post }) => {
         SEO_{score}%
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-cyber-black/90 backdrop-blur-md">
-          <div className="w-full max-w-4xl relative">
-            <CyberCard className="p-8 border-brand-orange shadow-[0_0_50px_rgba(249,115,22,0.2)]">
-              <div className="flex justify-between items-start mb-8 border-b border-brand-orange/20 pb-6">
-                <div>
-                  <h2 className="font-orbitron font-bold text-2xl text-foreground uppercase tracking-wider flex items-center gap-3">
-                    <Brain className="text-brand-orange" />
-                    AI_SEO_ADVISOR <span className="text-brand-orange/50 text-sm">// ĐANG PHÂN TÍCH: {post.title}</span>
-                  </h2>
-                </div>
-                <button onClick={() => setIsOpen(false)} className="text-muted hover:text-brand-orange transition-colors">
-                  <XCircle size={24} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1 flex flex-col items-center justify-center p-8 bg-cyber-black/40 border border-brand-orange/10 cyber-cut-sm h-fit">
-                  <div className="relative w-32 h-32 flex items-center justify-center mb-6">
-                     <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-brand-orange/10" />
-                        <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" 
-                          strokeDasharray={364.4} strokeDashoffset={364.4 - (364.4 * score) / 100}
-                          className={`${score >= 80 ? 'text-green-500' : 'text-brand-orange'} transition-all duration-1000 ease-out`}
-                        />
-                     </svg>
-                     <span className="absolute font-orbitron font-bold text-3xl">{score}%</span>
-                  </div>
-                  <h3 className="font-mono text-xs uppercase tracking-widest text-center">CHỈ SỐ ĐỒNG NHẤT</h3>
-                  <p className="mt-4 font-mono text-[11px] text-muted text-center italic leading-relaxed">
-                    "Các công cụ tìm kiếm AI (Perplexity, ChatGPT) dựa vào siêu dữ liệu có cấu trúc để tóm tắt nội dung bài viết của bạn."
-                  </p>
-                </div>
-
-                <div className="lg:col-span-2 space-y-6 max-h-[550px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-brand-orange/20">
-                   {/* Google Preview */}
-                   <div className="p-6 bg-white rounded-lg shadow-sm mb-8 border border-slate-200">
-                      <div className="flex items-center gap-2 mb-3 border-b pb-2">
-                        <Search size={14} className="text-slate-400" />
-                        <span className="text-[10px] font-sans font-medium text-slate-500 uppercase tracking-wider">Xem trước trên Google</span>
-                      </div>
-                      <div className="font-sans text-slate-900">
-                        <div className="text-[#1a0dab] text-xl hover:underline cursor-pointer mb-1 truncate max-w-full">
-                          {post.meta_title || post.title}
-                        </div>
-                        <div className="text-[#006621] text-sm mb-1 flex items-center gap-1">
-                          kingdragonhub.com <span className="text-[10px]">▼</span>
-                        </div>
-                        <div className="text-[#545454] text-sm leading-snug line-clamp-2">
-                          <span className="text-slate-400">{new Date().toLocaleDateString()} — </span>
-                          {post.meta_description || post.excerpt || 'Vui lòng cung cấp mô tả meta để xem trước cách bài viết của bạn hiển thị trên kết quả tìm kiếm...'}
-                        </div>
-                      </div>
-                   </div>
-
-                   <div className="grid grid-cols-1 gap-4">
-                     {analysis.map((item, idx) => (
-                      <div key={idx} className={`p-4 border border-l-4 ${
-                        item.status === 'success' ? 'border-green-500/20 border-l-green-500 bg-green-500/5' :
-                        item.status === 'warning' ? 'border-brand-orange/20 border-l-brand-orange bg-brand-orange/5' :
-                        'border-red-500/20 border-l-red-500 bg-red-500/5'
-                      }`}>
-                        <div className="flex justify-between items-center mb-2">
-                           <span className="font-orbitron font-bold text-[11px] uppercase tracking-wider">{item.label}</span>
-                           {item.status === 'success' ? <CheckCircle2 size={14} className="text-green-500" /> :
-                            item.status === 'warning' ? <AlertTriangle size={14} className="text-brand-orange" /> :
-                            <XCircle size={14} className="text-red-500" />}
-                        </div>
-                        <p className="font-mono text-xs text-foreground mb-3 leading-relaxed">{item.message}</p>
-                        
-                        <div className="bg-cyber-black/40 p-3 flex gap-3 items-start">
-                           <Lightbulb size={14} className="text-brand-orange mt-0.5 flex-shrink-0" />
-                           <p className="font-mono text-[11px] text-muted-foreground uppercase leading-normal tracking-wider">
-                              <span className="text-brand-orange font-black">GỢI Ý:</span> {item.suggestion}
-                           </p>
-                        </div>
-                      </div>
-                     ))}
-                   </div>
-
-                   <div className="p-5 bg-blue-500/5 dark:bg-blue-500/10 border-2 border-blue-500/40 border-dashed cyber-cut-sm mt-6">
-                      <div className="flex items-center gap-3 mb-4">
-                         <Zap size={18} className="text-blue-600 dark:text-blue-400 animate-pulse" />
-                         <span className="font-orbitron font-bold text-xs text-blue-700 dark:text-blue-400 uppercase tracking-[0.2em]">GIAO THỨC TỐI ƯU HÓA AI</span>
-                      </div>
-                      <ul className="space-y-3">
-                        {[
-                          'Sử dụng các từ khóa liên quan về mặt ngữ nghĩa trong 10% đầu tiên của nội dung.',
-                          'Đảm bảo các thẻ tiêu đề (H1, H2, H3) tạo thành một hệ thống phân cấp logic.',
-                          'Trích dẫn các nguồn uy tín để tăng độ tin cậy đối với các mô hình ngôn ngữ lớn (LLMs).',
-                          'Cung cấp dữ liệu cụ thể và các con số để AI dễ dàng trích xuất thông tin.',
-                        ].map((tip, i) => (
-                          <li key={i} className="font-mono text-[11px] text-blue-900 dark:text-blue-300/80 uppercase flex gap-3 items-start">
-                            <span className="text-blue-600 dark:text-blue-400 font-bold shrink-0">{'>'}</span> 
-                            <span className="leading-relaxed">{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                   </div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-end gap-4">
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="px-6 py-2 font-orbitron text-[10px] text-muted-foreground hover:text-brand-orange uppercase transition-colors"
-                >
-                  ĐÓNG PHÂN TÍCH
-                </button>
-                <button 
-                  onClick={() => window.location.href = `/admin/posts/edit/${post.id}`}
-                  className="px-8 py-2 bg-brand-orange text-cyber-black font-orbitron font-bold text-[10px] uppercase cyber-cut-sm hover:glow-orange transition-all"
-                >
-                  Cập nhật ngay
-                </button>
-              </div>
-            </CyberCard>
-          </div>
-        </div>
-      )}
+      {isOpen && mounted && createPortal(modalContent, document.body)}
     </>
   );
 };

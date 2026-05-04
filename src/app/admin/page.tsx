@@ -19,37 +19,21 @@ export default async function AdminDashboard() {
   const dbLatency = Math.round(performance.now() - startTime);
 
   // Tính toán SEO Score khoa học
-  // Các tiêu chí: Title (bắt buộc), Meta Title, Meta Desc, Excerpt, Image URL
   const allPosts = postsRes.data || [];
   const totalPosts = allPosts.length;
   
   let seoPoints = 0;
-  const maxPointsPerPost = 4; // Meta Title, Meta Desc, Excerpt, Image
+  const maxPointsPerPost = 4;
 
   allPosts.forEach(post => {
-    // 1. Meta Title (Chuẩn 50-70 chars)
-    if (post.meta_title && post.meta_title.length >= 50 && post.meta_title.length <= 70) {
-      seoPoints++;
-    } else if (post.meta_title) {
-      seoPoints += 0.5; // Có nhưng chưa chuẩn độ dài
-    }
+    if (post.meta_title && post.meta_title.length >= 50 && post.meta_title.length <= 70) seoPoints++;
+    else if (post.meta_title) seoPoints += 0.5;
 
-    // 2. Meta Description (Chuẩn 120-160 chars)
-    if (post.meta_description && post.meta_description.length >= 120 && post.meta_description.length <= 160) {
-      seoPoints++;
-    } else if (post.meta_description) {
-      seoPoints += 0.5;
-    }
+    if (post.meta_description && post.meta_description.length >= 120 && post.meta_description.length <= 160) seoPoints++;
+    else if (post.meta_description) seoPoints += 0.5;
 
-    // 3. Excerpt (Dẫn nhập > 50 chars)
-    if (post.excerpt && post.excerpt.length >= 50) {
-      seoPoints++;
-    }
-
-    // 4. Image URL (Hợp lệ)
-    if (post.image_url) {
-      seoPoints++;
-    }
+    if (post.excerpt && post.excerpt.length >= 50) seoPoints++;
+    if (post.image_url) seoPoints++;
   });
 
   const totalPossiblePoints = totalPosts * maxPointsPerPost;
@@ -79,10 +63,10 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div className="max-w-[1600px] mx-auto">
-      <div className="mb-10">
-        <h1 className="cyber-h1 text-3xl mb-2">TRUNG TÂM <span className="cyber-text-gradient">ĐIỀU HÀNH</span></h1>
-        <p className="font-mono text-muted text-xs uppercase tracking-widest">// HỆ_THỐNG_ỔN_ĐỊNH //</p>
+    <div className="max-w-[1600px] mx-auto pb-10">
+      <div className="mb-12">
+        <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">TRUNG TÂM <span className="cyber-text-gradient">ĐIỀU HÀNH</span></h1>
+        <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-bold animate-pulse">// HỆ_THỐNG_Ổ_ĐỊNH //</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -92,9 +76,9 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat) => (
               <Link key={stat.label} href={stat.href}>
-                <CyberCard className="p-6 hover:border-brand-orange/50 transition-all group cursor-pointer border-brand-orange/10 bg-cyber-black/20">
-                  <p className="font-mono text-[11px] text-brand-orange font-bold uppercase mb-2 tracking-wider">{stat.label}</p>
-                  <h2 className={`font-orbitron font-bold text-4xl ${stat.color}`}>{stat.count}</h2>
+                <CyberCard className="p-6 hover:border-brand-orange/50 transition-all group cursor-pointer border-brand-orange/10 bg-cyber-black/5 dark:bg-cyber-black/20">
+                  <p className="tech-mono text-[13px] text-brand-orange font-bold uppercase mb-3 tracking-widest">{stat.label}</p>
+                  <h2 className={`font-orbitron font-bold text-5xl ${stat.color} group-hover:scale-105 transition-transform`}>{stat.count}</h2>
                 </CyberCard>
               </Link>
             ))}
@@ -104,23 +88,26 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Recent Posts */}
             <CyberCard className="p-8">
-              <h2 className="font-orbitron font-bold text-sm mb-6 border-b border-brand-orange/20 pb-4 uppercase tracking-widest text-brand-orange">Truyền tải gần đây</h2>
+              <h2 className="cyber-h3 !text-lg mb-8 border-b border-brand-orange/20 pb-4 text-brand-orange">TRUYỀN TẢI GẦN ĐÂY</h2>
               
               <div className="space-y-4">
                 {recentPosts && recentPosts.length > 0 ? (
                   recentPosts.map((post) => (
                     <Link key={post.id} href={`/admin/posts/edit/${post.id}`}>
-                      <div className="flex items-center justify-between p-4 bg-cyber-black/40 border border-brand-orange/5 hover:border-brand-orange/30 transition-all group">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-1.5 h-8 ${post.is_published ? 'bg-green-500' : 'bg-brand-orange'}`}></div>
+                      <div className="flex items-center justify-between p-5 bg-cyber-black/5 dark:bg-cyber-black/40 border border-brand-orange/10 hover:border-brand-orange/30 transition-all group cyber-cut-sm">
+                        <div className="flex items-center gap-5">
+                          <div className={`w-1.5 h-10 ${post.is_published ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'bg-brand-orange shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}></div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-orbitron font-bold text-[10px] text-foreground group-hover:text-brand-orange transition-colors truncate">{post.title}</h3>
-                            <div className="flex gap-3 mt-1">
-                              <span className="font-mono text-[8px] text-brand-orange/60 uppercase">[{
+                            <h3 className="font-orbitron font-bold text-sm text-foreground group-hover:text-brand-orange transition-colors truncate">{post.title}</h3>
+                            <div className="flex gap-4 mt-2">
+                              <span className="tech-mono text-[10px] text-brand-orange font-bold uppercase">[{
                                 (Array.isArray(post.categories) 
                                   ? (post.categories as any)[0]?.name 
                                   : (post.categories as any)?.name) || 'Chưa phân loại'
                               }]</span>
+                              <span className="tech-mono text-[10px] text-muted font-bold uppercase">
+                                {new Date(post.created_at).toLocaleDateString()}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -128,7 +115,7 @@ export default async function AdminDashboard() {
                     </Link>
                   ))
                 ) : (
-                  <div className="font-mono text-xs text-muted font-bold py-10 text-center border border-dashed border-brand-orange/20 uppercase">
+                  <div className="tech-mono text-sm text-muted font-bold py-12 text-center border border-dashed border-brand-orange/20 uppercase tracking-[0.2em]">
                     // TRỐNG //
                   </div>
                 )}
@@ -137,29 +124,29 @@ export default async function AdminDashboard() {
 
             {/* Recent Comments */}
             <CyberCard className="p-8 border-yellow-500/20">
-              <h2 className="font-orbitron font-bold text-sm mb-6 border-b border-yellow-500/20 pb-4 uppercase tracking-widest text-yellow-400">Tương tác cộng đồng</h2>
+              <h2 className="cyber-h3 !text-lg mb-8 border-b border-yellow-500/20 pb-4 text-yellow-500 dark:text-yellow-400">TƯƠNG TÁC CỘNG ĐỒNG</h2>
               
               <div className="space-y-4">
                 {recentComments && recentComments.length > 0 ? (
                   recentComments.map((comment: any) => (
-                    <div key={comment.id} className="p-4 bg-cyber-black/40 border border-yellow-500/10 hover:border-yellow-500/30 transition-all">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-orbitron font-bold text-[10px] text-yellow-400 uppercase tracking-tighter">{comment.user_name}</span>
-                        <span className="font-mono text-[8px] text-muted uppercase">{new Date(comment.created_at).toLocaleDateString()}</span>
+                    <div key={comment.id} className="p-5 bg-cyber-black/5 dark:bg-cyber-black/40 border border-yellow-500/20 hover:border-yellow-500/40 transition-all cyber-cut-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="font-orbitron font-bold text-xs text-yellow-600 dark:text-yellow-400 uppercase tracking-wide">{comment.user_name}</span>
+                        <span className="tech-mono text-[10px] text-muted font-bold uppercase">{new Date(comment.created_at).toLocaleDateString()}</span>
                       </div>
-                      <p className="font-mono text-[10px] text-foreground/70 line-clamp-2 leading-relaxed mb-2 italic">
+                      <p className="tech-mono text-xs text-foreground line-clamp-2 leading-relaxed mb-3 italic">
                         "{comment.content}"
                       </p>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[8px] text-muted uppercase">BÀI VIẾT:</span>
-                        <span className="font-orbitron font-bold text-[8px] text-brand-orange/60 truncate uppercase">
+                      <div className="flex items-center gap-3 pt-3 border-t border-yellow-500/10">
+                        <span className="tech-mono text-[9px] text-muted font-bold uppercase">BÀI VIẾT:</span>
+                        <span className="font-orbitron font-bold text-[10px] text-brand-orange font-bold truncate uppercase tracking-tight">
                           {comment.posts?.title}
                         </span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="font-mono text-xs text-muted font-bold py-10 text-center border border-dashed border-yellow-500/20 uppercase">
+                  <div className="tech-mono text-sm text-muted font-bold py-12 text-center border border-dashed border-yellow-500/20 uppercase tracking-[0.2em]">
                     // TRỐNG //
                   </div>
                 )}
@@ -172,41 +159,41 @@ export default async function AdminDashboard() {
         <div className="flex flex-col gap-6">
           {/* Widget 1: SEO & AI Health */}
           <CyberCard className="p-6 border-blue-500/30">
-            <h2 className="font-orbitron font-bold text-xs mb-5 uppercase tracking-[0.2em] text-blue-400">Chỉ_số_vận_hành</h2>
+            <h2 className="cyber-h3 !text-sm mb-6 text-blue-600 dark:text-blue-400">CHỈ_SỐ_VẬN_HÀNH</h2>
             <div className="flex flex-col gap-5">
               <div className="flex justify-between items-end">
-                <span className="font-mono text-[11px] text-foreground font-bold uppercase">Điểm SEO</span>
-                <span className={`font-orbitron font-bold text-xl ${seoScore > 80 ? 'text-green-400' : 'text-brand-orange'}`}>{seoScore}%</span>
+                <span className="tech-mono text-[13px] text-foreground font-bold uppercase">Điểm SEO</span>
+                <span className={`font-orbitron font-bold text-2xl ${seoScore > 80 ? 'text-green-600 dark:text-green-400' : 'text-brand-orange'}`}>{seoScore}%</span>
               </div>
-              <div className="w-full h-1.5 bg-cyber-black overflow-hidden">
+              <div className="w-full h-2 bg-cyber-black/10 dark:bg-cyber-black overflow-hidden cyber-cut-sm">
                 <div 
-                  className={`h-full transition-all duration-1000 ${seoScore > 80 ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-brand-orange shadow-[0_0_10px_#f97316]'}`}
+                  className={`h-full transition-all duration-1000 ${seoScore > 80 ? 'bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]' : 'bg-brand-orange shadow-[0_0_15px_rgba(249,115,22,0.6)]'}`}
                   style={{ width: `${seoScore}%` }}
                 ></div>
               </div>
               
-              <div className="flex justify-between items-end mt-2">
-                <span className="font-mono text-[11px] text-foreground font-bold uppercase">Độ trễ DB</span>
-                <span className="font-orbitron font-bold text-sm text-blue-400">{dbLatency}ms</span>
+              <div className="flex justify-between items-end mt-4 pt-4 border-t border-blue-500/10">
+                <span className="tech-mono text-[13px] text-foreground font-bold uppercase">Độ trễ DB</span>
+                <span className="font-orbitron font-bold text-lg text-blue-600 dark:text-blue-400">{dbLatency}ms</span>
               </div>
             </div>
           </CyberCard>
 
           {/* Widget 2: Terminal Log */}
-          <CyberCard className="p-6 bg-cyber-black/80">
-            <h2 className="font-orbitron font-bold text-xs mb-5 uppercase tracking-[0.2em] text-brand-orange">Nhật_ký_hệ_thống</h2>
-            <div className="font-mono text-[11px] space-y-3 text-foreground/80 font-medium uppercase">
-              <p className="leading-relaxed"><span className="text-brand-orange font-bold">[20:55:01]</span> <span className="text-green-400">Đăng_nhập:</span> Quản trị viên KING DRAGON đã kết nối</p>
-              <p className="leading-relaxed"><span className="text-brand-orange font-bold">[20:54:12]</span> Đồng_bộ: Đã triển khai Ma trận Cấp bậc V2</p>
-              <p className="leading-relaxed"><span className="text-brand-orange font-bold">[20:50:33]</span> Ổn_định: Mọi mô-đun đang hoạt động</p>
+          <CyberCard className="p-6 bg-cyber-black/5 dark:bg-cyber-black/80 border border-brand-orange/10">
+            <h2 className="cyber-h3 !text-sm mb-6 text-brand-orange">NHẬT_KÝ_HỆ_THỐNG</h2>
+            <div className="tech-mono text-[11px] space-y-4 text-foreground font-bold">
+              <p className="leading-relaxed"><span className="text-brand-orange font-black">[20:55:01]</span> <span className="text-green-600 dark:text-green-400">Đăng_nhập:</span> Quản trị viên KING DRAGON kết nối thành công</p>
+              <p className="leading-relaxed"><span className="text-brand-orange font-black">[20:54:12]</span> Đồng_bộ: Đã triển khai Ma trận Cấp bậc V2</p>
+              <p className="leading-relaxed"><span className="text-brand-orange font-black">[20:50:33]</span> Ổn_định: Mọi mô-đun đang hoạt động tối ưu</p>
             </div>
           </CyberCard>
 
           {/* Widget 3: Quick Scratchpad */}
-          <CyberCard className="p-6">
-            <h2 className="font-orbitron font-bold text-xs mb-5 uppercase tracking-[0.2em] text-purple-400">Ghi_chú_nhanh</h2>
+          <CyberCard className="p-6 border-purple-500/20">
+            <h2 className="cyber-h3 !text-sm mb-6 text-purple-600 dark:text-purple-400">GHI_CHÚ_NHANH</h2>
             <textarea 
-              className="w-full bg-cyber-black border border-brand-orange/20 p-4 font-mono text-[11px] text-foreground font-medium outline-none focus:border-purple-500 transition-all resize-none"
+              className="w-full bg-cyber-black/5 dark:bg-cyber-black/50 border border-brand-orange/20 p-5 tech-mono text-sm text-foreground font-bold outline-none focus:border-purple-500 transition-all resize-none cyber-cut-sm placeholder:text-muted/50"
               rows={6}
               placeholder="Nhập ý tưởng hoặc từ khóa SEO tại đây..."
             />

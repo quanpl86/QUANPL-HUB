@@ -33,15 +33,15 @@ export default async function SubjectsPage() {
         <div className="flex flex-col gap-4">
           <h2 className="font-orbitron font-bold text-sm mb-2 uppercase tracking-widest">Chủ Đề Đang Hoạt Động</h2>
           {subjects?.map((sub: any) => (
-            <div key={sub.id} className="group relative bg-cyber-black/40 border border-brand-orange/10 p-4 hover:border-brand-orange/40 transition-all flex justify-between items-start">
+            <div key={sub.id} className="group relative bg-cyber-black/5 dark:bg-cyber-black/40 border border-brand-orange/20 dark:border-brand-orange/10 p-4 hover:border-brand-orange/40 transition-all flex justify-between items-start cyber-cut-sm">
               <div>
                 {sub.fields && (
-                  <span className="font-mono text-[9px] text-brand-orange/60 uppercase tracking-tighter mb-1 block">
+                  <span className="tech-mono text-[10px] text-brand-orange dark:text-brand-orange/60 uppercase tracking-tight mb-2 block font-black">
                     [{sub.fields.name}]
                   </span>
                 )}
-                <h3 className="font-orbitron font-bold text-brand-orange text-sm mb-1">{sub.name}</h3>
-                <p className="font-mono text-[10px] text-muted line-clamp-2 uppercase">{sub.description || 'Không có mô tả'}</p>
+                <h3 className="font-orbitron font-bold text-brand-orange text-base mb-1">{sub.name}</h3>
+                <p className="tech-mono text-[11px] text-foreground dark:text-muted line-clamp-2 uppercase font-bold">{sub.description || 'Không có mô tả'}</p>
               </div>
               <DeleteButton id={sub.id} onDelete={deleteSubject} label="chủ đề" />
             </div>

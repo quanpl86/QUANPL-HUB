@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 import { getSiteSettings } from '@/app/actions/settings';
 
@@ -39,20 +39,36 @@ export const Header = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const pathname = usePathname();
+
   // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [router]);
+  }, [pathname]);
 
-  // Lock body scroll when mobile menu is open
+  // Khóa cuộn trang mạnh mẽ hơn cho Header
   useEffect(() => {
     if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflowY = 'scroll';
     } else {
-      document.body.style.overflow = 'unset';
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflowY = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflowY = '';
     };
   }, [isMobileMenuOpen]);
 
@@ -90,18 +106,18 @@ export const Header = () => {
           </Link>
 
           {/* Navigation - Desktop (Hidden on mobile/tablet) */}
-          <nav className="hidden lg:flex items-center tech-mono">
-            <Link href="/blog" className="relative px-6 py-2 transition-colors group overflow-hidden" style={{ color: 'var(--muted)' }}>
+          <nav className="hidden lg:flex items-center tech-mono font-bold">
+            <Link href="/blog" className="relative px-6 py-2 transition-colors group overflow-hidden text-muted">
               <span className="relative z-10 group-hover:text-brand-orange transition-colors duration-300">BÀI VIẾT</span>
               <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></div>
             </Link>
             <div className="w-[1px] h-4 bg-brand-orange/20"></div>
-            <Link href="/utility-hub" className="relative px-6 py-2 transition-colors group overflow-hidden" style={{ color: 'var(--muted)' }}>
+            <Link href="/utility-hub" className="relative px-6 py-2 transition-colors group overflow-hidden text-muted">
               <span className="relative z-10 group-hover:text-brand-orange transition-colors duration-300">TIỆN ÍCH</span>
               <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></div>
             </Link>
             <div className="w-[1px] h-4 bg-brand-orange/20"></div>
-            <Link href="/about" className="relative px-6 py-2 transition-colors group overflow-hidden" style={{ color: 'var(--muted)' }}>
+            <Link href="/about" className="relative px-6 py-2 transition-colors group overflow-hidden text-muted">
               <span className="relative z-10 group-hover:text-brand-orange transition-colors duration-300">GIỚI THIỆU</span>
               <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></div>
             </Link>
