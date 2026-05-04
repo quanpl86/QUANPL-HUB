@@ -38,7 +38,7 @@ export default function AboutPage() {
               </div>
 
               {/* Tag */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-brand-orange text-cyber-black font-orbitron text-[10px] font-bold px-4 py-1.5 cyber-cut-sm shadow-[4px_4px_0px_rgba(0,0,0,0.5)]">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-brand-orange text-cyber-black tech-mono px-4 py-1.5 cyber-cut-sm shadow-[4px_4px_0px_rgba(0,0,0,0.5)]">
                 PROTOCOL: KD-GUIDE_V1
               </div>
             </div>
@@ -52,7 +52,7 @@ export default function AboutPage() {
             className="flex flex-col gap-8"
           >
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-orange/10 border border-brand-orange/30 text-brand-orange font-orbitron text-[10px] font-bold tracking-widest uppercase mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-orange/10 border border-brand-orange/30 text-brand-orange tech-mono mb-4">
                 <span className="w-1.5 h-1.5 bg-brand-orange animate-pulse"></span>
                 Về Chúng Tôi
               </div>
@@ -62,7 +62,7 @@ export default function AboutPage() {
               </h1>
             </div>
 
-            <div className="space-y-6 font-sans text-lg text-muted leading-relaxed">
+            <div className="space-y-6 body-lg text-muted">
               <p>
                 Xin chào! Tôi là <strong className="text-brand-orange">King Dragon</strong> — người dẫn đường của bạn trong không gian ma trận tri thức này. 
               </p>
@@ -90,16 +90,16 @@ export default function AboutPage() {
             {/* Stats / Tech Info */}
             <div className="mt-8 pt-8 border-t border-brand-orange/10 grid grid-cols-3 gap-4">
               <div className="flex flex-col">
-                <span className="font-orbitron text-2xl font-bold text-brand-orange">99+</span>
-                <span className="font-mono text-[9px] text-muted uppercase tracking-widest">Dữ liệu bài viết</span>
+                <span className="cyber-h3 !text-brand-orange">99+</span>
+                <span className="tech-mono text-muted !text-[9px]">Dữ liệu bài viết</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-orbitron text-2xl font-bold text-brand-orange">AI</span>
-                <span className="font-mono text-[9px] text-muted uppercase tracking-widest">Tối ưu hóa</span>
+                <span className="cyber-h3 !text-brand-orange">AI</span>
+                <span className="tech-mono text-muted !text-[9px]">Tối ưu hóa</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-orbitron text-2xl font-bold text-brand-orange">STEM</span>
-                <span className="font-mono text-[9px] text-muted uppercase tracking-widest">Tiêu chuẩn quốc tế</span>
+                <span className="cyber-h3 !text-brand-orange">STEM</span>
+                <span className="tech-mono text-muted !text-[9px]">Tiêu chuẩn quốc tế</span>
               </div>
             </div>
           </motion.div>

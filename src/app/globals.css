@@ -83,13 +83,34 @@ body {
 }
 
 @utility cyber-h1 {
-  @apply font-orbitron font-bold text-5xl md:text-7xl leading-tight uppercase tracking-tighter;
+  @apply font-orbitron font-bold text-4xl md:text-6xl lg:text-7xl leading-[1.1] uppercase tracking-tighter;
   color: var(--foreground);
 }
 
 @utility cyber-h2 {
-  @apply font-orbitron font-bold text-3xl md:text-4xl uppercase tracking-wider;
+  @apply font-orbitron font-bold text-2xl md:text-4xl lg:text-5xl uppercase tracking-wider leading-tight;
   color: var(--foreground);
+}
+
+@utility cyber-h3 {
+  @apply font-orbitron font-bold text-lg md:text-xl lg:text-2xl uppercase tracking-widest leading-snug;
+  color: var(--foreground);
+}
+
+@utility body-lg {
+  @apply font-sans text-lg md:text-xl leading-relaxed;
+}
+
+@utility body-base {
+  @apply font-sans text-base leading-relaxed;
+}
+
+@utility body-sm {
+  @apply font-sans text-sm leading-normal;
+}
+
+@utility tech-mono {
+  @apply font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold;
 }
 
 @utility cyber-text-gradient {

@@ -107,7 +107,7 @@ export const HeroSection = () => {
         <div className="flex flex-col gap-8 max-w-2xl">
           <motion.div variants={itemVariants} className="inline-flex items-center gap-3 bg-cyber-black/50 border-2 border-brand-orange shadow-[2px_2px_0px_#f97316] px-4 py-2 cyber-cut-sm w-fit">
             <span className="w-2 h-2 bg-brand-orange animate-pulse"></span>
-            <span className="font-mono text-xs text-brand-orange uppercase tracking-widest">Hệ thống Trực tuyến</span>
+            <span className="tech-mono text-brand-orange">Hệ thống Trực tuyến</span>
           </motion.div>
 
           <motion.h1 variants={itemVariants} className="cyber-h1">
@@ -116,7 +116,7 @@ export const HeroSection = () => {
             </span>
           </motion.h1>
 
-          <motion.p variants={itemVariants} className="font-sans text-lg leading-relaxed max-w-lg" style={{ color: 'var(--muted)' }}>
+          <motion.p variants={itemVariants} className="body-lg text-muted max-w-lg">
             {settings.site_description}
           </motion.p>
 
@@ -211,7 +211,7 @@ export const HeroSection = () => {
               initial={isMounted ? { opacity: 0, scale: 0.8 } : { opacity: 1, scale: 1 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 2, duration: 0.5 }}
-              className="absolute -top-4 right-0 bg-brand-orange text-cyber-black font-orbitron text-[9px] px-3 py-1 cyber-cut-sm font-bold shadow-[0_0_15px_rgba(249,115,22,0.5)]"
+              className="absolute -top-4 right-0 bg-brand-orange text-cyber-black tech-mono px-3 py-1 cyber-cut-sm shadow-[0_0_15px_rgba(249,115,22,0.5)]"
             >
               TRI THỨC
             </motion.div>
@@ -224,7 +224,7 @@ export const HeroSection = () => {
             transition={{ delay: 2.5, duration: 1 }}
             className="absolute -bottom-4 w-full text-center lg:text-right pr-4"
           >
-            <p className="font-mono text-[9px] text-brand-orange tracking-[0.4em] uppercase">
+            <p className="tech-mono text-brand-orange !tracking-[0.4em]">
               // KHÁM PHÁ VÀ NÂNG CẤP TRI THỨC: STEM | AI | CÔNG NGHỆ | KHOA HỌC
             </p>
             <div className="h-[1px] w-32 ml-auto bg-gradient-to-r from-transparent to-brand-orange/40 mt-1"></div>

@@ -19,7 +19,7 @@ export default function NotFound() {
         className="relative z-10 flex flex-col items-center text-center"
       >
         {/* Error Code */}
-        <div className="font-orbitron text-9xl font-black text-brand-orange/10 absolute -top-20 select-none">
+        <div className="font-orbitron text-[150px] md:text-[200px] font-black text-brand-orange/10 absolute -top-32 select-none">
           404
         </div>
 
@@ -53,7 +53,7 @@ export default function NotFound() {
           <span className="text-brand-orange">ERROR_CODE:</span> LOST_IN_MATRIX
         </h2>
         
-        <p className="font-mono text-muted max-w-md mb-12 uppercase tracking-widest leading-relaxed">
+        <p className="tech-mono text-muted max-w-md mb-12 !tracking-widest leading-relaxed">
           // CẢNH BÁO: ĐƯỜNG TRUYỀN DỮ LIỆU BỊ NGẮT KẾT NỐI. <br />
           CHÚ RỒNG CỦA CHÚNG TÔI KHÔNG THỂ TÌM THẤY SECTOR NÀY TRONG HỆ THỐNG.
         </p>

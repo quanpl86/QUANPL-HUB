@@ -75,9 +75,9 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-12 border-l-4 border-brand-orange pl-6">
           <div className="flex-1">
             {title || (
-              <h2 key="default-explore-title" className="font-orbitron font-bold text-3xl text-foreground uppercase tracking-wider">Khám phá <span className="text-brand-orange">TRI THỨC</span></h2>
+              <h2 key="default-explore-title" className="cyber-h2">Khám phá <span className="text-brand-orange">TRI THỨC</span></h2>
             )}
-            <p className="font-mono text-[10px] text-muted uppercase tracking-[0.4em] mt-2">// {subtitle} //</p>
+            <p className="tech-mono text-muted !text-[9px] mt-2 tracking-[0.4em]">// {subtitle} //</p>
           </div>
           
           <div className="w-full lg:w-96 relative group">
@@ -87,7 +87,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
             <input 
               type="text"
               placeholder="TÌM KIẾM TRONG KHO LƯU TRỮ..."
-              className="w-full bg-cyber-black/40 border border-brand-orange/20 focus:border-brand-orange py-4 pl-12 pr-4 font-mono text-xs uppercase tracking-widest text-foreground outline-none transition-all placeholder:text-muted/40"
+              className="w-full bg-cyber-black/40 border border-brand-orange/20 focus:border-brand-orange py-4 pl-12 pr-4 tech-mono text-foreground outline-none transition-all placeholder:text-muted/40"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
@@ -107,7 +107,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => updateParams({ category: 'all' })}
-              className={`px-6 py-2 font-orbitron text-[10px] uppercase tracking-widest transition-all ${
+              className={`px-6 py-2 tech-mono transition-all ${
                 currentCategory === 'all' 
                   ? 'bg-brand-orange text-white shadow-[0_0_15px_rgba(255,87,34,0.4)]' 
                   : 'bg-white/5 text-muted hover:bg-white/10 border border-white/5'
@@ -120,7 +120,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
               <button
                 key={cat.id}
                 onClick={() => updateParams({ category: cat.slug })}
-                className={`px-6 py-2 font-orbitron text-[10px] uppercase tracking-widest transition-all ${
+                className={`px-6 py-2 tech-mono transition-all ${
                   currentCategory === cat.slug 
                     ? 'bg-brand-orange text-white shadow-[0_0_15px_rgba(255,87,34,0.4)]' 
                     : 'bg-white/5 text-muted hover:bg-white/10 border border-white/5'
@@ -136,7 +136,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
             <select 
               value={currentSort}
               onChange={(e) => updateParams({ sort: e.target.value })}
-              className="bg-transparent border-none outline-none font-orbitron text-[10px] uppercase tracking-widest text-muted hover:text-brand-orange cursor-pointer"
+              className="bg-transparent border-none outline-none tech-mono text-muted hover:text-brand-orange cursor-pointer"
             >
               <option value="newest">MỚI NHẤT</option>
               <option value="oldest">CŨ NHẤT</option>
@@ -166,9 +166,9 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
                     </div>
                   </div>
                   <div className="p-6">
-                    <span className="font-mono text-[9px] text-brand-orange/60 uppercase block mb-2">[{post.categories?.name || 'BẢN GHI'}]</span>
-                    <h3 className="font-orbitron font-bold text-lg mb-4 group-hover:text-brand-orange transition-colors line-clamp-2 uppercase tracking-tight">{post.title}</h3>
-                    <div className="flex items-center gap-2 font-mono text-[10px] text-muted uppercase">
+                    <span className="tech-mono text-brand-orange/60 block mb-2 !text-[9px]">[{post.categories?.name || 'BẢN GHI'}]</span>
+                    <h3 className="cyber-h3 mb-4 group-hover:text-brand-orange transition-colors line-clamp-2 !tracking-tight">{post.title}</h3>
+                    <div className="flex items-center gap-2 tech-mono text-muted !text-[9px]">
                       <Calendar size={12} />
                       {new Date(post.created_at).toLocaleDateString()}
                     </div>
@@ -178,10 +178,10 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
             ))
           ) : (
             <div className="col-span-full py-20 text-center border border-dashed border-brand-orange/20 bg-cyber-black/10">
-              <p className="font-mono text-muted uppercase tracking-[0.5em]">// KHÔNG_CÓ_DỮ_LIỆU_PHÙ_HỢP //</p>
+              <p className="tech-mono text-muted !tracking-[0.5em]">// KHÔNG_CÓ_DỮ_LIỆU_PHÙ_HỢP //</p>
               <button 
                 onClick={() => { setSearchValue(''); updateParams({ category: 'all' }); }}
-                className="mt-6 font-orbitron text-[10px] text-brand-orange hover:glow-orange underline uppercase tracking-widest"
+                className="mt-6 tech-mono text-brand-orange hover:glow-orange underline"
               >
                 Khởi tạo lại ma trận
               </button>
@@ -191,7 +191,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
 
         {initialPosts.length > 0 && (
           <div className="mt-16 text-center">
-             <Link href="/blog" className="font-orbitron text-[11px] text-brand-orange hover:glow-orange transition-all uppercase tracking-[0.3em] border border-brand-orange/30 px-10 py-4 inline-block">
+             <Link href="/blog" className="tech-mono text-brand-orange hover:glow-orange transition-all border border-brand-orange/30 px-10 py-4 inline-block">
                 Xem toàn bộ kho lưu trữ
              </Link>
           </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseServer } from '@/lib/supabase-server';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -13,6 +13,7 @@ interface PostPageProps {
 // 1. Tự động tạo Metadata cho SEO (Dynamic Metadata)
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params;
+  const supabase = await getSupabaseServer();
   const { data: post } = await supabase
     .from('posts')
     .select('title, meta_title, meta_description, excerpt, image_url, keywords')
@@ -54,6 +55,7 @@ const PremiumMultimedia = dynamic(() => import('@/components/blog/PremiumMultime
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
+  const supabase = await getSupabaseServer();
   const headerList = await headers();
   const ip = headerList.get('x-forwarded-for') || 'anonymous';
 
@@ -95,7 +97,7 @@ export default async function PostPage({ params }: PostPageProps) {
     image: post.image_url,
     author: {
       '@type': 'Person',
-      name: post.profiles?.full_name || 'KING DRAGON',
+      name: (Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON',
     },
     publisher: {
       '@type': 'Organization',

@@ -70,7 +70,7 @@ export const Header = () => {
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-8 font-orbitron text-sm tracking-widest uppercase">
+        <nav className="hidden md:flex items-center gap-8 tech-mono">
           <Link href="/blog" className="relative py-2 transition-colors group overflow-hidden" style={{ color: 'var(--muted)' }}>
             <span className="relative z-10 group-hover:text-brand-orange transition-colors duration-300">BÀI VIẾT</span>
             <div className="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-orange transition-all duration-300 group-hover:w-full"></div>
@@ -91,20 +91,20 @@ export const Header = () => {
           {user ? (
             <div className="flex items-center gap-4">
               <Link href="/admin">
-                <button className="font-orbitron text-[10px] font-bold tracking-[0.2em] px-6 py-2 bg-brand-orange/10 text-brand-orange border border-brand-orange/30 hover:bg-brand-orange/20 transition-all cyber-cut-sm">
+                <button className="tech-mono px-6 py-2 bg-brand-orange/10 text-brand-orange border border-brand-orange/30 hover:bg-brand-orange/20 transition-all cyber-cut-sm">
                   TRUNG TÂM ĐIỀU HÀNH
                 </button>
               </Link>
               <button 
                 onClick={handleLogout}
-                className="font-mono text-[9px] text-muted hover:text-red-500 transition-colors uppercase tracking-widest"
+                className="tech-mono text-muted hover:text-red-500 transition-colors"
               >
                 [ ĐĂNG XUẤT ]
               </button>
             </div>
           ) : (
             <Link href="/login">
-              <button className="font-orbitron text-[10px] font-bold tracking-[0.2em] px-6 py-2 border border-brand-orange/30 text-brand-orange hover:bg-brand-orange/10 transition-all cyber-cut-sm">
+              <button className="tech-mono px-6 py-2 border border-brand-orange/30 text-brand-orange hover:bg-brand-orange/10 transition-all cyber-cut-sm">
                 ĐĂNG NHẬP HỆ THỐNG
               </button>
             </Link>
