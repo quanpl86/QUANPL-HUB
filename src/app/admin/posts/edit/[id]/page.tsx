@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, use, useRef } from 'react';
-import { CyberEditor } from '@/components/admin/editor/CyberEditor';
 import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
 import { CyberButton } from '@/components/ui/CyberButton';
 import { updatePost } from '@/app/actions/posts';
