@@ -1,8 +1,17 @@
 import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
 
-const window = new JSDOM('').window;
-const purify = DOMPurify(window as any);
+let purify: any;
+
+if (typeof window !== 'undefined') {
+  // Client-side environment
+  purify = DOMPurify;
+} else {
+  // Server-side environment
+  // We use require here to prevent the client bundle from trying to load jsdom
+  const { JSDOM } = require('jsdom');
+  const domWindow = new JSDOM('').window;
+  purify = DOMPurify(domWindow as any);
+}
 
 /**
  * Sanitizes HTML content for safe rendering.
