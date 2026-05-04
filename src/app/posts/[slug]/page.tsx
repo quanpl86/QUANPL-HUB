@@ -41,9 +41,18 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 }
 
 import { LikeButton } from '@/components/blog/LikeButton';
-import { CommentSection } from '@/components/blog/CommentSection';
-import { PremiumMultimedia } from '@/components/blog/PremiumMultimedia';
 import { headers } from 'next/headers';
+import dynamic from 'next/dynamic';
+
+const CommentSection = dynamic(() => import('@/components/blog/CommentSection').then(mod => mod.CommentSection), {
+  ssr: false,
+  loading: () => <div className="mt-24 pt-16 border-t border-brand-orange/10 animate-pulse font-mono text-xs text-brand-orange uppercase tracking-widest text-center">ĐANG_TẢI_MA_TRẬN_BÌNH_LUẬN...</div>
+});
+
+const PremiumMultimedia = dynamic(() => import('@/components/blog/PremiumMultimedia').then(mod => mod.PremiumMultimedia), {
+  ssr: false,
+  loading: () => <div className="h-20 bg-brand-orange/5 animate-pulse border border-brand-orange/10 mb-12"></div>
+});
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;

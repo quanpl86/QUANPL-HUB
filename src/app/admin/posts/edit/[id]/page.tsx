@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { PreviewModal } from '@/components/admin/PreviewModal';
-import { MultimediaStudio } from '@/components/admin/MultimediaStudio';
 import { ArrowLeft, Loader2, Eye, Maximize, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -16,6 +15,11 @@ import dynamic from 'next/dynamic';
 const CyberEditor = dynamic(() => import('@/components/admin/editor/CyberEditor').then(mod => mod.CyberEditor), {
   ssr: false,
   loading: () => <div className="h-[400px] w-full bg-cyber-black/20 animate-pulse border border-brand-orange/10 flex items-center justify-center font-mono text-xs text-brand-orange">ĐANG_TRUY_XUẤT_TRÌNH_SOẠN_THẢO...</div>
+});
+
+const MultimediaStudio = dynamic(() => import('@/components/admin/MultimediaStudio').then(mod => mod.MultimediaStudio), {
+  ssr: false,
+  loading: () => <div className="p-12 border-2 border-brand-orange/10 bg-brand-orange/5 animate-pulse text-center font-mono text-xs text-brand-orange">ĐANG_KẾT_NỐI_AI_STUDIO...</div>
 });
 
 // --- Smart Auto-resize Textarea Component ---
