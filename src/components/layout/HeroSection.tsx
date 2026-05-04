@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, Variants } from 'framer-motion';
 import { CyberButton } from '../ui/CyberButton';
 import Link from 'next/link';
+import Image from 'next/image';
+import { BinaryRain } from '../ui/BinaryRain';
 import { 
   Code, 
   MessageCircle, 
@@ -54,6 +56,9 @@ export const HeroSection = () => {
 
   return (
     <section className="relative w-full min-h-[90vh] flex items-center bg-cyber-gray dragon-grid overflow-hidden">
+      {/* Matrix Binary Rain */}
+      <BinaryRain />
+
       {/* Floating Social Bar (Desktop Only) */}
       <div className="absolute left-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-6 z-20">
         <div className="w-[1px] h-20 bg-gradient-to-b from-transparent via-brand-orange/40 to-brand-orange/40 mx-auto"></div>
@@ -140,61 +145,65 @@ export const HeroSection = () => {
           {/* Background Aura */}
           <div className="absolute w-[400px] h-[400px] bg-brand-orange/5 rounded-full blur-[60px] group-hover:bg-brand-orange/10 transition-all duration-700"></div>
 
-          <div className="relative w-80 h-80 md:w-[380px] md:h-[380px] flex items-center justify-center [transform-style:preserve-3d]">
+          <div className="relative w-96 h-96 md:w-[480px] md:h-[480px] flex items-center justify-center [transform-style:preserve-3d]">
 
             {/* 1. Static Orbital Path 1 */}
-            <div className="absolute inset-0 border-2 border-brand-orange/60 dark:border-brand-orange/40 rounded-full [transform:rotateX(75deg)_rotateY(10deg)] shadow-[0_0_15px_rgba(249,115,22,0.2)]"></div>
+            <div className="absolute inset-0 border-4 border-brand-orange/70 dark:border-brand-orange/50 rounded-full [transform:rotateX(75deg)_rotateY(10deg)] shadow-[0_0_25px_rgba(249,115,22,0.3)]"></div>
 
             {/* Planets for Path 1 */}
             <div className="absolute inset-0 [transform:rotateX(75deg)_rotateY(10deg)]">
               <div className="absolute inset-0 animate-[spin_8s_linear_infinite]">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-brand-orange rounded-full shadow-[0_0_20px_rgba(249,115,22,1)] [transform:rotateX(-75deg)]"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 bg-brand-orange rounded-full shadow-[0_0_30px_rgba(249,115,22,1)] [transform:rotateX(-75deg)] border-2 border-white/20"></div>
               </div>
               <div className="absolute inset-0 animate-[spin_12s_linear_infinite_reverse]">
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-brand-orange/80 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)] [transform:rotateX(-75deg)]"></div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-5 bg-brand-orange/90 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.6)] [transform:rotateX(-75deg)] border-2 border-white/10"></div>
               </div>
             </div>
 
             {/* 2. Static Orbital Path 2 */}
-            <div className="absolute inset-0 border-2 border-brand-orange/40 dark:border-brand-orange/30 rounded-full [transform:rotateX(75deg)_rotateY(-15deg)] shadow-[0_0_15px_rgba(249,115,22,0.1)]"></div>
+            <div className="absolute inset-0 border-4 border-brand-orange/50 dark:border-brand-orange/40 rounded-full [transform:rotateX(75deg)_rotateY(-15deg)] shadow-[0_0_25px_rgba(249,115,22,0.2)]"></div>
 
             {/* Planets for Path 2 */}
             <div className="absolute inset-0 [transform:rotateX(75deg)_rotateY(-15deg)]">
               <div className="absolute inset-0 animate-[spin_15s_linear_infinite]">
                 {/* Hành tinh trắng chuyển sang Midnight Blue ở Light Mode để tăng tương phản */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-midnight-blue dark:bg-white rounded-full shadow-[0_0_20px_rgba(15,23,42,0.4)] dark:shadow-[0_0_20px_rgba(255,255,255,1)] [transform:rotateX(-75deg)]"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-6 bg-midnight-blue dark:bg-white rounded-full shadow-[0_0_25px_rgba(15,23,42,0.5)] dark:shadow-[0_0_25px_rgba(255,255,255,1)] [transform:rotateX(-75deg)] border-2 border-brand-orange/20"></div>
               </div>
               <div className="absolute inset-0 animate-[spin_20s_linear_infinite_reverse]">
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-brand-orange/60 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)] [transform:rotateX(-75deg)]"></div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-brand-orange/70 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.6)] [transform:rotateX(-75deg)] border-2 border-white/10"></div>
               </div>
             </div>
 
-            {/* 3. Central Mechanical Core */}
-            <div className="relative w-36 h-36 flex items-center justify-center">
-              <div className="absolute inset-0 bg-brand-orange/20 rounded-full blur-[40px] animate-pulse"></div>
+            {/* 3. Central Mascot Core (Replaced Gears) */}
+            <div className="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center">
+              {/* Core Glow */}
+              <div className="absolute inset-0 bg-brand-orange/20 rounded-full blur-[60px] animate-pulse"></div>
 
-              {/* Outer Gear */}
+              {/* Mascot Image with Floating Animation */}
               <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                className="absolute w-24 h-24 text-brand-orange/40"
+                animate={{ 
+                  y: [0, -10, 0],
+                  rotate: [0, 1, -1, 0]
+                }}
+                transition={{ 
+                  duration: 5, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="relative w-full h-full z-10"
               >
-                <SettingsIcon size={96} strokeWidth={1} />
+                <Image
+                  src="/images/mascot.png"
+                  alt="King Dragon Mascot Core"
+                  fill
+                  className="object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.4)]"
+                  priority
+                />
               </motion.div>
 
-              {/* Inner Gear */}
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                className="absolute w-16 h-16 text-brand-orange"
-              >
-                <SettingsIcon size={64} strokeWidth={1.5} />
-              </motion.div>
-
-              {/* Central Glowing Point */}
-              <div className="relative w-4 h-4 bg-white rounded-full blur-[2px] shadow-[0_0_20px_#fff]"></div>
-
-              <div className="absolute w-30 h-30 border border-white/30 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.2)] animate-[spin_15s_linear_infinite]"></div>
+              {/* Decorative Tech Rings */}
+              <div className="absolute w-full h-full border border-brand-orange/20 rounded-full animate-[spin_20s_linear_infinite]"></div>
+              <div className="absolute w-[110%] h-[110%] border border-brand-orange/10 rounded-full animate-[spin_30s_linear_infinite_reverse]"></div>
             </div>
 
             {/* Labels (Vị trí sát Mascot hơn) */}
