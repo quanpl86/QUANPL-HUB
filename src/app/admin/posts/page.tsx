@@ -3,6 +3,7 @@ import { getSupabaseServer } from '@/lib/supabase-server';
 import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
 import { CyberButton } from '@/components/ui/CyberButton';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Plus, Edit2, ExternalLink } from 'lucide-react';
 import { DeleteButton } from '@/components/admin/DeleteButton';
 import { deletePost } from '@/app/actions/posts';
@@ -35,7 +36,14 @@ export default async function AdminPostsPage() {
           <div key={post.id} className="group relative bg-cyber-black/40 border border-brand-orange/10 p-5 hover:border-brand-orange/40 transition-all flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex gap-6 items-center flex-1">
               {post.image_url ? (
-                <img src={post.image_url} alt="" className="w-24 h-16 object-cover border border-brand-orange/20" />
+                <div className="relative w-24 h-16 shrink-0">
+                  <Image 
+                    src={post.image_url} 
+                    alt={post.title} 
+                    fill
+                    className="object-cover border border-brand-orange/20" 
+                  />
+                </div>
               ) : (
                 <div className="w-24 h-16 bg-brand-orange/5 border border-dashed border-brand-orange/20 flex items-center justify-center">
                   <span className="font-mono text-[8px] text-brand-orange/40">TRỐNG</span>
