@@ -682,69 +682,93 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
           onChange={(event) => handleAssetUpload(event.target.files?.[0])}
         />
 
-        {/* Bubble Menu - Contextual formatting */}
+        {/* Image Bubble Menu */}
         {editor.view && (
-          <BubbleMenu editor={editor} updateDelay={0}>
-            {editor.isActive('image') ? (
-              <div className="flex flex-wrap bg-[#0a0a0a] border border-[#ff5722]/50 shadow-2xl p-1 backdrop-blur-md rounded-none mb-2 items-center gap-1">
-                <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'left' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'left' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn trái"><AlignLeft size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'center' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'center' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn giữa"><AlignCenter size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'right' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'right' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn phải"><AlignRight size={16} /></button>
-                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
-                <select
-                  value={editor.getAttributes('image').shape || 'default'}
-                  onChange={(e) => editor.chain().focus().updateAttributes('image', { shape: e.target.value }).run()}
-                  className="bg-transparent text-white outline-none border border-white/10 px-1 py-1 text-[10px] mx-1 uppercase cursor-pointer hover:border-brand-orange/50 transition-colors"
-                >
-                  <option value="default" className="bg-cyber-black">Frame: Góc vuông</option>
-                  <option value="rounded" className="bg-cyber-black">Frame: Bo góc</option>
-                  <option value="circle" className="bg-cyber-black">Frame: Tròn/Ovan</option>
-                </select>
-                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
-                <button type="button" onClick={() => {
-                   const attrs = editor.getAttributes('image');
-                   if(attrs.src) setCropModalConfig({ isOpen: true, src: attrs.src });
-                }} className="p-2 text-white hover:text-[#ff5722]" title="Crop ảnh">
-                  <CropIcon size={16} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-wrap bg-[#0a0a0a] border border-[#ff5722]/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)] p-1 backdrop-blur-md rounded-none mb-2 items-center gap-1 max-w-[500px]">
-                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 1 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H1"><Heading1 size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 2 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H2"><Heading2 size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 3 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H3"><Heading3 size={16} /></button>
-                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
-                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 transition-colors ${editor.isActive('bold') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In đậm"><Bold size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 transition-colors ${editor.isActive('italic') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In nghiêng"><Italic size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 transition-colors ${editor.isActive('underline') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch chân"><UnderIcon size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 transition-colors ${editor.isActive('strike') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch ngang"><Minus size={16} className="rotate-45" /></button>
-                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
-                <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'left' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn trái"><AlignLeft size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'center' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn giữa"><AlignCenter size={16} /></button>
-                <button type="button" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'right' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn phải"><AlignRight size={16} /></button>
-                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
-                <select
-                  value={editor.getAttributes('textStyle').fontSize || 'default'}
-                  onChange={(e) => {
-                    const size = e.target.value;
-                    if (size === 'default') editor.chain().focus().unsetFontSize().run();
-                    else editor.chain().focus().setFontSize(size).run();
-                  }}
-                  className="bg-transparent text-white outline-none border border-white/10 px-1 py-1 text-[10px] mx-1 cursor-pointer hover:border-brand-orange/50 transition-colors"
-                >
-                  <option value="default" className="bg-cyber-black">Size</option>
-                  <option value="12px" className="bg-cyber-black">12px</option>
-                  <option value="14px" className="bg-cyber-black">14px</option>
-                  <option value="16px" className="bg-cyber-black">16px</option>
-                  <option value="18px" className="bg-cyber-black">18px</option>
-                  <option value="20px" className="bg-cyber-black">20px</option>
-                  <option value="24px" className="bg-cyber-black">24px</option>
-                  <option value="30px" className="bg-cyber-black">30px</option>
-                </select>
-                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
-                <button type="button" onClick={() => openPrompt('link', 'LIÊN KẾT', 'URL...')} className={`p-2 transition-colors ${editor.isActive('link') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Liên kết"><LinkIcon size={16} /></button>
-              </div>
-            )}
+          <BubbleMenu editor={editor} updateDelay={0} shouldShow={({ editor }) => editor.isActive('image')}>
+            <div className="flex flex-wrap bg-[#0a0a0a] border border-[#ff5722]/50 shadow-2xl p-1 backdrop-blur-md rounded-none mb-2 items-center gap-1">
+              <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'left' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'left' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn trái"><AlignLeft size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'center' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'center' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn giữa"><AlignCenter size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'right' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'right' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn phải"><AlignRight size={16} /></button>
+              <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+              <select
+                value={editor.getAttributes('image').shape || 'default'}
+                onChange={(e) => editor.chain().focus().updateAttributes('image', { shape: e.target.value }).run()}
+                className="bg-transparent text-white outline-none border border-white/10 px-1 py-1 text-[10px] mx-1 uppercase cursor-pointer hover:border-brand-orange/50 transition-colors"
+              >
+                <option value="default" className="bg-cyber-black">Frame: Góc vuông</option>
+                <option value="rounded" className="bg-cyber-black">Frame: Bo góc</option>
+                <option value="circle" className="bg-cyber-black">Frame: Tròn/Ovan</option>
+              </select>
+              <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+              <button type="button" onClick={() => {
+                  const attrs = editor.getAttributes('image');
+                  if(attrs.src) setCropModalConfig({ isOpen: true, src: attrs.src });
+              }} className="p-2 text-white hover:text-[#ff5722]" title="Crop ảnh">
+                <CropIcon size={16} />
+              </button>
+            </div>
+          </BubbleMenu>
+        )}
+
+        {/* Video (YouTube) Bubble Menu */}
+        {editor.view && (
+          <BubbleMenu editor={editor} updateDelay={0} shouldShow={({ editor }) => editor.isActive('youtube')}>
+            <div className="flex bg-[#0a0a0a] border border-[#ff5722]/50 shadow-2xl p-1 backdrop-blur-md rounded-none mb-2 items-center gap-1">
+              <span className="text-[10px] text-brand-orange font-mono uppercase px-2 font-bold tracking-widest">Video</span>
+              <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+              <button type="button" onClick={() => editor.chain().focus().deleteSelection().run()} className="p-2 text-white hover:text-red-500 transition-colors" title="Xóa video">
+                <X size={16} />
+              </button>
+            </div>
+          </BubbleMenu>
+        )}
+
+        {/* Text Bubble Menu */}
+        {editor.view && (
+          <BubbleMenu 
+            editor={editor} 
+            updateDelay={0}
+            shouldShow={({ state, editor }) => {
+              const { selection } = state;
+              const { empty } = selection;
+              return !empty && !editor.isActive('image') && !editor.isActive('youtube') && !editor.isActive('codeBlock');
+            }}
+          >
+            <div className="flex flex-wrap bg-[#0a0a0a] border border-[#ff5722]/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)] p-1 backdrop-blur-md rounded-none mb-2 items-center gap-1 max-w-[500px]">
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 1 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H1"><Heading1 size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 2 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H2"><Heading2 size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 3 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H3"><Heading3 size={16} /></button>
+              <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+              <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 transition-colors ${editor.isActive('bold') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In đậm"><Bold size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 transition-colors ${editor.isActive('italic') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In nghiêng"><Italic size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 transition-colors ${editor.isActive('underline') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch chân"><UnderIcon size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 transition-colors ${editor.isActive('strike') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch ngang"><Minus size={16} className="rotate-45" /></button>
+              <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+              <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'left' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn trái"><AlignLeft size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'center' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn giữa"><AlignCenter size={16} /></button>
+              <button type="button" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'right' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn phải"><AlignRight size={16} /></button>
+              <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+              <select
+                value={editor.getAttributes('textStyle').fontSize || 'default'}
+                onChange={(e) => {
+                  const size = e.target.value;
+                  if (size === 'default') editor.chain().focus().unsetFontSize().run();
+                  else editor.chain().focus().setFontSize(size).run();
+                }}
+                className="bg-transparent text-white outline-none border border-white/10 px-1 py-1 text-[10px] mx-1 cursor-pointer hover:border-brand-orange/50 transition-colors"
+              >
+                <option value="default" className="bg-cyber-black">Size</option>
+                <option value="12px" className="bg-cyber-black">12px</option>
+                <option value="14px" className="bg-cyber-black">14px</option>
+                <option value="16px" className="bg-cyber-black">16px</option>
+                <option value="18px" className="bg-cyber-black">18px</option>
+                <option value="20px" className="bg-cyber-black">20px</option>
+                <option value="24px" className="bg-cyber-black">24px</option>
+                <option value="30px" className="bg-cyber-black">30px</option>
+              </select>
+              <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+              <button type="button" onClick={() => openPrompt('link', 'LIÊN KẾT', 'URL...')} className={`p-2 transition-colors ${editor.isActive('link') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Liên kết"><LinkIcon size={16} /></button>
+            </div>
           </BubbleMenu>
         )}
 
