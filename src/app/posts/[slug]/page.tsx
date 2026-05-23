@@ -6,6 +6,8 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import Image from 'next/image';
 import Link from 'next/link';
 import { sanitize } from '@/lib/sanitize';
+import { parseHtmlWithToc } from '@/lib/toc-parser';
+import { TableOfContents } from '@/components/blog/TableOfContents';
 
 interface PostPageProps {
   params: { slug: string };
@@ -27,11 +29,15 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     title: post.meta_title || post.title,
     description: post.meta_description || post.excerpt,
     keywords: post.keywords || [],
+    alternates: {
+      canonical: `https://kingdragonhub.com/posts/${slug}`,
+    },
     openGraph: {
       title: post.meta_title || post.title,
       description: post.meta_description || post.excerpt,
       images: post.image_url ? [post.image_url] : [],
       type: 'article',
+      url: `https://kingdragonhub.com/posts/${slug}`,
     },
     twitter: {
       card: 'summary_large_image',
@@ -105,7 +111,9 @@ export default async function PostPage({ params }: PostPageProps) {
     .order('created_at', { ascending: false })
     .limit(3);
 
-  // Dữ liệu cấu trúc bài viết (Article Schema)
+  // Dữ liệu cấu trúc bài viết (Article Schema + E-E-A-T)
+  const authorName = (Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON';
+
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -113,23 +121,35 @@ export default async function PostPage({ params }: PostPageProps) {
     image: post.image_url,
     author: {
       '@type': 'Person',
-      name: (Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON',
+      name: authorName,
+      url: 'https://kingdragonhub.com',
+      jobTitle: 'STEM Education Specialist & System Architect',
+      worksFor: {
+        '@type': 'Organization',
+        name: 'KING DRAGON HUB',
+      },
+      sameAs: [
+        'https://kingdragonhub.com',
+      ],
     },
     publisher: {
       '@type': 'Organization',
       name: 'KING DRAGON HUB',
+      url: 'https://kingdragonhub.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://kingdragonhub.com/logo.png'
-      }
+        url: 'https://kingdragonhub.com/logo.png',
+      },
     },
     datePublished: post.created_at,
     dateModified: post.updated_at || post.created_at,
     description: post.excerpt,
+    keywords: post.tags?.join(', ') || post.keywords?.join(', ') || '',
+    inLanguage: 'vi',
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://kingdragonhub.com/posts/${slug}`
-    }
+      '@id': `https://kingdragonhub.com/posts/${slug}`,
+    },
   };
 
   // Trích xuất FAQ block để tạo FAQPage Schema
@@ -257,11 +277,20 @@ export default async function PostPage({ params }: PostPageProps) {
             title={post.title} 
           />
 
-          {/* Dynamic Content from Tiptap v3 / Markdown */}
-          <section 
-            className="king-dragon-content prose prose-brand max-w-none"
-            dangerouslySetInnerHTML={{ __html: sanitize(post.content || '') }}
-          />
+          {/* Table of Contents (Auto-generated from headings) */}
+          {(() => {
+            const { toc, html: tocHtml } = parseHtmlWithToc(post.content || '');
+            return (
+              <>
+                <TableOfContents items={toc} />
+                {/* Dynamic Content from Tiptap v3 / Markdown */}
+                <section 
+                  className="king-dragon-content prose prose-brand max-w-none"
+                  dangerouslySetInnerHTML={{ __html: sanitize(tocHtml) }}
+                />
+              </>
+            );
+          })()}
 
           {/* Post Tags (Bottom) */}
           {post.tags && post.tags.length > 0 && (

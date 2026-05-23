@@ -6,18 +6,21 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["vietnamese", "latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
   subsets: ["vietnamese", "latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
 });
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["vietnamese", "latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {

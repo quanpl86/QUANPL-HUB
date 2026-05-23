@@ -39,7 +39,7 @@ export function sanitize(html: string): string {
       'details', 'summary', 'section', 'article', 'aside', 'span'
     ],
     ALLOWED_ATTR: [
-      'href', 'name', 'target', 'src', 'alt', 'title', 'class', 'style', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'data-type', 'data-title', 'data-intro', 'data-steps'
+      'id', 'href', 'name', 'target', 'src', 'alt', 'title', 'class', 'style', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'data-type', 'data-title', 'data-intro', 'data-steps'
     ],
     ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|ftp|sms):|[^a-z0-9+.-]|(?:[a-z0-9+.-]+:)?\/\/)/i
   });
