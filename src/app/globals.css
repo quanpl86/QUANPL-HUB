@@ -229,114 +229,159 @@ body {
 
 .king-dragon-content .kd-timeline,
 .ProseMirror .kd-timeline {
-  background: linear-gradient(180deg, rgba(249, 115, 22, 0.05), rgba(15, 23, 42, 0.015));
-  border: 1px solid rgba(249, 115, 22, 0.18);
-  border-left: 4px solid #f97316;
+  background: var(--background);
+  border: 1px solid rgba(249, 115, 22, 0.15);
+  border-left: 2px solid #f97316;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
   color: var(--foreground);
   margin: 2.5rem 0;
-  padding: 1.5rem 1.25rem 1.5rem 1.4rem;
+  padding: 2rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.king-dragon-content .kd-timeline::before,
+.ProseMirror .kd-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.03) 0%, transparent 100%);
+  pointer-events: none;
 }
 
 .king-dragon-content .kd-timeline-title,
 .ProseMirror .kd-timeline-title {
-  border-bottom: 1px solid rgba(249, 115, 22, 0.25) !important;
+  border-bottom: 1px dashed rgba(249, 115, 22, 0.3) !important;
   color: #f97316 !important;
-  letter-spacing: 0.02em !important;
+  font-family: var(--font-space-grotesk), monospace !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
   margin: 0 0 1rem !important;
-  padding: 0 0 0.55rem !important;
+  padding: 0 0 0.75rem !important;
   text-transform: uppercase !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.king-dragon-content .kd-timeline-title::before,
+.ProseMirror .kd-timeline-title::before {
+  content: '▤';
+  font-size: 0.9em;
+  opacity: 0.8;
 }
 
 .king-dragon-content .kd-timeline-intro,
 .ProseMirror .kd-timeline-intro {
   color: var(--foreground) !important;
+  opacity: 0.8 !important;
+  font-size: 0.95rem !important;
   line-height: 1.7 !important;
-  margin-bottom: 2rem !important;
+  margin-bottom: 2.5rem !important;
 }
 
 .king-dragon-content .kd-timeline-list,
 .ProseMirror .kd-timeline-list {
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
   position: relative;
 }
 
 .king-dragon-content .kd-timeline-list::before,
 .ProseMirror .kd-timeline-list::before {
-  background-image: linear-gradient(to bottom, rgba(249, 115, 22, 0.8) 45%, rgba(15, 23, 42, 0.18) 45%);
-  background-size: 1px 7px;
-  bottom: 1.8rem;
+  background: rgba(249, 115, 22, 0.2);
+  bottom: 2rem;
   content: '';
-  left: 0.7rem;
+  left: 14px;
   position: absolute;
-  top: 1.55rem;
-  width: 1px;
+  top: 2rem;
+  width: 2px;
 }
 
 .king-dragon-content .kd-timeline-step,
 .ProseMirror .kd-timeline-step {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: 1.45rem 1fr;
+  gap: 1.25rem;
+  grid-template-columns: 30px 1fr;
   position: relative;
 }
 
 .king-dragon-content .kd-timeline-content,
 .ProseMirror .kd-timeline-content {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-left: 3px solid rgba(249, 115, 22, 0.7);
-  padding: 0.9rem 1rem 1rem;
+  background: rgba(15, 23, 42, 0.02);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.king-dragon-content .kd-timeline-content:hover,
+.ProseMirror .kd-timeline-content:hover {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(249, 115, 22, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transform: translateX(4px);
 }
 
 .king-dragon-content .kd-timeline-marker,
 .ProseMirror .kd-timeline-marker {
   align-self: start;
-  background: #0f172a;
+  background: var(--background);
   border: 2px solid #f97316;
-  border-radius: 999px;
-  box-shadow: 0 0 0 4px var(--background), 0 8px 18px rgba(15, 23, 42, 0.12);
-  color: #fff7ed;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
+  color: #f97316;
   display: grid;
-  font-family: var(--font-space-grotesk), sans-serif;
-  font-size: 0.72rem;
+  font-family: var(--font-space-grotesk), monospace;
+  font-size: 0.75rem;
   font-weight: 700;
-  height: 1.45rem;
+  height: 30px;
   line-height: 1;
   place-items: center;
   position: relative;
-  width: 1.45rem;
+  width: 30px;
   z-index: 1;
+  margin-top: 0.25rem;
 }
 
 .king-dragon-content .kd-timeline-label,
 .ProseMirror .kd-timeline-label {
   color: #f97316 !important;
-  display: inline-flex;
-  font-family: var(--font-space-grotesk), sans-serif;
-  font-size: 0.78rem !important;
+  display: inline-block;
+  font-family: var(--font-space-grotesk), monospace;
+  font-size: 0.65rem !important;
   font-style: normal;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  margin: 0 0 0.45rem !important;
+  letter-spacing: 0.15em;
+  margin: 0 0 0.5rem !important;
   text-transform: uppercase;
+  background: rgba(249, 115, 22, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
 }
 
 .king-dragon-content .kd-timeline-heading,
 .ProseMirror .kd-timeline-heading {
-  color: #0f172a !important;
-  font-size: 1.1rem !important;
-  font-weight: 800 !important;
-  letter-spacing: 0 !important;
-  line-height: 1.35 !important;
-  margin: 0 0 0.35rem !important;
+  color: var(--foreground) !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.4 !important;
+  margin: 0 0 0.5rem !important;
   text-transform: none !important;
 }
 
 .king-dragon-content .kd-timeline-body,
 .ProseMirror .kd-timeline-body {
   color: var(--foreground) !important;
-  line-height: 1.7 !important;
+  opacity: 0.75 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
   margin: 0 !important;
 }
 
