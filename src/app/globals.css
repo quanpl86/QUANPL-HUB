@@ -49,13 +49,13 @@ html {
 }
 
 .theme-reading {
-  --background: #f4f4f4; /* Neutral light grey, high readability */
-  --foreground: #222222; /* Soft black, high contrast but not pure black */
-  --card-bg: #fdfdfd; /* White for cards to stand out slightly */
-  --card-border: rgba(34, 34, 34, 0.1);
-  --card-shadow: rgba(0, 0, 0, 0.05);
-  --muted: #555555; /* Neutral dark grey for muted text */
-  --grid-color: rgba(34, 34, 34, 0.05); /* Very subtle grid */
+  --background: #fbf0d9; /* Distinct warm paper yellow, like a physical book */
+  --foreground: #3a2e25; /* Deep espresso brown for high, comfortable contrast */
+  --card-bg: #f5e8cd; /* Slightly darker parchment for cards */
+  --card-border: rgba(58, 46, 37, 0.15);
+  --card-shadow: rgba(58, 46, 37, 0.08);
+  --muted: #7a6859; /* Muted brown-grey */
+  --grid-color: rgba(58, 46, 37, 0.06); /* Subtle warm grid */
 }
 
 html, body {

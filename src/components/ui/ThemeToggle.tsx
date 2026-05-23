@@ -9,13 +9,13 @@ export function ThemeToggle() {
 
   const getBgClass = () => {
     if (theme === 'dark') return 'bg-slate-800';
-    if (theme === 'theme-reading') return 'bg-[#dcdbd7]'; // Muted Kindle frame
+    if (theme === 'theme-reading') return 'bg-[#e2d5ba]'; // Muted warm parchment frame
     return 'bg-slate-200';
   };
 
   const getThumbClass = () => {
     if (theme === 'dark') return 'left-9 bg-cyber-black';
-    if (theme === 'theme-reading') return 'left-5 bg-[#eae9e5]'; // Neutral Kindle background
+    if (theme === 'theme-reading') return 'left-5 bg-[#fbf0d9]'; // Warm paper background
     return 'left-1 bg-white';
   };
 
