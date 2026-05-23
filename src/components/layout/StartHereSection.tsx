@@ -66,13 +66,14 @@ export function StartHereSection() {
                 href={pathway.href}
                 className="group relative flex min-h-[300px] flex-col overflow-hidden border border-brand-orange/15 bg-cyber-black/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-orange/50 hover:shadow-[0_16px_40px_rgba(249,115,22,0.12)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut"
               >
-                <div className="absolute right-0 top-0 h-20 w-20 border-b border-l border-brand-orange/10 bg-brand-orange/5" />
+                <div className="absolute right-0 top-0 h-20 min-w-[5rem] px-6 flex items-center justify-center border-b border-l border-brand-orange/10 bg-brand-orange/5">
+                  <span className="tech-mono text-brand-orange/50 !text-[9px] pt-3">{pathway.signal}</span>
+                </div>
 
                 <div className="mb-8 flex items-center justify-between">
                   <div className="flex h-12 w-12 items-center justify-center border border-brand-orange/30 bg-brand-orange/10 text-brand-orange cyber-cut-sm">
                     <Icon size={24} aria-hidden="true" />
                   </div>
-                  <span className="tech-mono text-brand-orange/50 !text-[9px]">{pathway.signal}</span>
                 </div>
 
                 <h3 className="font-orbitron text-xl font-bold leading-snug text-foreground">
