@@ -52,6 +52,8 @@ const CommentSection = dynamic(() => import('@/components/blog/CommentSection').
 
 const RelatedArticles = dynamic(() => import('@/components/blog/RelatedArticles').then(mod => mod.RelatedArticles), {
   loading: () => <div className="mt-24 pt-16 border-t border-brand-orange/10 h-64 bg-brand-orange/5 animate-pulse"></div>
+});
+
 const PremiumMultimedia = dynamic(() => import('@/components/blog/PremiumMultimedia').then(mod => mod.PremiumMultimedia), {
   loading: () => <div className="h-20 bg-brand-orange/5 animate-pulse border border-brand-orange/10 mb-12"></div>
 });
