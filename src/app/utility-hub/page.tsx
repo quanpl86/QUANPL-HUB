@@ -18,43 +18,43 @@ const featuredTools = [
     title: 'Chuyển ảnh sang vector',
     description: 'Biến logo, icon hoặc hình minh họa raster thành SVG/vector để dùng trong bài giảng, thiết kế và STEM kit.',
     icon: Wand2,
-    status: 'DESIGNING',
-    formats: 'PNG / JPG -> SVG',
+    status: 'ĐANG THIẾT KẾ',
+    formats: 'TỪ PNG/JPG SANG SVG',
   },
   {
     title: 'Chuyển định dạng ảnh',
     description: 'Đổi nhanh giữa PNG, JPG, WebP và AVIF, ưu tiên chất lượng ổn định và file nhẹ cho website.',
     icon: RefreshCw,
-    status: 'PLANNED',
-    formats: 'PNG / JPG / WEBP / AVIF',
+    status: 'ĐÃ LÊN KẾ HOẠCH',
+    formats: 'ĐA ĐỊNH DẠNG ẢNH',
   },
   {
     title: 'Tách nền ảnh',
     description: 'Tạo ảnh nền trong suốt cho nhân vật, sản phẩm, mô hình robot hoặc tư liệu lớp học.',
     icon: Scissors,
-    status: 'PLANNED',
-    formats: 'IMAGE -> TRANSPARENT PNG',
+    status: 'ĐÃ LÊN KẾ HOẠCH',
+    formats: 'ẢNH -> NỀN TRONG SUỐT',
   },
   {
     title: 'Nén và tối ưu ảnh',
     description: 'Giảm dung lượng ảnh trước khi đăng bài mà vẫn giữ độ sắc nét cần thiết cho hình minh họa kỹ thuật.',
     icon: Gauge,
-    status: 'QUEUED',
-    formats: 'LOSSLESS / SMART COMPRESS',
+    status: 'TRONG HÀNG ĐỢI',
+    formats: 'NÉN GIỮ NGUYÊN CHẤT LƯỢNG',
   },
   {
     title: 'Tạo bảng màu từ ảnh',
     description: 'Trích xuất palette từ mascot, poster, robot field hoặc ảnh sản phẩm để giữ visual system nhất quán.',
     icon: Palette,
-    status: 'QUEUED',
-    formats: 'IMAGE -> PALETTE',
+    status: 'TRONG HÀNG ĐỢI',
+    formats: 'ẢNH -> BẢNG MÀU',
   },
   {
     title: 'Đóng gói asset',
     description: 'Chuẩn hóa tên file, kích thước và định dạng để đưa asset vào bài viết, slide hoặc thư viện học liệu.',
     icon: Archive,
-    status: 'ROADMAP',
-    formats: 'BATCH ASSET KIT',
+    status: 'LỘ TRÌNH',
+    formats: 'ĐÓNG GÓI TÀI NGUYÊN BATCH',
   },
 ];
 
@@ -66,11 +66,11 @@ const toolPrinciples = [
 ];
 
 const roadmap = [
-  'Image toolkit',
-  'Document helpers',
-  'STEM worksheet tools',
-  'Robotics field utilities',
-  'AI prompt utilities',
+  'Bộ công cụ xử lý ảnh',
+  'Tiện ích tài liệu',
+  'Công cụ worksheet STEM',
+  'Tiện ích sa bàn Robotics',
+  'Tiện ích Prompt AI',
 ];
 
 export default function UtilityHubPage() {
@@ -82,7 +82,7 @@ export default function UtilityHubPage() {
           <div className="max-w-4xl">
             <div className="inline-flex items-center gap-3 border border-brand-orange/30 bg-brand-orange/10 px-4 py-2 text-brand-orange tech-mono mb-6">
               <span className="h-2 w-2 bg-brand-orange animate-pulse" />
-              UTILITY_HUB_ROADMAP
+              LỘ TRÌNH TIỆN ÍCH
             </div>
             <h1 className="cyber-h1">
               Xưởng <span className="cyber-text-gradient">tiện ích sáng tạo</span>
@@ -192,11 +192,11 @@ export default function UtilityHubPage() {
               <div className="mt-8 flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 border border-brand-orange/20 px-4 py-2 tech-mono text-brand-orange/70">
                   <FileImage size={14} aria-hidden="true" />
-                  INPUT_SAFE
+                  AN TOÀN DỮ LIỆU ĐẦU VÀO
                 </span>
                 <span className="inline-flex items-center gap-2 border border-brand-orange/20 px-4 py-2 tech-mono text-brand-orange/70">
                   <Sparkles size={14} aria-hidden="true" />
-                  PREVIEW_FIRST
+                  XEM TRƯỚC KẾT QUẢ
                 </span>
               </div>
             </div>
