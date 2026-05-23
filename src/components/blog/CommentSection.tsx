@@ -76,7 +76,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
         <div className="bg-white/[0.02] border border-brand-orange/5 p-6 md:p-8 transition-all hover:bg-brand-orange/[0.01] hover:border-brand-orange/20 overflow-hidden rounded-sm backdrop-blur-sm group/item">
           <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20 flex-shrink-0 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+              <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20 flex-shrink-0">
                 <User className="w-5 h-5 text-brand-orange" />
               </div>
               <div className="min-w-0">
@@ -97,7 +97,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
                 onClick={() => handleReaction(comment.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-sm border transition-all duration-300 ${
                   hasReacted 
-                    ? 'border-brand-orange bg-brand-orange/10 text-brand-orange shadow-[0_0_20px_rgba(249,115,22,0.15)]' 
+                    ? 'border-brand-orange bg-brand-orange/10 text-brand-orange' 
                     : 'border-white/5 bg-white/5 text-muted-foreground hover:border-brand-orange/40 hover:text-foreground'
                 }`}
               >
@@ -109,7 +109,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
                 onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-sm border transition-all duration-300 ${
                   replyingTo === comment.id
-                    ? 'border-brand-orange bg-brand-orange/20 text-brand-orange shadow-[0_0_15px_rgba(249,115,22,0.2)]'
+                    ? 'border-brand-orange bg-brand-orange/20 text-brand-orange'
                     : 'border-white/5 bg-white/5 text-muted-foreground hover:border-brand-orange/40 hover:text-foreground'
                 }`}
               >
@@ -199,7 +199,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
 
       <div className="max-w-4xl mx-auto space-y-16">
         {/* Form chính - Đưa lên trên và mở rộng */}
-        <div className="bg-cyber-black/40 border border-brand-orange/10 p-8 md:p-10 backdrop-blur-md rounded-sm shadow-[0_0_50px_rgba(0,0,0,0.4)] relative overflow-hidden group">
+        <div className="bg-cyber-black/40 border border-brand-orange/10 p-8 md:p-10 backdrop-blur-md rounded-sm relative overflow-hidden group">
           {/* Decorative accents */}
           <div className="absolute top-0 left-0 w-2 h-2 bg-brand-orange"></div>
           <div className="absolute bottom-0 right-0 w-2 h-2 bg-brand-orange"></div>
