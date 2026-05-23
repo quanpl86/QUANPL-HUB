@@ -168,7 +168,7 @@ body {
 
 .king-dragon-content li::marker {
   color: inherit !important;
-  font-weight: bold !important;
+  font-weight: inherit !important;
 }
 
 .king-dragon-content strong {
@@ -406,7 +406,7 @@ body {
   left: 0 !important;
   top: 0 !important;
   color: inherit !important;
-  font-weight: bold !important;
+  font-weight: inherit !important;
   font-size: 1.2em !important;
   line-height: 1.5 !important;
 }
@@ -418,14 +418,14 @@ body {
   left: 0 !important;
   top: 0 !important;
   color: inherit !important;
-  font-weight: bold !important;
+  font-weight: inherit !important;
   line-height: 1.5 !important;
 }
 
 /* Keep native markers for the published blog detail (which doesn't suffer the contenteditable bug) */
 .king-dragon-content li::marker {
   color: inherit !important;
-  font-weight: bold !important;
+  font-weight: inherit !important;
 }
 
 .king-dragon-content .faq-answer,
