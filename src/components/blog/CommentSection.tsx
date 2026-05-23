@@ -199,7 +199,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
 
       <div className="max-w-4xl mx-auto space-y-16">
         {/* Form chính - Đưa lên trên và mở rộng */}
-        <div className="bg-cyber-black/40 border border-brand-orange/10 p-8 md:p-10 backdrop-blur-md rounded-sm relative overflow-hidden group">
+        <div className="bg-black/[0.02] dark:bg-white/[0.02] border border-brand-orange/10 p-8 md:p-10 backdrop-blur-md rounded-sm relative overflow-hidden group">
           {/* Decorative accents */}
           <div className="absolute top-0 left-0 w-2 h-2 bg-brand-orange"></div>
           <div className="absolute bottom-0 right-0 w-2 h-2 bg-brand-orange"></div>
@@ -218,7 +218,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
                 <input 
                   name="user_name"
                   placeholder="Định danh của bạn..."
-                  className="w-full bg-cyber-black/60 border border-brand-orange/10 p-4 pl-12 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground"
+                  className="w-full bg-black/[0.03] dark:bg-white/[0.05] border border-brand-orange/10 p-4 pl-12 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground"
                 />
               </div>
               <div className="relative group/input">
@@ -227,7 +227,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
                   name="user_email"
                   type="email"
                   placeholder="Email liên kết (không bắt buộc)..."
-                  className="w-full bg-cyber-black/60 border border-brand-orange/10 p-4 pl-12 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground"
+                  className="w-full bg-black/[0.03] dark:bg-white/[0.05] border border-brand-orange/10 p-4 pl-12 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground"
                 />
               </div>
             </div>
@@ -238,7 +238,7 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
                 required
                 rows={5}
                 placeholder="Truyền tải ý kiến của bạn vào ma trận..."
-                className="w-full bg-cyber-black/60 border border-brand-orange/10 p-6 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground resize-y min-h-[150px]"
+                className="w-full bg-black/[0.03] dark:bg-white/[0.05] border border-brand-orange/10 p-6 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground resize-y min-h-[150px]"
               />
               <div className="absolute bottom-4 right-4 font-mono text-[8px] text-brand-orange/30 uppercase tracking-widest pointer-events-none">
                 input_stream_ready

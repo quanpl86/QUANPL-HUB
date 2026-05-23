@@ -26,11 +26,11 @@
 }
 
 .dark {
-  --background: #121212; /* Cyber Gray */
-  --foreground: #f8fafc; /* Slate 50 */
-  --card-bg: #050505; /* Cyber Black */
-  --card-border: rgba(249, 115, 22, 0.3);
-  --card-shadow: rgba(0, 0, 0, 0.5);
+  --background: #171717; /* Softer Dark Gray */
+  --foreground: #e2e8f0; /* Slate 200 - Softer white to reduce glare */
+  --card-bg: #1f1f1f; /* Softer card background */
+  --card-border: rgba(249, 115, 22, 0.25);
+  --card-shadow: rgba(0, 0, 0, 0.4);
   --muted: #94a3b8; /* Slate 400 */
   --grid-color: rgba(249, 115, 22, 0.05); /* Lưới nhạt hơn cho nền tối */
 }
