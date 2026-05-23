@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { JsonLd } from '@/components/seo/JsonLd';
 import Image from 'next/image';
+import Link from 'next/link';
 import { sanitize } from '@/lib/sanitize';
 
 interface PostPageProps {
@@ -62,7 +63,7 @@ export default async function PostPage({ params }: PostPageProps) {
   // Fetch Post with Profile and Category
   const { data: post } = await supabase
     .from('posts')
-    .select('*, profiles(full_name), categories(name)')
+    .select('*, profiles(full_name), categories(name, slug)')
     .eq('slug', slug)
     .single();
 
@@ -175,9 +176,18 @@ export default async function PostPage({ params }: PostPageProps) {
 
             {/* Categories / Tags */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border border-foreground/30 rounded-full text-foreground/80 hover:border-brand-orange transition-colors">
-                {(Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED'}
-              </span>
+              {(() => {
+                const categoryName = (Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED';
+                const categorySlug = (Array.isArray(post.categories) ? (post.categories as any)[0]?.slug : (post.categories as any)?.slug) || 'all';
+                return (
+                  <Link 
+                    href={`/blog?category=${categorySlug}`}
+                    className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border border-foreground/30 rounded-full text-foreground/80 hover:border-brand-orange hover:text-brand-orange transition-colors"
+                  >
+                    {categoryName}
+                  </Link>
+                );
+              })()}
             </div>
           </div>
         </div>
