@@ -15,10 +15,13 @@ import { BubbleMenu as BubbleMenuExtension } from '@tiptap/extension-bubble-menu
 import { FloatingMenu as FloatingMenuExtension } from '@tiptap/extension-floating-menu';
 import Youtube from '@tiptap/extension-youtube';
 import { Link } from '@tiptap/extension-link';
-import { Image } from '@tiptap/extension-image';
+// import { Image } from '@tiptap/extension-image';
 import { Placeholder } from '@tiptap/extension-placeholder';
 import { Underline } from '@tiptap/extension-underline';
 import { TextAlign } from '@tiptap/extension-text-align';
+import { FontSize } from './CustomExtensions';
+import { CyberImage } from './CyberImageExtension';
+import { ImageCropModal } from './ImageCropModal';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
@@ -41,8 +44,8 @@ import { marked } from 'marked';
 const lowlight = createLowlight(all);
 
 import {
-  AlignCenter, AlignJustify, AlignLeft, AlignRight, BarChart3, Bold, CheckSquare, Code, Command, Cpu,
-  Eraser, GitBranch, Heading1, Heading2, Highlighter, Image as ImageIcon, ImagePlus, Italic,
+  AlignCenter, AlignJustify, AlignLeft, AlignRight, BarChart3, Bold, CheckSquare, Code, Command, Cpu, Crop as CropIcon,
+  Eraser, GitBranch, Heading1, Heading2, Heading3, Heading4, Heading5, Highlighter, Image as ImageIcon, ImagePlus, Italic,
   LayoutTemplate, Link as LinkIcon, List, ListOrdered, ListTodo, Maximize2, Minimize2, Minus, Monitor,
   PaintBucket, Palette, PanelTop, PenTool, Play as YoutubeIcon, Quote, Redo, Subscript as Infra,
   Superscript as Supra, Table as TableIcon, Terminal, Type, Underline as UnderIcon, Undo, UploadCloud,
@@ -279,6 +282,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     isOpen: boolean; title: string; placeholder: string; defaultValue: string; 
     type: PromptType | null; secondaryPlaceholder?: string;
   }>({ isOpen: false, title: '', placeholder: '', defaultValue: '', type: null });
+  const [cropModalConfig, setCropModalConfig] = useState<{isOpen: boolean; src: string}>({isOpen: false, src: ''});
 
   const extensions = useMemo(() => [
     StarterKit.configure({ 
@@ -293,7 +297,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     Table.configure({ resizable: true }),
     TableRow, TableHeader, TableCell,
     Youtube.configure({ width: 840, height: 480 }),
-    Image,
+    CyberImage, FontSize,
     Placeholder.configure({
       placeholder: mode === 'matrix' ? 'Nhấn / để triệu hồi lệnh ma trận...' : 'ĐANG TRUYỀN TẢI: Bắt đầu nhập nội dung...',
     }),
@@ -526,6 +530,9 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
             <div className="flex items-center gap-0.5">
               <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 ${editor.isActive('heading', { level: 1 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 1"><Heading1 size={18} /></button>
               <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 ${editor.isActive('heading', { level: 2 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 2"><Heading2 size={18} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 ${editor.isActive('heading', { level: 3 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 3"><Heading3 size={18} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} className={`p-2 ${editor.isActive('heading', { level: 4 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 4"><Heading4 size={18} /></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()} className={`p-2 ${editor.isActive('heading', { level: 5 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 5"><Heading5 size={18} /></button>
               <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 ${editor.isActive('bulletList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách dấu chấm"><List size={18} /></button>
               <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 ${editor.isActive('orderedList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách số"><ListOrdered size={18} /></button>
               <button type="button" onClick={() => editor.chain().focus().toggleTaskList().run()} className={`p-2 ${editor.isActive('taskList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách công việc"><ListTodo size={18} /></button>
@@ -563,6 +570,26 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
                   </div>
                 )}
               </div>
+
+              <select
+                value={editor.getAttributes('textStyle').fontSize || 'default'}
+                onChange={(e) => {
+                  const size = e.target.value;
+                  if (size === 'default') editor.chain().focus().unsetFontSize().run();
+                  else editor.chain().focus().setFontSize(size).run();
+                }}
+                className="bg-cyber-black text-muted-foreground outline-none border border-white/10 px-1 py-1 text-xs mx-1 cursor-pointer hover:border-brand-orange/50 transition-colors"
+                title="Kích thước chữ"
+              >
+                <option value="default">Size</option>
+                <option value="12px">12px</option>
+                <option value="14px">14px</option>
+                <option value="16px">16px</option>
+                <option value="18px">18px</option>
+                <option value="20px">20px</option>
+                <option value="24px">24px</option>
+                <option value="30px">30px</option>
+              </select>
 
               {/* Highlight Picker */}
               <div className="relative">
@@ -657,16 +684,67 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
 
         {/* Bubble Menu - Contextual formatting */}
         {editor.view && (
-          <BubbleMenu editor={editor}>
-            <div className="flex bg-[#0a0a0a] border border-[#ff5722]/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)] p-1 backdrop-blur-md rounded-none mb-2">
-              <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 transition-colors ${editor.isActive('bold') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In đậm"><Bold size={16} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 transition-colors ${editor.isActive('italic') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In nghiêng"><Italic size={16} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 transition-colors ${editor.isActive('underline') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch chân"><UnderIcon size={16} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 transition-colors ${editor.isActive('strike') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch ngang"><Minus size={16} className="rotate-45" /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleCode().run()} className={`p-2 transition-colors ${editor.isActive('code') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Mã dòng"><Code size={16} /></button>
-              <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
-              <button type="button" onClick={() => openPrompt('link', 'LIÊN KẾT', 'URL...')} className={`p-2 transition-colors ${editor.isActive('link') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Liên kết"><LinkIcon size={16} /></button>
-            </div>
+          <BubbleMenu editor={editor} updateDelay={0}>
+            {editor.isActive('image') ? (
+              <div className="flex flex-wrap bg-[#0a0a0a] border border-[#ff5722]/50 shadow-2xl p-1 backdrop-blur-md rounded-none mb-2 items-center gap-1">
+                <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'left' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'left' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn trái"><AlignLeft size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'center' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'center' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn giữa"><AlignCenter size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().updateAttributes('image', { align: 'right' }).run()} className={`p-2 transition-colors ${editor.getAttributes('image').align === 'right' ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn phải"><AlignRight size={16} /></button>
+                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+                <select
+                  value={editor.getAttributes('image').shape || 'default'}
+                  onChange={(e) => editor.chain().focus().updateAttributes('image', { shape: e.target.value }).run()}
+                  className="bg-transparent text-white outline-none border border-white/10 px-1 py-1 text-[10px] mx-1 uppercase cursor-pointer hover:border-brand-orange/50 transition-colors"
+                >
+                  <option value="default" className="bg-cyber-black">Frame: Góc vuông</option>
+                  <option value="rounded" className="bg-cyber-black">Frame: Bo góc</option>
+                  <option value="circle" className="bg-cyber-black">Frame: Tròn/Ovan</option>
+                </select>
+                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+                <button type="button" onClick={() => {
+                   const attrs = editor.getAttributes('image');
+                   if(attrs.src) setCropModalConfig({ isOpen: true, src: attrs.src });
+                }} className="p-2 text-white hover:text-[#ff5722]" title="Crop ảnh">
+                  <CropIcon size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap bg-[#0a0a0a] border border-[#ff5722]/50 shadow-[0_10px_30px_rgba(0,0,0,0.5)] p-1 backdrop-blur-md rounded-none mb-2 items-center gap-1 max-w-[500px]">
+                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 1 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H1"><Heading1 size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 2 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H2"><Heading2 size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 transition-colors ${editor.isActive('heading', { level: 3 }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="H3"><Heading3 size={16} /></button>
+                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 transition-colors ${editor.isActive('bold') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In đậm"><Bold size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 transition-colors ${editor.isActive('italic') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="In nghiêng"><Italic size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 transition-colors ${editor.isActive('underline') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch chân"><UnderIcon size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 transition-colors ${editor.isActive('strike') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Gạch ngang"><Minus size={16} className="rotate-45" /></button>
+                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+                <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'left' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn trái"><AlignLeft size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'center' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn giữa"><AlignCenter size={16} /></button>
+                <button type="button" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 transition-colors ${editor.isActive({ textAlign: 'right' }) ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Căn phải"><AlignRight size={16} /></button>
+                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+                <select
+                  value={editor.getAttributes('textStyle').fontSize || 'default'}
+                  onChange={(e) => {
+                    const size = e.target.value;
+                    if (size === 'default') editor.chain().focus().unsetFontSize().run();
+                    else editor.chain().focus().setFontSize(size).run();
+                  }}
+                  className="bg-transparent text-white outline-none border border-white/10 px-1 py-1 text-[10px] mx-1 cursor-pointer hover:border-brand-orange/50 transition-colors"
+                >
+                  <option value="default" className="bg-cyber-black">Size</option>
+                  <option value="12px" className="bg-cyber-black">12px</option>
+                  <option value="14px" className="bg-cyber-black">14px</option>
+                  <option value="16px" className="bg-cyber-black">16px</option>
+                  <option value="18px" className="bg-cyber-black">18px</option>
+                  <option value="20px" className="bg-cyber-black">20px</option>
+                  <option value="24px" className="bg-cyber-black">24px</option>
+                  <option value="30px" className="bg-cyber-black">30px</option>
+                </select>
+                <div className="w-[1px] bg-white/10 mx-1 h-6"></div>
+                <button type="button" onClick={() => openPrompt('link', 'LIÊN KẾT', 'URL...')} className={`p-2 transition-colors ${editor.isActive('link') ? 'text-[#ff5722]' : 'text-white hover:text-[#ff5722]'}`} title="Liên kết"><LinkIcon size={16} /></button>
+              </div>
+            )}
           </BubbleMenu>
         )}
 
@@ -702,6 +780,32 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
       </div>
 
       <CyberPrompt {...promptConfig} onConfirm={handlePromptConfirm} onCancel={() => setPromptConfig(p => ({ ...p, isOpen: false }))} />
+
+      <ImageCropModal 
+        isOpen={cropModalConfig.isOpen} 
+        src={cropModalConfig.src} 
+        onCancel={() => setCropModalConfig({ isOpen: false, src: '' })}
+        onConfirm={async (blob) => {
+          setCropModalConfig({ isOpen: false, src: '' });
+          setIsUploadingAsset(true);
+          const formData = new FormData();
+          formData.append('file', new File([blob], `cropped-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+          formData.append('provider', assetProvider);
+          try {
+            const result = await uploadEditorAsset(formData);
+            if (!result.success || !('url' in result) || !result.url) {
+              toast.error('error' in result ? result.error : 'Không thể tải ảnh đã cắt lên.');
+              return;
+            }
+            editor.chain().focus().setImage({ src: result.url as string }).run();
+            toast.success(`Đã cắt và tải ảnh mới lên ${result.provider === 'github' ? 'GitHub' : 'Supabase'}`);
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Không thể tải ảnh đã cắt lên.');
+          } finally {
+            setIsUploadingAsset(false);
+          }
+        }} 
+      />
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
