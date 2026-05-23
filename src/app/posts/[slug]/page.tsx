@@ -284,7 +284,9 @@ export default async function PostPage({ params }: PostPageProps) {
               </div>
             </div>
           )}
-          
+        </div>
+
+        <div className="max-w-[1200px] mx-auto">
           {/* Related Articles Section */}
           <RelatedArticles posts={recentPosts || []} />
           
