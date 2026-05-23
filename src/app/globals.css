@@ -249,7 +249,6 @@ body {
 .ProseMirror .kd-timeline-list {
   background: var(--background);
   border: 1px solid rgba(249, 115, 22, 0.15);
-  border-left: 2px solid #f97316;
   border-radius: 0.5rem;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
   padding: 2rem 1.5rem;
@@ -275,11 +274,11 @@ body {
 .king-dragon-content .kd-timeline-list::before,
 .ProseMirror .kd-timeline-list::before {
   background: rgba(249, 115, 22, 0.2);
-  bottom: 2rem;
+  bottom: 2.5rem;
   content: '';
-  left: 14px;
+  left: 38px;
   position: absolute;
-  top: 2rem;
+  top: 2.5rem;
   width: 2px;
 }
 
