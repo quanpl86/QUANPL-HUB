@@ -49,7 +49,7 @@ import {
   LayoutTemplate, Link as LinkIcon, List, ListOrdered, ListTodo, Maximize2, Minimize2, Minus, Monitor,
   PaintBucket, Palette, PanelTop, PenTool, Play as YoutubeIcon, Quote, Redo, Subscript as Infra,
   Superscript as Supra, Table as TableIcon, Terminal, Type, Underline as UnderIcon, Undo, UploadCloud,
-  Wand2, Zap
+  Wand2, Zap, X
 } from 'lucide-react';
 import { CyberPrompt } from '@/components/ui/CyberPrompt';
 import { ChartBlock, DrawingBoard, KnowledgeCallout, ScratchEmbed, SketchfabEmbed, WorkflowTimeline } from './CustomExtensions';
