@@ -48,6 +48,16 @@ html {
   --grid-color: rgba(249, 115, 22, 0.05); /* Lưới nhạt hơn cho nền tối */
 }
 
+.sepia {
+  --background: #fdf6e3; /* Warm paper yellow */
+  --foreground: #4a3e33; /* Dark sepia brown */
+  --card-bg: #f4ebd8; /* Slightly darker paper for cards */
+  --card-border: rgba(181, 137, 0, 0.2);
+  --card-shadow: rgba(74, 62, 51, 0.08);
+  --muted: #7c6f64; /* Muted brown */
+  --grid-color: rgba(181, 137, 0, 0.1); /* Subtle warm grid */
+}
+
 html, body {
   max-width: 100vw;
   overflow-x: hidden;

@@ -1,34 +1,42 @@
 'use client';
 
 import * as React from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, BookOpen } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+
+  const getBgClass = () => {
+    if (theme === 'dark') return 'bg-slate-800';
+    if (theme === 'sepia') return 'bg-[#e6d5b8]'; // Warm background for the switch
+    return 'bg-slate-200';
+  };
+
+  const getThumbClass = () => {
+    if (theme === 'dark') return 'left-9 bg-cyber-black';
+    if (theme === 'sepia') return 'left-5 bg-[#fdf6e3]'; // Sepia background for the thumb
+    return 'left-1 bg-white';
+  };
 
   return (
     <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-500 flex items-center border-2 border-brand-orange shadow-inner group ${
-        theme === 'dark' ? 'bg-slate-800' : 'bg-slate-200'
-      }`}
+      onClick={toggleTheme}
+      className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-500 flex items-center border-2 border-brand-orange shadow-inner group ${getBgClass()}`}
       aria-label="Toggle theme"
     >
       <div className={`
         absolute w-6 h-6 rounded-full transition-all duration-500 flex items-center justify-center shadow-lg
-        ${theme === 'dark' ? 'left-9 bg-cyber-black' : 'left-1 bg-white'}
+        ${getThumbClass()}
       `}>
-        {theme === 'dark' ? (
-          <Moon className="w-3.5 h-3.5 text-brand-orange" />
-        ) : (
-          <Sun className="w-3.5 h-3.5 text-brand-orange" />
-        )}
+        {theme === 'dark' && <Moon className="w-3.5 h-3.5 text-brand-orange" />}
+        {theme === 'sepia' && <BookOpen className="w-3.5 h-3.5 text-brand-orange" />}
+        {theme === 'light' && <Sun className="w-3.5 h-3.5 text-brand-orange" />}
       </div>
       
       {/* Decorative scanner line */}
       <div className="absolute inset-0 overflow-hidden rounded-full pointer-events-none opacity-40">
-        <div className={`w-full h-[1px] bg-brand-orange animate-[slide_3s_linear_infinite] ${theme === 'light' ? 'opacity-20' : 'opacity-100'}`} />
+        <div className={`w-full h-[1px] bg-brand-orange animate-[slide_3s_linear_infinite] ${theme === 'dark' ? 'opacity-100' : 'opacity-40'}`} />
       </div>
     </button>
   );

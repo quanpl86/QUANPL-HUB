@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light';
+type Theme = 'dark' | 'light' | 'sepia';
 
 interface ThemeContextType {
   theme: Theme;
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const applyTheme = (t: Theme) => {
     const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
+    root.classList.remove('light', 'dark', 'sepia');
     root.classList.add(t);
     localStorage.setItem('kingdragon-theme', t);
   };
@@ -38,7 +38,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    // Cycle: light -> sepia -> dark -> light
+    const newTheme = theme === 'light' ? 'sepia' : theme === 'sepia' ? 'dark' : 'light';
     setTheme(newTheme);
   };
 
