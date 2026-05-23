@@ -137,6 +137,15 @@ export default function NewPostPage() {
               </div>
 
               <div className="flex flex-col gap-2">
+                <label className="font-mono text-[10px] text-muted uppercase">Tags (Cách nhau bằng dấu phẩy)</label>
+                <input 
+                  name="tags" 
+                  placeholder="AI, Robotics, Figma..."
+                  className="w-full bg-cyber-gray border border-brand-orange/20 p-2 font-mono text-xs outline-none focus:border-brand-orange text-foreground" 
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
                 <CoverImageUpload />
               </div>
 

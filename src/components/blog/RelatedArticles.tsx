@@ -8,9 +8,9 @@ interface Post {
   title: string;
   excerpt: string;
   image_url: string;
-  created_at: string;
   profiles: any;
   categories: any;
+  tags?: string[];
 }
 
 interface RelatedArticlesProps {
@@ -72,6 +72,11 @@ export function RelatedArticles({ posts }: RelatedArticlesProps) {
                   <span className="px-3 py-1.5 bg-foreground/5 border border-foreground/20 rounded-full text-[10px] tech-mono uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 hover:border-foreground/40 transition-colors">
                     {categoryName}
                   </span>
+                  {post.tags?.map((tag, idx) => (
+                    <span key={idx} className="px-3 py-1.5 bg-foreground/5 border border-foreground/20 rounded-full text-[10px] tech-mono uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 hover:border-foreground/40 transition-colors">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
             </Link>

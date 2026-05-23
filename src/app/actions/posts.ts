@@ -38,6 +38,10 @@ export async function createPost(formData: FormData, content: string) {
   const metaDescription = formData.get('meta_description') as string;
   const keywordsRaw = formData.get('keywords') as string;
   const keywords = keywordsRaw ? keywordsRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
+  
+  // Content Tags
+  const tagsRaw = formData.get('tags') as string;
+  const tags = tagsRaw ? tagsRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
 
   const slug = slugify(title) + '-' + Math.random().toString(36).substring(2, 7);
 
@@ -56,6 +60,7 @@ export async function createPost(formData: FormData, content: string) {
       meta_title: metaTitle,
       meta_description: metaDescription,
       keywords,
+      tags,
       seo_keywords: { image_alt: imageAlt }
     }])
     .select()
@@ -90,6 +95,10 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   const keywordsRaw = formData.get('keywords') as string;
   const keywords = keywordsRaw ? keywordsRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
 
+  // Content Tags
+  const tagsRaw = formData.get('tags') as string;
+  const tags = tagsRaw ? tagsRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
+
   const { data: existingPost } = await supabase.from('posts').select('seo_keywords').eq('id', id).single();
   const existingSeoKeywords = existingPost?.seo_keywords || {};
 
@@ -106,6 +115,7 @@ export async function updatePost(id: any, formData: FormData, content: string) {
       meta_title: metaTitle,
       meta_description: metaDescription,
       keywords,
+      tags,
       seo_keywords: { ...(typeof existingSeoKeywords === 'object' ? existingSeoKeywords : {}), image_alt: imageAlt },
       updated_at: new Date().toISOString()
     })

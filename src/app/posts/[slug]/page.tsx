@@ -97,7 +97,7 @@ export default async function PostPage({ params }: PostPageProps) {
   // Fetch 3 Recent/Related Posts
   const { data: recentPosts } = await supabase
     .from('posts')
-    .select('id, slug, title, excerpt, image_url, created_at, profiles(full_name), categories(name)')
+    .select('id, slug, title, excerpt, image_url, created_at, profiles(full_name), categories(name), tags')
     .eq('is_published', true)
     .neq('id', post.id)
     .order('created_at', { ascending: false })
@@ -201,6 +201,16 @@ export default async function PostPage({ params }: PostPageProps) {
                   </Link>
                 );
               })()}
+              
+              {/* Additional Tags */}
+              {post.tags?.map((tag: string, idx: number) => (
+                <span 
+                  key={idx}
+                  className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border border-foreground/30 rounded-full text-foreground/80 cursor-default"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
         </div>
