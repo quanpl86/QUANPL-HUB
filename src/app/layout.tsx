@@ -72,7 +72,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${beVietnamPro.variable} ${spaceGrotesk.variable} ${inter.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col font-be-vietnam transition-colors duration-300">
+      <body className="min-h-full flex flex-col font-sans transition-colors duration-300">
         <ThemeProvider>
           <Header />
           <main className="flex-grow">
