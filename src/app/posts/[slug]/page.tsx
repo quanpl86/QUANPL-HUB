@@ -142,7 +142,7 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   return (
-    <article className="min-h-screen pb-20 bg-[var(--blog-bg)] text-foreground selection:bg-brand-orange selection:text-white transition-colors duration-300">
+    <article className="min-h-screen pb-20 bg-background text-foreground selection:bg-brand-orange selection:text-white transition-colors duration-300">
       <JsonLd data={articleSchema} />
       {faqSchema && <JsonLd data={faqSchema} />}
       
