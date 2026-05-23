@@ -229,20 +229,38 @@ body {
 
 .king-dragon-content .kd-timeline,
 .ProseMirror .kd-timeline {
+  margin: 2.5rem 0;
+  position: relative;
+}
+
+.king-dragon-content .kd-timeline-title,
+.ProseMirror .kd-timeline-title {
+  /* Inherit standard prose styles */
+  margin-bottom: 1rem;
+}
+
+.king-dragon-content .kd-timeline-intro,
+.ProseMirror .kd-timeline-intro {
+  /* Inherit standard prose styles */
+  margin-bottom: 2rem;
+}
+
+.king-dragon-content .kd-timeline-list,
+.ProseMirror .kd-timeline-list {
   background: var(--background);
   border: 1px solid rgba(249, 115, 22, 0.15);
   border-left: 2px solid #f97316;
   border-radius: 0.5rem;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-  color: var(--foreground);
-  margin: 2.5rem 0;
   padding: 2rem 1.5rem;
   position: relative;
   overflow: hidden;
+  display: grid;
+  gap: 1.5rem;
 }
 
-.king-dragon-content .kd-timeline::before,
-.ProseMirror .kd-timeline::before {
+.king-dragon-content .kd-timeline-list::after,
+.ProseMirror .kd-timeline-list::after {
   content: '';
   position: absolute;
   top: 0;
@@ -253,44 +271,6 @@ body {
   pointer-events: none;
 }
 
-.king-dragon-content .kd-timeline-title,
-.ProseMirror .kd-timeline-title {
-  border-bottom: 1px dashed rgba(249, 115, 22, 0.3) !important;
-  color: #f97316 !important;
-  font-family: var(--font-space-grotesk), monospace !important;
-  font-size: 1.1rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.1em !important;
-  margin: 0 0 1rem !important;
-  padding: 0 0 0.75rem !important;
-  text-transform: uppercase !important;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.king-dragon-content .kd-timeline-title::before,
-.ProseMirror .kd-timeline-title::before {
-  content: '▤';
-  font-size: 0.9em;
-  opacity: 0.8;
-}
-
-.king-dragon-content .kd-timeline-intro,
-.ProseMirror .kd-timeline-intro {
-  color: var(--foreground) !important;
-  opacity: 0.8 !important;
-  font-size: 0.95rem !important;
-  line-height: 1.7 !important;
-  margin-bottom: 2.5rem !important;
-}
-
-.king-dragon-content .kd-timeline-list,
-.ProseMirror .kd-timeline-list {
-  display: grid;
-  gap: 1.5rem;
-  position: relative;
-}
 
 .king-dragon-content .kd-timeline-list::before,
 .ProseMirror .kd-timeline-list::before {
