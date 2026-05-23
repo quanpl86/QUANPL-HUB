@@ -9,8 +9,9 @@ interface CyberPromptProps {
   isOpen: boolean;
   title: string;
   placeholder?: string;
+  secondaryPlaceholder?: string;
   defaultValue?: string;
-  onConfirm: (value: string) => void;
+  onConfirm: (value: string, secondaryValue?: string) => void;
   onCancel: () => void;
 }
 
@@ -18,14 +19,19 @@ export const CyberPrompt = ({
   isOpen, 
   title, 
   placeholder = 'Yêu cầu nhập dữ liệu...', 
+  secondaryPlaceholder,
   defaultValue = '', 
   onConfirm, 
   onCancel 
 }: CyberPromptProps) => {
   const [value, setValue] = useState(defaultValue);
+  const [secondaryValue, setSecondaryValue] = useState('');
 
   useEffect(() => {
-    if (isOpen) setValue(defaultValue);
+    if (isOpen) {
+      setValue(defaultValue);
+      setSecondaryValue('');
+    }
   }, [isOpen, defaultValue]);
 
   return (
@@ -68,13 +74,30 @@ export const CyberPrompt = ({
                   onChange={(e) => setValue(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      onConfirm(value);
+                      onConfirm(value, secondaryValue);
                     }
                   }}
                   placeholder={placeholder}
                   className="w-full bg-cyber-black border-b border-brand-orange/10 py-3 px-2 font-mono text-sm text-foreground outline-none focus:border-brand-orange transition-all placeholder:text-brand-orange/20"
                 />
               </div>
+
+              {secondaryPlaceholder && (
+                <div className="relative">
+                  <div className="absolute -left-2 top-0 bottom-0 w-[2px] bg-brand-orange/40" />
+                  <input 
+                    value={secondaryValue}
+                    onChange={(e) => setSecondaryValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        onConfirm(value, secondaryValue);
+                      }
+                    }}
+                    placeholder={secondaryPlaceholder}
+                    className="w-full bg-cyber-black border-b border-brand-orange/10 py-3 px-2 font-mono text-sm text-foreground outline-none focus:border-brand-orange transition-all placeholder:text-brand-orange/20"
+                  />
+                </div>
+              )}
 
               <div className="flex gap-3 justify-end pt-2">
                 <button 
@@ -86,7 +109,7 @@ export const CyberPrompt = ({
                 </button>
                 <CyberButton 
                   type="button" 
-                  onClick={() => onConfirm(value)}
+                  onClick={() => onConfirm(value, secondaryValue)}
                   variant="primary" 
                   className="px-8 h-10 text-[10px]"
                 >

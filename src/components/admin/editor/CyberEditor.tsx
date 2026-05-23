@@ -276,7 +276,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [promptConfig, setPromptConfig] = useState<{
     isOpen: boolean; title: string; placeholder: string; defaultValue: string; 
-    type: PromptType | null;
+    type: PromptType | null; secondaryPlaceholder?: string;
   }>({ isOpen: false, title: '', placeholder: '', defaultValue: '', type: null });
 
   const extensions = useMemo(() => [
@@ -353,10 +353,10 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
 
   if (!editor) return null;
 
-  const handlePromptConfirm = (value: string) => {
+  const handlePromptConfirm = (value: string, secondaryValue?: string) => {
     if (!value) { setPromptConfig(p => ({ ...p, isOpen: false })); return; }
     switch (promptConfig.type) {
-      case 'image': editor.chain().focus().setImage({ src: value }).run(); break;
+      case 'image': editor.chain().focus().setImage({ src: value, alt: secondaryValue || '' }).run(); break;
       case 'youtube': editor.chain().focus().setYoutubeVideo({ src: value }).run(); break;
       case 'scratch': editor.chain().focus().insertContent({ type: 'scratchEmbed', attrs: { projectId: value } }).run(); break;
       case 'sketchfab': editor.chain().focus().insertContent({ type: 'sketchfabEmbed', attrs: { modelId: value } }).run(); break;
@@ -365,8 +365,8 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     setPromptConfig(p => ({ ...p, isOpen: false }));
   };
 
-  const openPrompt = (type: PromptType, title: string, placeholder: string, defaultValue = '') => {
-    setPromptConfig({ isOpen: true, type, title, placeholder, defaultValue });
+  const openPrompt = (type: PromptType, title: string, placeholder: string, defaultValue = '', secondaryPlaceholder?: string) => {
+    setPromptConfig({ isOpen: true, type, title, placeholder, defaultValue, secondaryPlaceholder });
   };
 
   const handleMagicMarkdown = async () => {
@@ -608,7 +608,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
 
             {/* Group 7: Media & Tables */}
             <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => openPrompt('image', 'HÌNH ẢNH', 'URL...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn ảnh"><ImageIcon size={18} /></button>
+              <button type="button" onClick={() => openPrompt('image', 'HÌNH ẢNH', 'URL...', '', 'Alt text (tuỳ chọn)...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn ảnh"><ImageIcon size={18} /></button>
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploadingAsset} className="p-2 text-muted-foreground hover:text-brand-orange disabled:opacity-40" title="Tải ảnh từ máy lên storage"><UploadCloud size={18} /></button>
               <button type="button" onClick={() => openPrompt('youtube', 'YOUTUBE', 'Link video...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn Video YouTube"><YoutubeIcon size={18} /></button>
               <button type="button" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng"><TableIcon size={18} /></button>
