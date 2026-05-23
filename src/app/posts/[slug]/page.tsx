@@ -147,7 +147,7 @@ export default async function PostPage({ params }: PostPageProps) {
       
       {/* Editorial Header */}
       <div className="container mx-auto px-6 pt-32 pb-12">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-[1200px] mx-auto">
           {/* Date */}
           <div className="tech-mono text-sm tracking-widest text-foreground/60 mb-6 uppercase">
             {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'NEURAL_LINK_PENDING'}
