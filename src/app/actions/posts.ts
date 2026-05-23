@@ -99,8 +99,9 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   const tagsRaw = formData.get('tags') as string;
   const tags = tagsRaw ? tagsRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
 
-  const { data: existingPost } = await supabase.from('posts').select('seo_keywords').eq('id', id).single();
+  const { data: existingPost } = await supabase.from('posts').select('slug, seo_keywords').eq('id', id).single();
   const existingSeoKeywords = existingPost?.seo_keywords || {};
+  const slug = existingPost?.slug;
 
   const { error } = await supabase
     .from('posts')
@@ -128,7 +129,7 @@ export async function updatePost(id: any, formData: FormData, content: string) {
 
   revalidatePath('/admin/posts');
   revalidatePath('/sitemap.xml');
-  revalidatePath(`/posts/${formData.get('slug')}`); // Revalidate bài viết cụ thể
+  if (slug) revalidatePath(`/posts/${slug}`); // Revalidate bài viết cụ thể
   revalidatePath('/');
   return { success: true };
 }
