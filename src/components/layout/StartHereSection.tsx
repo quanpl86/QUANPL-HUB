@@ -7,7 +7,7 @@ const pathways = [
     description: 'Hiểu AI theo cách an toàn, thực tế và phù hợp với lứa tuổi trước khi chọn công cụ hay khóa học.',
     href: '/blog?q=AI',
     icon: Bot,
-    signal: 'AI_FOUNDATION',
+    signal: 'NỀN TẢNG AI',
     cta: 'Bắt đầu với AI',
   },
   {
@@ -15,7 +15,7 @@ const pathways = [
     description: 'Khung tư duy, hoạt động lớp học và workflow AI giúp thiết kế bài học STEM có chiều sâu hơn.',
     href: '/blog?q=STEM',
     icon: GraduationCap,
-    signal: 'TEACHER_OS',
+    signal: 'CÔNG CỤ GIÁO VIÊN',
     cta: 'Xem lộ trình STEM',
   },
   {
@@ -23,7 +23,7 @@ const pathways = [
     description: 'Phân tích đề, chiến thuật ghi điểm, thiết kế robot và tư duy kỹ thuật cho WRO / GreenMech.',
     href: '/blog?q=Robotics',
     icon: Cpu,
-    signal: 'ROBOTICS_LAB',
+    signal: 'PHÒNG LAB ROBOTICS',
     cta: 'Khám phá Robotics',
   },
   {
@@ -31,7 +31,7 @@ const pathways = [
     description: 'Xây hệ thống ghi chú, NotebookLM, RAG và kho tri thức cá nhân cho người học công nghệ.',
     href: '/blog?q=Second%20Brain',
     icon: BrainCircuit,
-    signal: 'DRAGONMIND',
+    signal: 'HỆ THỐNG DRAGONMIND',
     cta: 'Mở DragonMind',
   },
 ];
@@ -44,7 +44,7 @@ export function StartHereSection() {
           <div>
             <div className="inline-flex items-center gap-3 border border-brand-orange/30 bg-brand-orange/10 px-4 py-2 text-brand-orange tech-mono mb-5">
               <span className="h-2 w-2 bg-brand-orange" />
-              START_HERE
+              BẮT ĐẦU TẠI ĐÂY
             </div>
             <h2 className="cyber-h2">
               Bắt đầu đúng <span className="text-brand-orange">lộ trình</span>
