@@ -120,7 +120,7 @@ export default async function PostPage({ params }: PostPageProps) {
         {post.image_url ? (
           <Image 
             src={post.image_url} 
-            alt={post.title} 
+            alt={post.seo_keywords?.image_alt || post.title} 
             fill
             sizes="100vw"
             priority

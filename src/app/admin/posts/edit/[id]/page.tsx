@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { PreviewModal } from '@/components/admin/PreviewModal';
 import { ArrowLeft, Loader2, Eye, Maximize, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { CoverImageUpload } from '@/components/admin/CoverImageUpload';
 import dynamic from 'next/dynamic';
 
 const CyberEditor = dynamic(() => import('@/components/admin/editor/CyberEditor').then(mod => mod.CyberEditor), {
@@ -230,10 +231,15 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="font-mono text-[10px] text-muted uppercase">URL Ảnh đại diện</label>
+                <CoverImageUpload defaultValue={post.image_url} />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-mono text-[10px] text-muted uppercase">Alt text (Mô tả ảnh bìa)</label>
                 <input 
-                  name="image_url" 
-                  defaultValue={post.image_url}
+                  name="image_alt" 
+                  defaultValue={post.seo_keywords?.image_alt || ''}
+                  placeholder="Mô tả ngắn gọn nội dung bức ảnh..."
                   className="w-full bg-cyber-gray border border-brand-orange/20 p-2 font-mono text-[10px] outline-none focus:border-brand-orange text-foreground" 
                 />
               </div>

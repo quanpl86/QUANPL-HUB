@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Eye, Loader2 } from 'lucide-react';
 import { PreviewModal } from '@/components/admin/PreviewModal';
+import { CoverImageUpload } from '@/components/admin/CoverImageUpload';
 import dynamic from 'next/dynamic';
 
 const CyberEditor = dynamic(() => import('@/components/admin/editor/CyberEditor').then(mod => mod.CyberEditor), {
@@ -136,8 +137,16 @@ export default function NewPostPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="font-mono text-[10px] text-muted uppercase">URL Ảnh đại diện</label>
-                <input name="image_url" className="w-full bg-cyber-gray border border-brand-orange/20 p-2 font-mono text-[10px] outline-none focus:border-brand-orange text-foreground" />
+                <CoverImageUpload />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-mono text-[10px] text-muted uppercase">Alt text (Mô tả ảnh bìa)</label>
+                <input 
+                  name="image_alt" 
+                  placeholder="Mô tả ngắn gọn nội dung bức ảnh..."
+                  className="w-full bg-cyber-gray border border-brand-orange/20 p-2 font-mono text-[10px] outline-none focus:border-brand-orange text-foreground" 
+                />
               </div>
 
               <div className="flex items-center gap-3 py-2">

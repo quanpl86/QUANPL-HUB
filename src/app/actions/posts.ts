@@ -29,6 +29,7 @@ export async function createPost(formData: FormData, content: string) {
   const excerpt = formData.get('excerpt') as string;
   const categoryId = formData.get('category_id') as string;
   const imageUrl = formData.get('image_url') as string;
+  const imageAlt = formData.get('image_alt') as string;
   const isPublished = formData.get('is_published') === 'on';
   const commentsEnabled = formData.get('comments_enabled') === 'on';
   
@@ -54,7 +55,8 @@ export async function createPost(formData: FormData, content: string) {
       comments_enabled: commentsEnabled,
       meta_title: metaTitle,
       meta_description: metaDescription,
-      keywords
+      keywords,
+      seo_keywords: { image_alt: imageAlt }
     }])
     .select()
     .single();
@@ -78,6 +80,7 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   const excerpt = formData.get('excerpt') as string;
   const categoryId = formData.get('category_id') as string;
   const imageUrl = formData.get('image_url') as string;
+  const imageAlt = formData.get('image_alt') as string;
   const isPublished = formData.get('is_published') === 'on';
   const commentsEnabled = formData.get('comments_enabled') === 'on';
   
@@ -86,6 +89,9 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   const metaDescription = formData.get('meta_description') as string;
   const keywordsRaw = formData.get('keywords') as string;
   const keywords = keywordsRaw ? keywordsRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
+
+  const { data: existingPost } = await supabase.from('posts').select('seo_keywords').eq('id', id).single();
+  const existingSeoKeywords = existingPost?.seo_keywords || {};
 
   const { error } = await supabase
     .from('posts')
@@ -100,6 +106,7 @@ export async function updatePost(id: any, formData: FormData, content: string) {
       meta_title: metaTitle,
       meta_description: metaDescription,
       keywords,
+      seo_keywords: { ...(typeof existingSeoKeywords === 'object' ? existingSeoKeywords : {}), image_alt: imageAlt },
       updated_at: new Date().toISOString()
     })
     .eq('id', id);
