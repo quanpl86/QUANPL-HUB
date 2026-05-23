@@ -11,6 +11,7 @@ interface CyberPromptProps {
   placeholder?: string;
   secondaryPlaceholder?: string;
   defaultValue?: string;
+  isTextArea?: boolean;
   onConfirm: (value: string, secondaryValue?: string) => void;
   onCancel: () => void;
 }
@@ -21,6 +22,7 @@ export const CyberPrompt = ({
   placeholder = 'Yêu cầu nhập dữ liệu...', 
   secondaryPlaceholder,
   defaultValue = '', 
+  isTextArea = false,
   onConfirm, 
   onCancel 
 }: CyberPromptProps) => {
@@ -68,18 +70,28 @@ export const CyberPrompt = ({
             <div className="p-6 space-y-6">
               <div className="relative">
                 <div className="absolute -left-2 top-0 bottom-0 w-[2px] bg-brand-orange/40" />
-                <input 
-                  autoFocus
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      onConfirm(value, secondaryValue);
-                    }
-                  }}
-                  placeholder={placeholder}
-                  className="w-full bg-cyber-black border-b border-brand-orange/10 py-3 px-2 font-mono text-sm text-foreground outline-none focus:border-brand-orange transition-all placeholder:text-brand-orange/20"
-                />
+                {isTextArea ? (
+                  <textarea
+                    autoFocus
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full bg-cyber-black border-b border-brand-orange/10 py-3 px-2 font-mono text-sm text-foreground outline-none focus:border-brand-orange transition-all placeholder:text-brand-orange/20 min-h-[300px] resize-y"
+                  />
+                ) : (
+                  <input 
+                    autoFocus
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        onConfirm(value, secondaryValue);
+                      }
+                    }}
+                    placeholder={placeholder}
+                    className="w-full bg-cyber-black border-b border-brand-orange/10 py-3 px-2 font-mono text-sm text-foreground outline-none focus:border-brand-orange transition-all placeholder:text-brand-orange/20"
+                  />
+                )}
               </div>
 
               {secondaryPlaceholder && (

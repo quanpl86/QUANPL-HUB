@@ -259,72 +259,85 @@ export const KnowledgeCallout = Node.create({
 export const KeyTakeaways = Node.create({
   name: 'keyTakeaways',
   group: 'block',
-  atom: true,
-
-  addAttributes() {
-    return {
-      title: {
-        default: 'TL;DR / Key Takeaways',
-      },
-      points: {
-        default: ['Ý chính số 1 (nhập tại đây)', 'Ý chính số 2 (nhập tại đây)'],
-      },
-    };
-  },
+  content: 'bulletList',
 
   parseHTML() {
     return [
       {
-        tag: 'div[data-type="key-takeaways"]',
-        getAttrs: (element) => {
-          if (!(element instanceof HTMLElement)) return false;
-          let points = ['Ý chính số 1', 'Ý chính số 2'];
-          try {
-            points = JSON.parse(element.getAttribute('data-points') || '[]');
-          } catch (e) {}
-          return {
-            title: element.getAttribute('data-title'),
-            points: points,
-          };
-        },
+        tag: 'details.kd-key-takeaways',
+        contentElement: '.kd-takeaways-content',
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    const points = Array.isArray(HTMLAttributes.points) ? HTMLAttributes.points : [];
-    
     return [
-      'div',
+      'details',
       mergeAttributes(HTMLAttributes, {
-        'data-type': 'key-takeaways',
-        'data-points': JSON.stringify(points),
-        class: 'kd-key-takeaways my-8 p-6 bg-brand-orange/5 border-l-4 border-brand-orange',
+        class: 'kd-key-takeaways mb-8 border border-brand-orange/30 bg-brand-orange/5 rounded-lg overflow-hidden group',
       }),
-      ['h3', { class: 'font-orbitron font-bold text-xl mb-4 text-brand-orange uppercase tracking-wider flex items-center gap-2' }, 
-        ['span', { class: 'text-2xl' }, '💡'], 
-        HTMLAttributes.title
+      ['summary', { class: 'font-orbitron font-bold text-xl p-6 cursor-pointer text-brand-orange uppercase tracking-wider flex items-center gap-2 hover:bg-brand-orange/10 transition-colors outline-none list-none' },
+        ['span', { class: 'text-2xl' }, '💡'],
+        'TL;DR / KEY TAKEAWAYS'
       ],
-      ['ul', { class: 'list-disc list-inside space-y-2 font-be-vietnam text-foreground/90' },
-        ...points.map((point: string) => ['li', {}, point])
-      ],
+      ['div', { class: 'kd-takeaways-content p-6 pt-0 font-be-vietnam text-foreground/90' }, 0],
     ];
+  },
+
+  addNodeView() {
+    return ({ HTMLAttributes }) => {
+      const dom = document.createElement('details');
+      dom.classList.add('kd-key-takeaways', 'mb-8', 'border', 'border-brand-orange/30', 'bg-brand-orange/5', 'rounded-lg', 'overflow-hidden', 'group');
+      // Copy attributes over
+      Object.entries(HTMLAttributes).forEach(([key, value]) => {
+        if (value !== null) {
+          dom.setAttribute(key, value);
+        }
+      });
+      // By default collapsed
+      // dom.open = true;
+
+      const summary = document.createElement('summary');
+      summary.classList.add('font-orbitron', 'font-bold', 'text-xl', 'p-6', 'cursor-pointer', 'text-brand-orange', 'uppercase', 'tracking-wider', 'flex', 'items-center', 'gap-2', 'hover:bg-brand-orange/10', 'transition-colors', 'outline-none', 'list-none');
+      summary.innerHTML = '<span class="text-2xl">💡</span>TL;DR / KEY TAKEAWAYS';
+      
+      const content = document.createElement('div');
+      content.classList.add('kd-takeaways-content', 'p-6', 'pt-0', 'font-be-vietnam', 'text-foreground/90');
+
+      dom.append(summary, content);
+
+      return {
+        dom,
+        contentDOM: content,
+        update: (updatedNode) => {
+          if (updatedNode.type.name !== 'keyTakeaways') return false;
+          return true;
+        },
+        ignoreMutation: (mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'open') return true;
+          return false;
+        },
+        stopEvent: (e) => {
+          if (e.target === summary || summary.contains(e.target as globalThis.Node)) {
+            return true;
+          }
+          return false;
+        }
+      };
+    };
   },
 });
 
 export const FAQBlock = Node.create({
   name: 'faqBlock',
   group: 'block',
-  atom: true,
+  content: 'inline*',
 
   addAttributes() {
     return {
       question: {
         default: 'Câu hỏi thường gặp (Nhập tại đây)?',
-      },
-      answer: {
-        default: 'Câu trả lời chi tiết (Nhập tại đây).',
-      },
+      }
     };
   },
 
@@ -334,10 +347,10 @@ export const FAQBlock = Node.create({
         tag: 'details.faq-block',
         getAttrs: (element) => {
           if (!(element instanceof HTMLElement)) return false;
-          const summary = element.querySelector('summary')?.textContent || '';
-          const body = element.querySelector('.faq-answer')?.textContent || '';
-          return { question: summary, answer: body };
+          const summary = element.querySelector('summary')?.textContent?.trim() || '';
+          return { question: summary };
         },
+        contentElement: '.faq-answer',
       },
     ];
   },
@@ -346,13 +359,58 @@ export const FAQBlock = Node.create({
     return [
       'details',
       mergeAttributes(HTMLAttributes, {
-        class: 'faq-block group mb-4 border border-white/10 bg-cyber-black/40 rounded-sm overflow-hidden',
+        class: 'faq-block group mb-4 rounded-sm overflow-hidden',
       }),
       ['summary', { class: 'font-orbitron font-semibold p-4 cursor-pointer text-brand-orange hover:bg-brand-orange/10 transition-colors list-none outline-none' }, 
         HTMLAttributes.question
       ],
-      ['div', { class: 'faq-answer p-4 font-be-vietnam text-foreground/80 border-t border-white/5 leading-relaxed bg-black/20' }, HTMLAttributes.answer],
+      ['div', { class: 'faq-answer p-4 font-be-vietnam leading-relaxed' }, 0],
     ];
+  },
+
+  addNodeView() {
+    return ({ node, HTMLAttributes }) => {
+      const dom = document.createElement('details');
+      dom.classList.add('faq-block', 'group', 'mb-4', 'rounded-sm', 'overflow-hidden');
+      Object.entries(HTMLAttributes).forEach(([key, value]) => {
+        if (value !== null) {
+          dom.setAttribute(key, value);
+        }
+      });
+      // By default collapsed
+      // dom.open = true;
+
+      const summary = document.createElement('summary');
+      summary.classList.add('font-orbitron', 'font-semibold', 'p-4', 'cursor-pointer', 'text-brand-orange', 'hover:bg-brand-orange/10', 'transition-colors', 'list-none', 'outline-none');
+      summary.textContent = node.attrs.question || 'Câu hỏi thường gặp (Nhập tại đây)?';
+
+      const content = document.createElement('div');
+      content.classList.add('faq-answer', 'p-4', 'font-be-vietnam', 'leading-relaxed');
+
+      dom.append(summary, content);
+
+      return {
+        dom,
+        contentDOM: content,
+        update: (updatedNode) => {
+          if (updatedNode.type.name !== 'faqBlock') return false;
+          if (summary.textContent !== updatedNode.attrs.question) {
+            summary.textContent = updatedNode.attrs.question || 'Câu hỏi thường gặp (Nhập tại đây)?';
+          }
+          return true;
+        },
+        ignoreMutation: (mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'open') return true;
+          return false;
+        },
+        stopEvent: (e) => {
+          if (e.target === summary || summary.contains(e.target as globalThis.Node)) {
+            return true;
+          }
+          return false;
+        }
+      };
+    };
   },
 });
 

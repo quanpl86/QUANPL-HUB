@@ -57,7 +57,7 @@ import { uploadEditorAsset } from '@/app/actions/editor-assets';
 import { toast } from 'sonner';
 
 type EditorMode = 'simple' | 'matrix' | 'agent';
-type PromptType = 'image' | 'youtube' | 'scratch' | 'sketchfab' | 'link' | 'upload_meta';
+type PromptType = 'image' | 'youtube' | 'scratch' | 'sketchfab' | 'link' | 'upload_meta' | 'import_ai';
 type WorkflowMarkdownStep = {
   label: string;
   title: string;
@@ -391,39 +391,65 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
       return;
     }
 
-    if (!value) { setPromptConfig(p => ({ ...p, isOpen: false })); return; }
+    if (!value && promptConfig.type !== 'import_ai') { setPromptConfig(p => ({ ...p, isOpen: false })); return; }
     switch (promptConfig.type) {
       case 'image': editor.chain().focus().setImage({ src: value, alt: secondaryValue || '' }).run(); break;
       case 'youtube': editor.chain().focus().setYoutubeVideo({ src: value }).run(); break;
       case 'scratch': editor.chain().focus().insertContent({ type: 'scratchEmbed', attrs: { projectId: value } }).run(); break;
       case 'sketchfab': editor.chain().focus().insertContent({ type: 'sketchfabEmbed', attrs: { modelId: value } }).run(); break;
       case 'link': editor.chain().focus().extendMarkRange('link').setLink({ href: value }).run(); break;
+      case 'import_ai': {
+        let rawContent = value;
+
+        // 1. Nhận diện và chuyển đổi [BLOCK: KEY TAKEAWAYS]
+        rawContent = rawContent.replace(/\[BLOCK:\s*KEY\s*TAKEAWAYS[^\]]*\]\s*(?:\*\([^\)]*\)\*\s*)?([\s\S]*?)(?=\n\n|\n## |$)/g, (match, listContent) => {
+          const points = listContent.split('\n').filter((line: string) => line.trim().startsWith('-')).map((line: string) => line.replace(/^-\s*/, '').trim()).filter(Boolean);
+          if (points.length === 0) return match;
+          return `\n<details class="kd-key-takeaways mb-8 border border-brand-orange/30 bg-brand-orange/5 rounded-lg overflow-hidden group">
+            <summary class="font-orbitron font-bold text-xl p-6 cursor-pointer text-brand-orange uppercase tracking-wider flex items-center gap-2 hover:bg-brand-orange/10 transition-colors outline-none list-none"><span class="text-2xl">💡</span>TL;DR / Key Takeaways</summary>
+            <div class="kd-takeaways-content p-6 pt-0 font-be-vietnam text-foreground/90">
+              <ul>
+                ${points.map((p: string) => `<li>${marked.parseInline(p)}</li>`).join('')}
+              </ul>
+            </div>
+          </details>\n`;
+        });
+
+        // 2. Nhận diện và chuyển đổi [BLOCK: FAQ]
+        rawContent = rawContent.replace(/\[BLOCK:\s*FAQ[^\]]*\]\s*(?:\*\([^\)]*\)\*\s*)?([\s\S]*?)(?=\n\n\n|\n\-\-\-|\nNguồn|$)/g, (match, content) => {
+          const qnaRegex = /\*\*Hỏi:\s*(.*?)\*\*\s*(?:\r?\n)?\*\*Đáp:\*\*\s*([\s\S]*?)(?=\*\*Hỏi:|$)/g;
+          let result = '\n';
+          let qnaMatch;
+          let hasMatch = false;
+          while ((qnaMatch = qnaRegex.exec(content)) !== null) {
+            hasMatch = true;
+            const q = qnaMatch[1].trim();
+            const a = qnaMatch[2].trim();
+            result += `<details class="faq-block group mb-4 rounded-sm overflow-hidden">
+              <summary class="font-orbitron font-semibold p-4 cursor-pointer text-brand-orange hover:bg-brand-orange/10 transition-colors list-none outline-none">${marked.parseInline(q)}</summary>
+              <div class="faq-answer p-4 font-be-vietnam leading-relaxed">${marked.parseInline(a)}</div>
+            </details>\n`;
+          }
+          return hasMatch ? result : match;
+        });
+
+        const workflowHtml = convertWorkflowMarkdownSections(rawContent);
+        if (workflowHtml && workflowHtml !== rawContent) {
+          rawContent = workflowHtml;
+        } else {
+          rawContent = await marked.parse(rawContent, { gfm: true, breaks: true });
+        }
+        
+        editor.commands.setContent(rawContent);
+        toast.success('Đã import và parse thành công dữ liệu từ AI!');
+        break;
+      }
     }
     setPromptConfig(p => ({ ...p, isOpen: false }));
   };
 
   const openPrompt = (type: PromptType, title: string, placeholder: string, defaultValue = '', secondaryPlaceholder?: string) => {
     setPromptConfig({ isOpen: true, type, title, placeholder, defaultValue, secondaryPlaceholder });
-  };
-
-  const handleMagicMarkdown = async () => {
-    if (!editor) return;
-    const rawContent = editor.getText(); // Lấy văn bản thô
-    const workflowHtml = convertWorkflowMarkdownSections(rawContent);
-
-    if (workflowHtml) {
-      editor.commands.setContent(workflowHtml);
-      toast.success('Đã nhận diện workflow trong Markdown và chuyển đúng block quy trình.');
-      return;
-    }
-    
-    // Sử dụng thư viện marked với cấu hình tối ưu
-    const html = await marked.parse(rawContent, {
-      gfm: true,
-      breaks: true
-    });
-
-    editor.commands.setContent(html);
   };
 
   const insertWorkflowTimeline = () => {
@@ -539,9 +565,9 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
           <div className="flex flex-wrap items-center gap-1">
             {/* Group 1: History & Magic */}
               <div className="flex items-center gap-0.5">
+              <button type="button" onClick={() => openPrompt('import_ai', 'NHẬP NỘI DUNG TỪ AI', 'Dán toàn bộ văn bản Markdown từ AI vào đây...')} className="p-2 text-brand-orange hover:bg-brand-orange/10 font-bold px-4 flex items-center gap-2 border border-brand-orange/20 mr-2 rounded-sm" title="Import toàn bộ Markdown từ AI"><Wand2 size={16} /> MAGIC IMPORT</button>
               <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Hoàn tác"><Undo size={16} /></button>
               <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Làm lại"><Redo size={16} /></button>
-              <button type="button" onClick={handleMagicMarkdown} className="p-2 text-brand-orange hover:bg-brand-orange/10 rounded-full transition-all animate-pulse" title="Phép thuật Markdown: Chuyển MD sang HTML"><Wand2 size={16} /></button>
             </div>
 
             <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
@@ -825,7 +851,16 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
         </div>
       </div>
 
-      <CyberPrompt {...promptConfig} onConfirm={handlePromptConfirm} onCancel={() => setPromptConfig(p => ({ ...p, isOpen: false }))} />
+      <CyberPrompt 
+        isOpen={promptConfig.isOpen}
+        title={promptConfig.title}
+        placeholder={promptConfig.placeholder}
+        secondaryPlaceholder={promptConfig.secondaryPlaceholder}
+        defaultValue={promptConfig.defaultValue}
+        isTextArea={promptConfig.type === 'import_ai'}
+        onConfirm={handlePromptConfirm}
+        onCancel={() => setPromptConfig(p => ({ ...p, isOpen: false }))}
+      />
 
       <ImageCropModal 
         isOpen={cropModalConfig.isOpen} 

@@ -361,6 +361,43 @@ body {
   margin: 0 !important;
 }
 
+.king-dragon-content .faq-block,
+.ProseMirror .faq-block {
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background-color: rgba(15, 23, 42, 0.03) !important;
+}
+
+.dark .king-dragon-content .faq-block,
+.dark .ProseMirror .faq-block {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.king-dragon-content .kd-takeaways-content ul,
+.ProseMirror .kd-takeaways-content ul {
+  list-style-type: disc !important;
+  list-style-position: inside !important;
+}
+
+.king-dragon-content .kd-takeaways-content li,
+.ProseMirror .kd-takeaways-content li {
+  margin-bottom: 0.75rem !important;
+}
+
+.king-dragon-content .faq-answer,
+.ProseMirror .faq-answer {
+  border-top: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background-color: rgba(15, 23, 42, 0.03) !important;
+  color: var(--foreground) !important;
+  opacity: 0.95 !important;
+}
+
+.dark .king-dragon-content .faq-answer,
+.dark .ProseMirror .faq-answer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
 .king-dragon-content .kd-chart-block,
 .king-dragon-content .kd-drawing-board,
 .ProseMirror .kd-chart-block,

@@ -117,7 +117,7 @@ export default async function PostPage({ params }: PostPageProps) {
   };
 
   // Trích xuất FAQ block để tạo FAQPage Schema
-  const faqRegex = /<details[^>]*class="[^"]*faq-block[^"]*"[^>]*>.*?<summary[^>]*>(.*?)<\/summary>.*?<div[^>]*class="[^"]*faq-answer[^"]*"[^>]*>(.*?)<\/div>.*?<\/details>/gs;
+  const faqRegex = /<details[^>]*class="[^"]*faq-block[^"]*"[^>]*>[\s\S]*?<summary[^>]*>([\s\S]*?)<\/summary>[\s\S]*?<div[^>]*class="[^"]*faq-answer[^"]*"[^>]*>([\s\S]*?)<\/div>[\s\S]*?<\/details>/g;
   const faqs = [];
   let match;
   while ((match = faqRegex.exec(post.content || '')) !== null) {
