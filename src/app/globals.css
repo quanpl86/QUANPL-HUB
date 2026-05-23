@@ -49,13 +49,22 @@ html {
 }
 
 .theme-reading {
-  --background: #fbf0d9; /* Distinct warm paper yellow, like a physical book */
-  --foreground: #3a2e25; /* Deep espresso brown for high, comfortable contrast */
-  --card-bg: #f5e8cd; /* Slightly darker parchment for cards */
-  --card-border: rgba(58, 46, 37, 0.15);
-  --card-shadow: rgba(58, 46, 37, 0.08);
-  --muted: #7a6859; /* Muted brown-grey */
-  --grid-color: rgba(58, 46, 37, 0.06); /* Subtle warm grid */
+  --background: #f4f4f4; /* Neutral e-ink grey background */
+  --foreground: #111111; /* Near pure black for maximum text contrast */
+  --card-bg: #ffffff; /* Pure white for cards to stand out */
+  --card-border: rgba(0, 0, 0, 0.15);
+  --card-shadow: rgba(0, 0, 0, 0.05);
+  --muted: #555555; /* Dark grey for secondary text */
+  --grid-color: rgba(0, 0, 0, 0.05); /* Very subtle grid */
+  --color-brand-orange: #111111; /* Override brand orange to black for pure B&W experience */
+}
+
+/* Make all media black and white in reading mode */
+.theme-reading img,
+.theme-reading video,
+.theme-reading iframe,
+.theme-reading svg.text-brand-orange {
+  filter: grayscale(100%) contrast(1.15);
 }
 
 html, body {
