@@ -9,13 +9,13 @@ export function ThemeToggle() {
 
   const getBgClass = () => {
     if (theme === 'dark') return 'bg-slate-800';
-    if (theme === 'sepia') return 'bg-[#dcdbd7]'; // Muted Kindle frame
+    if (theme === 'theme-reading') return 'bg-[#dcdbd7]'; // Muted Kindle frame
     return 'bg-slate-200';
   };
 
   const getThumbClass = () => {
     if (theme === 'dark') return 'left-9 bg-cyber-black';
-    if (theme === 'sepia') return 'left-5 bg-[#eae9e5]'; // Neutral Kindle background
+    if (theme === 'theme-reading') return 'left-5 bg-[#eae9e5]'; // Neutral Kindle background
     return 'left-1 bg-white';
   };
 
@@ -30,7 +30,7 @@ export function ThemeToggle() {
         ${getThumbClass()}
       `}>
         {theme === 'dark' && <Moon className="w-3.5 h-3.5 text-brand-orange" />}
-        {theme === 'sepia' && <BookOpen className="w-3.5 h-3.5 text-brand-orange" />}
+        {theme === 'theme-reading' && <BookOpen className="w-3.5 h-3.5 text-brand-orange" />}
         {theme === 'light' && <Sun className="w-3.5 h-3.5 text-brand-orange" />}
       </div>
       

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light' | 'sepia';
+type Theme = 'dark' | 'light' | 'theme-reading';
 
 interface ThemeContextType {
   theme: Theme;
@@ -21,13 +21,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initialTheme = savedTheme || systemTheme;
     
-    setThemeState(initialTheme);
-    applyTheme(initialTheme);
+    // Convert old 'sepia' to 'theme-reading' if exists in localstorage
+    const safeInitialTheme = initialTheme === 'sepia' as any ? 'theme-reading' : initialTheme;
+    
+    setThemeState(safeInitialTheme);
+    applyTheme(safeInitialTheme);
   }, []);
 
   const applyTheme = (t: Theme) => {
     const root = window.document.documentElement;
-    root.classList.remove('light', 'dark', 'sepia');
+    root.classList.remove('light', 'dark', 'sepia', 'theme-reading');
     root.classList.add(t);
     localStorage.setItem('kingdragon-theme', t);
   };
@@ -38,8 +41,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleTheme = () => {
-    // Cycle: light -> sepia -> dark -> light
-    const newTheme = theme === 'light' ? 'sepia' : theme === 'sepia' ? 'dark' : 'light';
+    // Cycle: light -> theme-reading -> dark -> light
+    const newTheme = theme === 'light' ? 'theme-reading' : theme === 'theme-reading' ? 'dark' : 'light';
     setTheme(newTheme);
   };
 
