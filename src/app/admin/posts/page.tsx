@@ -41,6 +41,7 @@ export default async function AdminPostsPage() {
                     src={post.image_url} 
                     alt={post.title} 
                     fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     className="object-cover border border-brand-orange/20" 
                   />
                 </div>

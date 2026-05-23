@@ -13,16 +13,9 @@ export const ImageCropModal = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const [cropper, setCropper] = useState<CropperJS | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setImageLoaded(false);
-    }
-  }, [isOpen, src]);
-
-  useEffect(() => {
-    if (isOpen && imageRef.current && imageLoaded) {
+    if (isOpen && imageRef.current) {
       const cropperInstance = new CropperJS(imageRef.current, {
         viewMode: 1,
         autoCropArea: 1,
@@ -49,7 +42,7 @@ export const ImageCropModal = ({
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high',
       });
-      
+
       if (!canvas) {
         setIsProcessing(false);
         onCancel();
@@ -68,7 +61,7 @@ export const ImageCropModal = ({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -93,22 +86,13 @@ export const ImageCropModal = ({
             </div>
 
             <div className="relative flex-grow bg-black overflow-hidden p-4 flex items-center justify-center">
-              {!imageLoaded && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black">
-                  <div className="w-8 h-8 border-2 border-brand-orange/30 border-t-brand-orange rounded-full animate-spin mb-4"></div>
-                  <div className="text-brand-orange font-mono text-[10px] tracking-widest uppercase animate-pulse">
-                    ĐANG TẢI ẢNH VÀ CÔNG CỤ CROP...
-                  </div>
-                </div>
-              )}
-              <div className="w-full h-full max-h-full max-w-full" style={{ opacity: imageLoaded ? 1 : 0, transition: 'opacity 0.3s' }}>
-                <img 
-                  ref={imageRef} 
-                  src={src} 
-                  alt="Crop" 
-                  crossOrigin="anonymous" 
-                  style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }}
-                  onLoad={() => setImageLoaded(true)}
+              <div className="w-full h-full max-h-full max-w-full">
+                <img
+                  ref={imageRef}
+                  src={src}
+                  alt="Crop"
+                  crossOrigin="anonymous"
+                  style={{ display: 'block', maxWidth: '100%' }}
                 />
               </div>
             </div>
@@ -125,13 +109,13 @@ export const ImageCropModal = ({
                     <ZoomOut size={18} />
                   </button>
                 </div>
-                
+
                 <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded overflow-hidden">
                   <button type="button" onClick={() => cropper?.rotate(90)} className="p-2 hover:bg-brand-orange/20 text-white hover:text-brand-orange transition-colors" title="Xoay phải 90 độ">
                     <RotateCw size={18} />
                   </button>
                 </div>
-                
+
                 <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded overflow-hidden">
                   <button type="button" onClick={() => cropper?.reset()} className="px-3 py-2 hover:bg-brand-orange/20 text-white hover:text-brand-orange transition-colors font-mono text-[10px] uppercase tracking-widest" title="Đặt lại">
                     Reset
@@ -140,19 +124,19 @@ export const ImageCropModal = ({
               </div>
 
               <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={onCancel}
                   disabled={isProcessing}
                   className="px-6 py-2 font-mono text-[10px] text-red-500/80 hover:text-red-700 uppercase tracking-widest transition-colors font-bold border border-transparent hover:border-red-500/20 disabled:opacity-50"
                 >
                   [ HỦY BỎ ]
                 </button>
-                <CyberButton 
-                  type="button" 
+                <CyberButton
+                  type="button"
                   onClick={handleConfirm}
                   disabled={isProcessing}
-                  variant="primary" 
+                  variant="primary"
                   className="px-8 h-10 text-[12px]"
                 >
                   {isProcessing ? 'ĐANG XỬ LÝ...' : 'LƯU HÌNH ẢNH'}

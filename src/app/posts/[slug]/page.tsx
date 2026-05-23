@@ -122,6 +122,7 @@ export default async function PostPage({ params }: PostPageProps) {
             src={post.image_url} 
             alt={post.title} 
             fill
+            sizes="100vw"
             priority
             className="object-cover opacity-60 dark:opacity-50"
           />

@@ -93,6 +93,7 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
                       src={data.image_url} 
                       alt={data.title || 'Preview Image'} 
                       fill
+                      sizes="100vw"
                       className="object-cover opacity-50" 
                     />
                   ) : (
