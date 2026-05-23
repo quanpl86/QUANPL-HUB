@@ -441,12 +441,12 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     try {
       const result = await uploadEditorAsset(formData);
 
-      if (!result.success || !('url' in result)) {
+      if (!result.success || !('url' in result) || !result.url) {
         toast.error('error' in result ? result.error : 'Không thể tải ảnh lên.');
         return;
       }
 
-      editor.chain().focus().setImage({ src: result.url, alt: file.name }).run();
+      editor.chain().focus().setImage({ src: result.url as string, alt: file.name }).run();
       toast.success(`Đã tải ảnh lên ${result.provider === 'github' ? 'GitHub' : 'Supabase'} và chèn vào bài viết.`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Không thể tải ảnh lên.');
