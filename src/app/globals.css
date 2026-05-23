@@ -217,3 +217,233 @@ body {
   border: 1px solid rgba(249, 115, 22, 0.2) !important;
   overflow-x: auto !important;
 }
+
+.king-dragon-content .kd-timeline,
+.ProseMirror .kd-timeline {
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.05), rgba(15, 23, 42, 0.015));
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  border-left: 4px solid #f97316;
+  color: var(--foreground);
+  margin: 2.5rem 0;
+  padding: 1.5rem 1.25rem 1.5rem 1.4rem;
+}
+
+.king-dragon-content .kd-timeline-title,
+.ProseMirror .kd-timeline-title {
+  border-bottom: 1px solid rgba(249, 115, 22, 0.25) !important;
+  color: #f97316 !important;
+  letter-spacing: 0.02em !important;
+  margin: 0 0 1rem !important;
+  padding: 0 0 0.55rem !important;
+  text-transform: uppercase !important;
+}
+
+.king-dragon-content .kd-timeline-intro,
+.ProseMirror .kd-timeline-intro {
+  color: var(--foreground) !important;
+  line-height: 1.7 !important;
+  margin-bottom: 2rem !important;
+}
+
+.king-dragon-content .kd-timeline-list,
+.ProseMirror .kd-timeline-list {
+  display: grid;
+  gap: 1rem;
+  position: relative;
+}
+
+.king-dragon-content .kd-timeline-list::before,
+.ProseMirror .kd-timeline-list::before {
+  background-image: linear-gradient(to bottom, rgba(249, 115, 22, 0.8) 45%, rgba(15, 23, 42, 0.18) 45%);
+  background-size: 1px 7px;
+  bottom: 1.8rem;
+  content: '';
+  left: 0.7rem;
+  position: absolute;
+  top: 1.55rem;
+  width: 1px;
+}
+
+.king-dragon-content .kd-timeline-step,
+.ProseMirror .kd-timeline-step {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1.45rem 1fr;
+  position: relative;
+}
+
+.king-dragon-content .kd-timeline-content,
+.ProseMirror .kd-timeline-content {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-left: 3px solid rgba(249, 115, 22, 0.7);
+  padding: 0.9rem 1rem 1rem;
+}
+
+.king-dragon-content .kd-timeline-marker,
+.ProseMirror .kd-timeline-marker {
+  align-self: start;
+  background: #0f172a;
+  border: 2px solid #f97316;
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px var(--background), 0 8px 18px rgba(15, 23, 42, 0.12);
+  color: #fff7ed;
+  display: grid;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  height: 1.45rem;
+  line-height: 1;
+  place-items: center;
+  position: relative;
+  width: 1.45rem;
+  z-index: 1;
+}
+
+.king-dragon-content .kd-timeline-label,
+.ProseMirror .kd-timeline-label {
+  color: #f97316 !important;
+  display: inline-flex;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 0.78rem !important;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.45rem !important;
+  text-transform: uppercase;
+}
+
+.king-dragon-content .kd-timeline-heading,
+.ProseMirror .kd-timeline-heading {
+  color: #0f172a !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.35 !important;
+  margin: 0 0 0.35rem !important;
+  text-transform: none !important;
+}
+
+.king-dragon-content .kd-timeline-body,
+.ProseMirror .kd-timeline-body {
+  color: var(--foreground) !important;
+  line-height: 1.7 !important;
+  margin: 0 !important;
+}
+
+.king-dragon-content .kd-callout,
+.ProseMirror .kd-callout {
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-left: 5px solid #f97316;
+  background: rgba(249, 115, 22, 0.06);
+  padding: 1.25rem 1.5rem;
+}
+
+.king-dragon-content .kd-callout-kicker,
+.ProseMirror .kd-callout-kicker {
+  color: #f97316 !important;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.18em;
+  margin-bottom: 0.5rem !important;
+}
+
+.king-dragon-content .kd-callout-title,
+.ProseMirror .kd-callout-title {
+  color: var(--foreground) !important;
+  text-transform: none !important;
+  margin: 0 0 0.5rem !important;
+}
+
+.king-dragon-content .kd-callout-body,
+.ProseMirror .kd-callout-body {
+  color: var(--foreground) !important;
+  margin: 0 !important;
+}
+
+.king-dragon-content .kd-chart-block,
+.king-dragon-content .kd-drawing-board,
+.ProseMirror .kd-chart-block,
+.ProseMirror .kd-drawing-board {
+  border: 1px dashed rgba(249, 115, 22, 0.35);
+  background: rgba(249, 115, 22, 0.04);
+  padding: 1.5rem;
+}
+
+.king-dragon-content .kd-chart-bars,
+.ProseMirror .kd-chart-bars {
+  min-height: 180px;
+  display: flex;
+  align-items: end;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.king-dragon-content .kd-chart-bars span,
+.ProseMirror .kd-chart-bars span {
+  display: block;
+  width: 18%;
+  background: linear-gradient(to top, rgba(249, 115, 22, 0.75), rgba(249, 115, 22, 0.18));
+}
+
+.king-dragon-content .kd-chart-bars span:nth-child(1),
+.ProseMirror .kd-chart-bars span:nth-child(1) { height: 35%; }
+.king-dragon-content .kd-chart-bars span:nth-child(2),
+.ProseMirror .kd-chart-bars span:nth-child(2) { height: 70%; }
+.king-dragon-content .kd-chart-bars span:nth-child(3),
+.ProseMirror .kd-chart-bars span:nth-child(3) { height: 50%; }
+.king-dragon-content .kd-chart-bars span:nth-child(4),
+.ProseMirror .kd-chart-bars span:nth-child(4) { height: 88%; }
+
+.king-dragon-content .kd-drawing-grid,
+.ProseMirror .kd-drawing-grid {
+  min-height: 180px;
+  background-size: 28px 28px;
+  background-image: linear-gradient(to right, rgba(249, 115, 22, 0.08) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(249, 115, 22, 0.08) 1px, transparent 1px);
+  position: relative;
+  overflow: hidden;
+}
+
+.king-dragon-content .kd-drawing-grid span,
+.ProseMirror .kd-drawing-grid span {
+  position: absolute;
+  border: 1px solid rgba(249, 115, 22, 0.55);
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.king-dragon-content .kd-drawing-grid span:nth-child(1),
+.ProseMirror .kd-drawing-grid span:nth-child(1) {
+  width: 34%;
+  height: 42%;
+  left: 8%;
+  top: 20%;
+}
+
+.king-dragon-content .kd-drawing-grid span:nth-child(2),
+.ProseMirror .kd-drawing-grid span:nth-child(2) {
+  width: 24%;
+  height: 24%;
+  right: 12%;
+  top: 14%;
+  border-radius: 999px;
+}
+
+.king-dragon-content .kd-drawing-grid span:nth-child(3),
+.ProseMirror .kd-drawing-grid span:nth-child(3) {
+  width: 48%;
+  height: 1px;
+  left: 35%;
+  top: 58%;
+  transform: rotate(-16deg);
+}
+
+.king-dragon-content .kd-chart-block figcaption,
+.king-dragon-content .kd-drawing-board figcaption,
+.ProseMirror .kd-chart-block figcaption,
+.ProseMirror .kd-drawing-board figcaption {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  color: var(--muted);
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   useEditor, 
   EditorContent,
@@ -8,6 +8,7 @@ import {
   NodeViewWrapper,
   ReactNodeViewRenderer
 } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/react';
 import { BubbleMenu, FloatingMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import { BubbleMenu as BubbleMenuExtension } from '@tiptap/extension-bubble-menu';
@@ -32,24 +33,155 @@ import { CharacterCount } from '@tiptap/extension-character-count';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
+import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model';
 import { all, createLowlight } from 'lowlight';
 import { motion } from 'framer-motion';
 import { marked } from 'marked';
 
 const lowlight = createLowlight(all);
 
-import { 
-  Bold, Italic, Underline as UnderIcon, List, ListOrdered, Heading1, Heading2, Code, Image as ImageIcon, 
-  Play as YoutubeIcon, Box, Monitor, Link as LinkIcon, Quote, Minus, Undo, Redo,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Table as TableIcon, Highlighter,
-  CheckSquare, Superscript as Supra, Subscript as Infra, Type, Zap, Command, Cpu,
-  ListTodo, Search, Maximize2, Minimize2, ChevronDown, Terminal, Wand2,
-  Palette, PaintBucket, Eraser
+import {
+  AlignCenter, AlignJustify, AlignLeft, AlignRight, BarChart3, Bold, CheckSquare, Code, Command, Cpu,
+  Eraser, GitBranch, Heading1, Heading2, Highlighter, Image as ImageIcon, ImagePlus, Italic,
+  LayoutTemplate, Link as LinkIcon, List, ListOrdered, ListTodo, Maximize2, Minimize2, Minus, Monitor,
+  PaintBucket, Palette, PanelTop, PenTool, Play as YoutubeIcon, Quote, Redo, Subscript as Infra,
+  Superscript as Supra, Table as TableIcon, Terminal, Type, Underline as UnderIcon, Undo, UploadCloud,
+  Wand2, Zap
 } from 'lucide-react';
 import { CyberPrompt } from '@/components/ui/CyberPrompt';
-import { ScratchEmbed, SketchfabEmbed } from './CustomExtensions';
+import { ChartBlock, DrawingBoard, KnowledgeCallout, ScratchEmbed, SketchfabEmbed, WorkflowTimeline } from './CustomExtensions';
+import { uploadEditorAsset } from '@/app/actions/editor-assets';
+import { toast } from 'sonner';
 
 type EditorMode = 'simple' | 'matrix' | 'agent';
+type PromptType = 'image' | 'youtube' | 'scratch' | 'sketchfab' | 'link';
+type WorkflowMarkdownStep = {
+  label: string;
+  title: string;
+  body: string;
+};
+
+type WorkflowMarkdownBlock = {
+  title: string;
+  intro: string;
+  steps: WorkflowMarkdownStep[];
+  start: number;
+  end: number;
+};
+
+const workflowItemPattern = /(?:^|\n)\s*(\d+)\.\s+\*\*(.+?)\*\*\s*(?:[:\-–—])?\s*(Bước\s*\d+)\.?\s*\n([\s\S]*?)(?=\n\s*\d+\.\s+\*\*|\n\s*(?:-{3,}\s*\n\s*)?##\s+|$)/g;
+
+function normalizeMarkdownForEditor(markdown: string) {
+  return markdown
+    .replace(/\r\n/g, '\n')
+    .replace(/([^\n])\s+(-{3,})\s+(?=#{1,6}\s+)/g, '$1\n\n$2\n\n')
+    .replace(/([^\n])\s+(#{1,6}\s+\d+[\s.])/g, '$1\n\n$2')
+    .replace(/([^\n])\s+(\d+\.\s+\*\*)/g, '$1\n\n$2')
+    .replace(/\s+(-{3,})\s+(?=\*?XEM TRƯỚC|VỊ TRÍ|#{1,6}\s+|\d+\.\s+\*\*)/gi, '\n\n$1\n\n');
+}
+
+function normalizeWorkflowTitle(title: string) {
+  return title.replace(/\s+/g, ' ').replace(/[:：]\s*$/, '').trim();
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderMarkdownSync(markdown: string) {
+  const trimmed = markdown.trim();
+  if (!trimmed) return '';
+
+  const rendered = marked.parse(trimmed, {
+    gfm: true,
+    breaks: true,
+  });
+
+  return typeof rendered === 'string' ? rendered : escapeHtml(trimmed);
+}
+
+function workflowToHtml(workflow: WorkflowMarkdownBlock) {
+  const steps = workflow.steps.map((step) => ({
+    label: step.label,
+    title: step.title,
+    body: step.body,
+  }));
+  const dataSteps = escapeHtml(JSON.stringify(steps));
+
+  return `
+    <section data-type="workflow-timeline" data-title="${escapeHtml(workflow.title)}" data-intro="${escapeHtml(workflow.intro)}" data-steps="${dataSteps}" class="kd-timeline my-10">
+      <h2 class="kd-timeline-title">${escapeHtml(workflow.title)}</h2>
+      <p class="kd-timeline-intro">${escapeHtml(workflow.intro)}</p>
+      <div class="kd-timeline-list">
+        ${steps.map((step, index) => `
+          <article class="kd-timeline-step">
+            <div class="kd-timeline-marker">${index + 1}</div>
+            <div class="kd-timeline-content">
+              <h3 class="kd-timeline-heading">${escapeHtml(step.title)}</h3>
+              <p class="kd-timeline-label">${escapeHtml(step.label)}</p>
+              <p class="kd-timeline-body">${escapeHtml(step.body)}</p>
+            </div>
+          </article>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function parseWorkflowMarkdown(markdown: string): WorkflowMarkdownBlock | null {
+  const source = normalizeMarkdownForEditor(markdown);
+  workflowItemPattern.lastIndex = 0;
+  const firstItemMatch = workflowItemPattern.exec(source);
+  workflowItemPattern.lastIndex = 0;
+  if (!firstItemMatch) return null;
+
+  const headingMatches = Array.from(source.matchAll(/^##\s+(.+)$/gm))
+    .filter((match) => match.index !== undefined && match.index < firstItemMatch.index);
+  const titleMatch = headingMatches.at(-1);
+  if (!titleMatch || titleMatch.index === undefined) return null;
+
+  const intro = source
+    .slice(titleMatch.index + titleMatch[0].length, firstItemMatch.index)
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+
+  workflowItemPattern.lastIndex = 0;
+  const matches = Array.from(source.matchAll(workflowItemPattern));
+  const steps = matches.map((match) => ({
+    label: match[3].replace(/\s+/g, ' ').trim(),
+    title: normalizeWorkflowTitle(match[2]),
+    body: match[4].replace(/\n{2,}/g, '\n').trim(),
+  }));
+
+  if (steps.length < 2) return null;
+  const lastMatch = matches[matches.length - 1];
+  const end = (lastMatch.index ?? source.length) + lastMatch[0].length;
+
+  return {
+    title: titleMatch[1].trim(),
+    intro,
+    steps,
+    start: titleMatch.index,
+    end,
+  };
+}
+
+function convertWorkflowMarkdownSections(markdown: string) {
+  const source = normalizeMarkdownForEditor(markdown);
+  const workflow = parseWorkflowMarkdown(source);
+  if (!workflow) return null;
+
+  return [
+    renderMarkdownSync(source.slice(0, workflow.start)),
+    workflowToHtml(workflow),
+    renderMarkdownSync(source.slice(workflow.end)),
+  ].filter(Boolean).join('\n');
+}
 
 // --- Color Picker Component ---
 const ColorPicker = ({ 
@@ -102,7 +234,7 @@ const ColorPicker = ({
 };
 
 // --- Custom Code Block Component ---
-const CodeBlockComponent = ({ node: { attrs: { language } }, updateAttributes, extension }: any) => {
+const CodeBlockComponent = ({ node: { attrs: { language } }, updateAttributes, extension }: NodeViewProps) => {
   return (
     <NodeViewWrapper className="code-block-wrapper relative group my-8">
       <div className="absolute right-4 top-4 z-10 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -122,7 +254,7 @@ const CodeBlockComponent = ({ node: { attrs: { language } }, updateAttributes, e
         </div>
       </div>
       <pre>
-        <NodeViewContent as={"code" as any} />
+        <NodeViewContent as={'code' as unknown as 'div'} />
       </pre>
     </NodeViewWrapper>
   );
@@ -139,9 +271,12 @@ const CustomCodeBlockLowlight = CodeBlockLowlight.extend({
 export function CyberEditor({ content, onChange }: { content: string, onChange: (html: string) => void }) {
   const [mode, setMode] = useState<EditorMode>('agent');
   const [isFullView, setIsFullView] = useState(false);
+  const [assetProvider, setAssetProvider] = useState<'supabase' | 'github'>('supabase');
+  const [isUploadingAsset, setIsUploadingAsset] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [promptConfig, setPromptConfig] = useState<{
     isOpen: boolean; title: string; placeholder: string; defaultValue: string; 
-    type: 'image' | 'youtube' | 'scratch' | 'sketchfab' | 'link' | null;
+    type: PromptType | null;
   }>({ isOpen: false, title: '', placeholder: '', defaultValue: '', type: null });
 
   const extensions = useMemo(() => [
@@ -162,6 +297,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
       placeholder: mode === 'matrix' ? 'Nhấn / để triệu hồi lệnh ma trận...' : 'ĐANG TRUYỀN TẢI: Bắt đầu nhập nội dung...',
     }),
     ScratchEmbed, SketchfabEmbed,
+    WorkflowTimeline, KnowledgeCallout, ChartBlock, DrawingBoard,
     TaskList, TaskItem.configure({ nested: true }),
     Typography, Superscript, Subscript,
     Color, TextStyle, Link, Underline,
@@ -180,6 +316,21 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     editorProps: {
       attributes: {
         class: ['p-8', 'focus:outline-none', 'min-h-[400px]', 'flex-grow', 'prose', 'dark:prose-invert', 'prose-brand', 'max-w-none', 'prose-headings:font-orbitron', 'prose-headings:uppercase', 'prose-p:font-sans', 'prose-p:text-lg', mode === 'matrix' ? 'prose-h1:text-center prose-h1:mb-16' : ''].filter(Boolean).join(' ')
+      },
+      handlePaste: (view, event) => {
+        const text = event.clipboardData?.getData('text/plain');
+        if (!text) return false;
+
+        const convertedHtml = convertWorkflowMarkdownSections(text);
+        if (!convertedHtml) return false;
+
+        event.preventDefault();
+        const container = document.createElement('div');
+        container.innerHTML = convertedHtml;
+        const slice = ProseMirrorDOMParser.fromSchema(view.state.schema).parseSlice(container);
+        view.dispatch(view.state.tr.replaceSelection(slice));
+        toast.success('Đã tự nhận diện workflow trong Markdown và giữ nguyên các phần nội dung còn lại.');
+        return true;
       }
     }
   });
@@ -214,13 +365,20 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     setPromptConfig(p => ({ ...p, isOpen: false }));
   };
 
-  const openPrompt = (type: any, title: string, placeholder: string, defaultValue = '') => {
+  const openPrompt = (type: PromptType, title: string, placeholder: string, defaultValue = '') => {
     setPromptConfig({ isOpen: true, type, title, placeholder, defaultValue });
   };
 
   const handleMagicMarkdown = async () => {
     if (!editor) return;
     const rawContent = editor.getText(); // Lấy văn bản thô
+    const workflowHtml = convertWorkflowMarkdownSections(rawContent);
+
+    if (workflowHtml) {
+      editor.commands.setContent(workflowHtml);
+      toast.success('Đã nhận diện workflow trong Markdown và chuyển đúng block quy trình.');
+      return;
+    }
     
     // Sử dụng thư viện marked với cấu hình tối ưu
     const html = await marked.parse(rawContent, {
@@ -229,6 +387,73 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     });
 
     editor.commands.setContent(html);
+  };
+
+  const insertWorkflowTimeline = () => {
+    editor.chain().focus().insertContent({
+      type: 'workflowTimeline',
+      attrs: {
+        title: 'Quy trình triển khai thực hành',
+        intro: 'Dùng block này cho các nội dung dạng quy trình, timeline, roadmap hoặc vận hành hệ thống nhiều bước.',
+      },
+    }).run();
+  };
+
+  const insertKnowledgeCallout = () => {
+    editor.chain().focus().insertContent({
+      type: 'knowledgeCallout',
+      attrs: {
+        variant: 'insight',
+        title: 'Insight trọng tâm',
+        body: 'Viết kết luận, cảnh báo, nguyên tắc hoặc ghi chú quan trọng cần người đọc chú ý.',
+      },
+    }).run();
+  };
+
+  const insertChartBlock = () => {
+    editor.chain().focus().insertContent({
+      type: 'chartBlock',
+      attrs: {
+        title: 'Đồ thị dữ liệu',
+        description: 'Mô tả dữ liệu, đơn vị đo và insight chính của biểu đồ tại đây.',
+      },
+    }).run();
+  };
+
+  const insertDrawingBoard = () => {
+    editor.chain().focus().insertContent({
+      type: 'drawingBoard',
+      attrs: {
+        title: 'Bảng vẽ minh họa',
+        description: 'Dùng để giữ chỗ cho sơ đồ, field map, kiến trúc hệ thống hoặc bản phác thảo kỹ thuật.',
+      },
+    }).run();
+  };
+
+  const handleAssetUpload = async (file?: File) => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('provider', assetProvider);
+
+    setIsUploadingAsset(true);
+    try {
+      const result = await uploadEditorAsset(formData);
+
+      if (!result.success || !('url' in result)) {
+        toast.error('error' in result ? result.error : 'Không thể tải ảnh lên.');
+        return;
+      }
+
+      editor.chain().focus().setImage({ src: result.url, alt: file.name }).run();
+      toast.success(`Đã tải ảnh lên ${result.provider === 'github' ? 'GitHub' : 'Supabase'} và chèn vào bài viết.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể tải ảnh lên.');
+    } finally {
+      setIsUploadingAsset(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -371,15 +596,50 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
 
             <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
 
-            {/* Group 6: Media & Tables */}
+            {/* Group 6: Content Blocks */}
+            <div className="flex items-center gap-0.5">
+              <button type="button" onClick={insertWorkflowTimeline} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn quy trình / timeline"><GitBranch size={18} /></button>
+              <button type="button" onClick={insertKnowledgeCallout} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn callout / ghi chú nổi bật"><PanelTop size={18} /></button>
+              <button type="button" onClick={insertChartBlock} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn đồ thị"><BarChart3 size={18} /></button>
+              <button type="button" onClick={insertDrawingBoard} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng vẽ"><PenTool size={18} /></button>
+            </div>
+
+            <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
+
+            {/* Group 7: Media & Tables */}
             <div className="flex items-center gap-0.5">
               <button type="button" onClick={() => openPrompt('image', 'HÌNH ẢNH', 'URL...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn ảnh"><ImageIcon size={18} /></button>
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploadingAsset} className="p-2 text-muted-foreground hover:text-brand-orange disabled:opacity-40" title="Tải ảnh từ máy lên storage"><UploadCloud size={18} /></button>
               <button type="button" onClick={() => openPrompt('youtube', 'YOUTUBE', 'Link video...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn Video YouTube"><YoutubeIcon size={18} /></button>
               <button type="button" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng"><TableIcon size={18} /></button>
               <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Đường kẻ ngang"><Minus size={18} /></button>
             </div>
           </div>
+
+          <div className="flex items-center gap-2 px-2">
+            <ImagePlus size={14} className="text-brand-orange" />
+            <select
+              value={assetProvider}
+              onChange={(event) => setAssetProvider(event.target.value as 'supabase' | 'github')}
+              className="bg-cyber-black border border-brand-orange/20 px-2 py-1 font-mono text-[9px] uppercase text-muted-foreground outline-none hover:text-brand-orange"
+              title="Nơi lưu ảnh upload"
+            >
+              <option value="supabase">Supabase</option>
+              <option value="github">GitHub</option>
+            </select>
+            <span className="font-mono text-[9px] uppercase text-muted-foreground">
+              {isUploadingAsset ? 'Đang tải ảnh...' : 'Upload ảnh'}
+            </span>
+          </div>
         </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+          className="hidden"
+          onChange={(event) => handleAssetUpload(event.target.files?.[0])}
+        />
 
         {/* Bubble Menu - Contextual formatting */}
         {editor.view && (
@@ -404,6 +664,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
               <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className="flex items-center gap-3 px-3 py-2 text-xs text-muted-foreground hover:bg-brand-orange/10 hover:text-brand-orange transition-all"><Heading2 size={14} /> Tiêu đề 2</button>
               <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className="flex items-center gap-3 px-3 py-2 text-xs text-muted-foreground hover:bg-brand-orange/10 hover:text-brand-orange transition-all"><List size={14} /> Danh sách</button>
               <button type="button" onClick={() => editor.chain().focus().toggleTaskList().run()} className="flex items-center gap-3 px-3 py-2 text-xs text-muted-foreground hover:bg-brand-orange/10 hover:text-brand-orange transition-all"><CheckSquare size={14} /> Công việc</button>
+              <button type="button" onClick={insertWorkflowTimeline} className="flex items-center gap-3 px-3 py-2 text-xs text-muted-foreground hover:bg-brand-orange/10 hover:text-brand-orange transition-all"><LayoutTemplate size={14} /> Quy trình</button>
             </div>
           </FloatingMenu>
         )}

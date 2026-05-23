@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Calendar, Search, Filter, SlidersHorizontal, X } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Calendar, Compass, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
@@ -31,6 +31,8 @@ interface ExploreContentProps {
   subtitle?: string;
 }
 
+const suggestedTopics = ['AI', 'STEM', 'Robotics', 'Second Brain'];
+
 export function ExploreContent({ initialPosts, categories, title, subtitle = 'TÌM_KIẾM_LỌC_SẮP_XẾP_SẴN_SÀNG' }: ExploreContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,8 +40,22 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
   const currentCategory = searchParams.get('category') || 'all';
   const currentSearch = searchParams.get('q') || '';
   const currentSort = searchParams.get('sort') || 'newest';
+  const selectedCategory = categories.find((cat) => cat.slug === currentCategory);
+  const hasActiveFilters = Boolean(currentSearch) || currentCategory !== 'all';
   
   const [searchValue, setSearchValue] = useState(currentSearch);
+
+  const updateParams = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value && value !== 'all' && value !== 'newest') {
+        params.set(key, value);
+      } else if (!value || value === 'all' || value === 'newest') {
+        params.delete(key);
+      }
+    });
+    router.push(`${window.location.pathname}?${params.toString()}#explore`, { scroll: false });
+  }, [router, searchParams]);
 
   // Sorting Logic
   const sortedPosts = [...initialPosts].sort((a, b) => {
@@ -51,22 +67,22 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
 
   // Debounced search update
   useEffect(() => {
+    if (searchValue === currentSearch) return;
+
     const timer = setTimeout(() => {
       updateParams({ q: searchValue });
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchValue]);
+  }, [currentSearch, searchValue, updateParams]);
 
-  const updateParams = (updates: Record<string, string>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value && value !== 'all' && value !== 'newest') {
-        params.set(key, value);
-      } else if (value === 'all' || value === 'newest') {
-        params.delete(key);
-      }
-    });
-    router.push(`${window.location.pathname}?${params.toString()}#explore`, { scroll: false });
+  const resetDiscovery = () => {
+    setSearchValue('');
+    updateParams({ q: '', category: 'all', sort: 'newest' });
+  };
+
+  const exploreTopic = (topic: string) => {
+    setSearchValue(topic);
+    updateParams({ q: topic, category: 'all', sort: 'newest' });
   };
 
   return (
@@ -78,7 +94,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
             {title || (
               <h2 key="default-explore-title" className="cyber-h2">Khám phá <span className="text-brand-orange">TRI THỨC</span></h2>
             )}
-            <p className="tech-mono text-muted !text-[9px] mt-2 tracking-[0.4em]">// {subtitle} //</p>
+            <p className="tech-mono text-muted !text-[9px] mt-2 tracking-[0.4em]">{`// ${subtitle} //`}</p>
           </div>
           
           <div className="w-full lg:w-96 relative group">
@@ -209,14 +225,64 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
               </Link>
             ))
           ) : (
-            <div className="col-span-full py-20 text-center border border-dashed border-brand-orange/20 bg-cyber-black/10">
-              <p className="tech-mono text-muted !tracking-[0.5em]">// KHÔNG_CÓ_DỮ_LIỆU_PHÙ_HỢP //</p>
-              <button 
-                onClick={() => { setSearchValue(''); updateParams({ category: 'all' }); }}
-                className="mt-6 tech-mono text-brand-orange hover:glow-orange underline"
-              >
-                Khởi tạo lại ma trận
-              </button>
+            <div className="col-span-full border border-dashed border-brand-orange/25 bg-cyber-black/20 p-6 md:p-10 cyber-cut">
+              <div className="mx-auto max-w-3xl text-center">
+                <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center border border-brand-orange/30 bg-brand-orange/10 text-brand-orange cyber-cut-sm">
+                  <Compass size={26} aria-hidden="true" />
+                </div>
+
+                <p className="tech-mono text-brand-orange/70 !tracking-[0.25em]">NO_MATCH_FOUND</p>
+                <h3 className="font-orbitron text-2xl md:text-3xl font-bold text-foreground mt-4">
+                  Chưa tìm thấy node tri thức phù hợp
+                </h3>
+                <p className="body-base text-muted mt-4">
+                  {hasActiveFilters ? (
+                    <>
+                      Bộ lọc hiện tại
+                      {currentSearch && <span className="text-brand-orange">{` "${currentSearch}"`}</span>}
+                      {selectedCategory && (
+                        <span>
+                          {' '}trong chủ đề <span className="text-brand-orange">{selectedCategory.name}</span>
+                        </span>
+                      )}
+                      {' '}chưa có bài viết khớp. Hãy thử một chủ đề rộng hơn hoặc quay về điểm bắt đầu.
+                    </>
+                  ) : (
+                    'Kho nội dung đang chờ dữ liệu xuất bản. Bạn có thể bắt đầu bằng các chủ đề nền tảng bên dưới.'
+                  )}
+                </p>
+
+                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                  {suggestedTopics.map((topic) => (
+                    <button
+                      key={topic}
+                      type="button"
+                      onClick={() => exploreTopic(topic)}
+                      className="inline-flex items-center gap-2 border border-brand-orange/20 bg-brand-orange/5 px-4 py-2 tech-mono text-brand-orange transition-all hover:border-brand-orange/50 hover:bg-brand-orange/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange"
+                    >
+                      <Sparkles size={14} aria-hidden="true" />
+                      {topic}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button
+                    type="button"
+                    onClick={resetDiscovery}
+                    className="inline-flex items-center justify-center gap-2 border border-brand-orange bg-brand-orange px-5 py-3 font-orbitron text-sm font-bold uppercase text-cyber-black transition-all hover:glow-orange focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut-sm"
+                  >
+                    <RotateCcw size={16} aria-hidden="true" />
+                    Xóa bộ lọc
+                  </button>
+                  <Link
+                    href="/#start-here"
+                    className="inline-flex items-center justify-center gap-2 border border-brand-orange/30 px-5 py-3 font-orbitron text-sm font-bold uppercase text-brand-orange transition-all hover:bg-brand-orange/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut-sm"
+                  >
+                    Về Start Here
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
         </div>
