@@ -108,12 +108,42 @@ export default async function PostPage({ params }: PostPageProps) {
       }
     },
     datePublished: post.created_at,
+    dateModified: post.updated_at || post.created_at,
     description: post.excerpt,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://kingdragonhub.com/posts/${slug}`
+    }
   };
+
+  // Trích xuất FAQ block để tạo FAQPage Schema
+  const faqRegex = /<details[^>]*class="[^"]*faq-block[^"]*"[^>]*>.*?<summary[^>]*>(.*?)<\/summary>.*?<div[^>]*class="[^"]*faq-answer[^"]*"[^>]*>(.*?)<\/div>.*?<\/details>/gs;
+  const faqs = [];
+  let match;
+  while ((match = faqRegex.exec(post.content || '')) !== null) {
+    faqs.push({
+      '@type': 'Question',
+      name: match[1].replace(/<[^>]*>?/gm, '').trim(),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: match[2].replace(/<[^>]*>?/gm, '').trim(),
+      }
+    });
+  }
+
+  let faqSchema = null;
+  if (faqs.length > 0) {
+    faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs
+    };
+  }
 
   return (
     <article className="min-h-screen pb-20 bg-background text-foreground selection:bg-brand-orange selection:text-white">
       <JsonLd data={articleSchema} />
+      {faqSchema && <JsonLd data={faqSchema} />}
       
       {/* Hero Header Full-width */}
       <div className="relative h-[80vh] min-h-[600px] w-full overflow-hidden border-b border-brand-orange/30 bg-cyber-black">

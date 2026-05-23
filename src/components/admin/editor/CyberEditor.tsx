@@ -49,10 +49,10 @@ import {
   LayoutTemplate, Link as LinkIcon, List, ListOrdered, ListTodo, Maximize2, Minimize2, Minus, Monitor,
   PaintBucket, Palette, PanelTop, PenTool, Play as YoutubeIcon, Quote, Redo, Subscript as Infra,
   Superscript as Supra, Table as TableIcon, Terminal, Type, Underline as UnderIcon, Undo, UploadCloud,
-  Wand2, Zap, X
+  Wand2, Zap, X, Lightbulb, HelpCircle
 } from 'lucide-react';
 import { CyberPrompt } from '@/components/ui/CyberPrompt';
-import { ChartBlock, DrawingBoard, KnowledgeCallout, ScratchEmbed, SketchfabEmbed, WorkflowTimeline } from './CustomExtensions';
+import { ChartBlock, DrawingBoard, KnowledgeCallout, ScratchEmbed, SketchfabEmbed, WorkflowTimeline, KeyTakeaways, FAQBlock } from './CustomExtensions';
 import { uploadEditorAsset } from '@/app/actions/editor-assets';
 import { toast } from 'sonner';
 
@@ -302,7 +302,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
       placeholder: mode === 'matrix' ? 'Nhấn / để triệu hồi lệnh ma trận...' : 'ĐANG TRUYỀN TẢI: Bắt đầu nhập nội dung...',
     }),
     ScratchEmbed, SketchfabEmbed,
-    WorkflowTimeline, KnowledgeCallout, ChartBlock, DrawingBoard,
+    WorkflowTimeline, KnowledgeCallout, ChartBlock, DrawingBoard, KeyTakeaways, FAQBlock,
     TaskList, TaskItem.configure({ nested: true }),
     Typography, Superscript, Subscript,
     Color, TextStyle, Link, Underline,
@@ -443,6 +443,26 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
         variant: 'insight',
         title: 'Insight trọng tâm',
         body: 'Viết kết luận, cảnh báo, nguyên tắc hoặc ghi chú quan trọng cần người đọc chú ý.',
+      },
+    }).run();
+  };
+
+  const insertKeyTakeaways = () => {
+    editor.chain().focus().insertContent({
+      type: 'keyTakeaways',
+      attrs: {
+        title: 'TL;DR / Key Takeaways',
+        points: ['Ý chính 1 (Nhấn đúp để sửa...)', 'Ý chính 2 (Nhấn đúp để sửa...)'],
+      },
+    }).run();
+  };
+
+  const insertFAQBlock = () => {
+    editor.chain().focus().insertContent({
+      type: 'faqBlock',
+      attrs: {
+        question: 'Câu hỏi thường gặp (Nhập tại đây)?',
+        answer: 'Câu trả lời chi tiết (Nhập tại đây).',
       },
     }).run();
   };
@@ -641,6 +661,8 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
             <div className="flex items-center gap-0.5">
               <button type="button" onClick={insertWorkflowTimeline} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn quy trình / timeline"><GitBranch size={18} /></button>
               <button type="button" onClick={insertKnowledgeCallout} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn callout / ghi chú nổi bật"><PanelTop size={18} /></button>
+              <button type="button" onClick={insertKeyTakeaways} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn tóm tắt / TL;DR"><Lightbulb size={18} /></button>
+              <button type="button" onClick={insertFAQBlock} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn khối hỏi đáp FAQ"><HelpCircle size={18} /></button>
               <button type="button" onClick={insertChartBlock} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn đồ thị"><BarChart3 size={18} /></button>
               <button type="button" onClick={insertDrawingBoard} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng vẽ"><PenTool size={18} /></button>
             </div>
