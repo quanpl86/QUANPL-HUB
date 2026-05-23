@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, Space_Grotesk } from "next/font/google";
+import { Be_Vietnam_Pro, Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
@@ -64,7 +70,7 @@ export default function RootLayout({
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${beVietnamPro.variable} ${spaceGrotesk.variable} h-full antialiased dark`}
+      className={`${beVietnamPro.variable} ${spaceGrotesk.variable} ${inter.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col font-be-vietnam transition-colors duration-300">
         <ThemeProvider>

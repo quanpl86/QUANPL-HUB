@@ -149,34 +149,33 @@ export default async function PostPage({ params }: PostPageProps) {
       <div className="container mx-auto px-6 pt-32 pb-12">
         <div className="max-w-[1200px] mx-auto">
           {/* Date */}
-          <div className="tech-mono text-sm tracking-widest text-foreground/60 mb-6 uppercase">
-            {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'NEURAL_LINK_PENDING'}
+          <div className="tech-mono text-[0.7rem] tracking-[0.1em] text-foreground mb-6 uppercase font-bold">
+            {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN', { month: 'long', day: 'numeric', year: 'numeric' }) : 'NEURAL_LINK_PENDING'}
           </div>
 
           {/* Title */}
-          <h1 className="cyber-h1 !text-5xl md:!text-6xl lg:!text-7xl mb-12 text-foreground leading-[1.1]">
+          <h1 className="font-[family-name:var(--font-inter)] font-medium text-[3.5rem] md:text-[5rem] lg:text-[5.5rem] leading-[1.05] tracking-[-0.03em] mb-16 text-foreground max-w-5xl">
             {post.title}
           </h1>
 
           {/* Metadata Row: Author & Categories */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
             {/* Author */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full border border-brand-orange/30 flex items-center justify-center bg-brand-orange/10 overflow-hidden">
-                <span className="font-orbitron text-brand-orange font-bold text-sm">Q</span>
+              <div className="w-8 h-8 rounded-full border border-brand-orange/30 flex items-center justify-center bg-brand-orange/10 overflow-hidden">
+                <span className="font-orbitron text-brand-orange font-bold text-xs">Q</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="font-be-vietnam font-bold text-foreground">
-                  {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON ADMIN'}
+              <div className="flex items-center gap-2 font-[family-name:var(--font-inter)] text-sm">
+                <span className="font-semibold text-foreground">
+                  {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON Admin'}
                 </span>
-                <span className="text-foreground/40 hidden md:inline">•</span>
-                <span className="tech-mono text-xs text-foreground/50 hidden md:inline tracking-wider">AUTHORISED</span>
+                <span className="text-foreground/70 hidden md:inline">Authorised System Architect</span>
               </div>
             </div>
 
             {/* Categories / Tags */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-4 py-1 text-xs tech-mono font-bold uppercase border border-foreground/20 rounded-full text-foreground/80 hover:border-brand-orange/50 transition-colors">
+              <span className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border border-foreground/30 rounded-full text-foreground/80 hover:border-brand-orange transition-colors">
                 {(Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED'}
               </span>
             </div>
@@ -187,7 +186,7 @@ export default async function PostPage({ params }: PostPageProps) {
       {/* Cover Image as a Poster */}
       {post.image_url && (
         <div className="container mx-auto px-6 mb-16 md:mb-24">
-          <div className="relative aspect-video w-full max-w-[1200px] mx-auto overflow-hidden bg-background border border-brand-orange/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="relative aspect-video w-full max-w-[1200px] mx-auto overflow-hidden bg-background border border-brand-orange/10">
             
             {/* Ambient Adaptive Background */}
             <div className="absolute inset-0 w-full h-full opacity-40 dark:opacity-30">
@@ -207,7 +206,7 @@ export default async function PostPage({ params }: PostPageProps) {
               fill
               sizes="(max-width: 1200px) 100vw, 1200px"
               priority
-              className="object-contain z-10 drop-shadow-2xl"
+              className="object-contain z-10"
             />
           </div>
         </div>
