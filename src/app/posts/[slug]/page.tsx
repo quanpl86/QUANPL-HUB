@@ -148,7 +148,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   </span>
                 </div>
               </div>
-              <h1 className="cyber-h1 !text-5xl md:!text-7xl lg:!text-8xl mb-10 text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
+              <h1 className="cyber-h1 !text-4xl md:!text-5xl lg:!text-6xl mb-10 text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
                 {post.title}
               </h1>
               <div className="flex items-center gap-6 mt-12 group">
