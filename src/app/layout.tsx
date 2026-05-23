@@ -21,6 +21,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://kingdragonhub.com'),
   title: {
     default: 'KING DRAGON HUB | Đỉnh Cao Trí Tuệ & Công Nghệ',
     template: '%s | KING DRAGON HUB'
