@@ -145,60 +145,63 @@ export default async function PostPage({ params }: PostPageProps) {
       <JsonLd data={articleSchema} />
       {faqSchema && <JsonLd data={faqSchema} />}
       
-      {/* Hero Header Full-width */}
-      <div className="relative h-[80vh] min-h-[600px] w-full overflow-hidden border-b border-brand-orange/30 bg-cyber-black">
-        {post.image_url ? (
-          <Image 
-            src={post.image_url} 
-            alt={post.seo_keywords?.image_alt || post.title} 
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover opacity-70"
-          />
-        ) : (
-          <div className="w-full h-full bg-cyber-black" />
-        )}
-        {/* Dark overlay for contrast */}
-        <div className="absolute inset-0 bg-black/40" />
-        {/* Gradient to blend the bottom */}
-        <div className="absolute inset-0 bg-gradient-to-t from-cyber-black via-cyber-black/60 to-transparent" />
-        
-        <div className="absolute inset-0 flex items-end">
-          <div className="container mx-auto px-6 pb-24">
-            <div className="max-w-5xl">
-              <div className="flex items-center gap-8 mb-12 animate-fade-in-up">
-                <span className="px-6 py-2 bg-brand-orange text-white tech-mono rounded-sm shadow-[0_5px_15px_rgba(249,115,22,0.4)]">
-                  {(Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED'}
+      {/* Editorial Header */}
+      <div className="container mx-auto px-6 pt-32 pb-12">
+        <div className="max-w-5xl mx-auto">
+          {/* Date */}
+          <div className="tech-mono text-sm tracking-widest text-foreground/60 mb-6 uppercase">
+            {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'NEURAL_LINK_PENDING'}
+          </div>
+
+          {/* Title */}
+          <h1 className="cyber-h1 !text-5xl md:!text-6xl lg:!text-7xl mb-12 text-foreground leading-[1.1]">
+            {post.title}
+          </h1>
+
+          {/* Metadata Row: Author & Categories */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8">
+            {/* Author */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full border border-brand-orange/30 flex items-center justify-center bg-brand-orange/10 overflow-hidden">
+                <span className="font-orbitron text-brand-orange font-bold text-sm">Q</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-be-vietnam font-bold text-foreground">
+                  {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON ADMIN'}
                 </span>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-[1px] bg-brand-orange/60"></div>
-                  <span className="tech-mono text-white/90 font-bold drop-shadow-md">
-                    {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'NEURAL_LINK_PENDING'}
-                  </span>
-                </div>
+                <span className="text-foreground/40 hidden md:inline">•</span>
+                <span className="tech-mono text-xs text-foreground/50 hidden md:inline tracking-wider">AUTHORISED</span>
               </div>
-              <h1 className="cyber-h1 !text-4xl md:!text-5xl lg:!text-6xl mb-10 text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
-                {post.title}
-              </h1>
-              <div className="flex items-center gap-6 mt-12 group">
-                <div className="w-14 h-14 rounded-full border-2 border-brand-orange/60 flex items-center justify-center bg-black/50 backdrop-blur-md shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                  <span className="font-orbitron text-brand-orange font-bold text-lg">Q</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="tech-mono text-brand-orange mb-1 font-bold">AUTHORISED BY:</span>
-                  <span className="cyber-h3 !text-sm tracking-widest text-white drop-shadow-md">
-                    {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON ADMIN'}
-                  </span>
-                </div>
-              </div>
+            </div>
+
+            {/* Categories / Tags */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-4 py-1 text-xs tech-mono font-bold uppercase border border-foreground/20 rounded-full text-foreground/80 hover:border-brand-orange/50 transition-colors">
+                {(Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED'}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Cover Image as a Poster */}
+      {post.image_url && (
+        <div className="container mx-auto px-6 mb-16 md:mb-24">
+          <div className="relative aspect-video w-full max-w-[1200px] mx-auto rounded-xl md:rounded-3xl overflow-hidden bg-cyber-black/5 border border-brand-orange/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <Image 
+              src={post.image_url} 
+              alt={post.seo_keywords?.image_alt || post.title} 
+              fill
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              priority
+              className="object-cover"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
-      <div className="container mx-auto px-6 mt-32">
+      <div className="container mx-auto px-6 mt-8 md:mt-16">
         <div className="max-w-4xl mx-auto">
           {/* Post Excerpt/Lead */}
           {post.excerpt && (
