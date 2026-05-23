@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import Cropper from 'react-cropper';
+import React, { useState, useEffect, useRef } from 'react';
+import CropperJS from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
 import { CyberButton } from '../../ui/CyberButton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,18 +10,33 @@ export const ImageCropModal = ({
 }: {
   isOpen: boolean; src: string; onConfirm: (blob: Blob) => void; onCancel: () => void;
 }) => {
-  const [cropper, setCropper] = useState<any>();
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [cropper, setCropper] = useState<CropperJS | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    if (!isOpen && cropper) {
-      cropper.destroy();
-      setCropper(undefined);
+    if (isOpen && imageRef.current) {
+      const cropperInstance = new CropperJS(imageRef.current, {
+        viewMode: 1,
+        autoCropArea: 1,
+        background: true,
+        responsive: true,
+        checkOrientation: false,
+        minCropBoxHeight: 10,
+        minCropBoxWidth: 10,
+        guides: true,
+      });
+      setCropper(cropperInstance);
+
+      return () => {
+        cropperInstance.destroy();
+        setCropper(null);
+      };
     }
-  }, [isOpen, cropper]);
+  }, [isOpen, src]);
 
   const handleConfirm = () => {
-    if (typeof cropper !== 'undefined') {
+    if (cropper) {
       setIsProcessing(true);
       const canvas = cropper.getCroppedCanvas({
         imageSmoothingEnabled: true,
@@ -72,22 +87,12 @@ export const ImageCropModal = ({
 
             <div className="relative flex-grow bg-black overflow-hidden p-4 flex items-center justify-center">
               <div className="w-full h-full max-h-full max-w-full">
-                <Cropper
-                  style={{ height: '100%', width: '100%' }}
-                  zoomTo={0}
-                  initialAspectRatio={NaN}
-                  src={src}
-                  viewMode={1}
-                  minCropBoxHeight={10}
-                  minCropBoxWidth={10}
-                  background={true}
-                  responsive={true}
-                  autoCropArea={1}
-                  checkOrientation={false}
-                  onInitialized={(instance: any) => {
-                    setCropper(instance);
-                  }}
-                  guides={true}
+                <img 
+                  ref={imageRef} 
+                  src={src} 
+                  alt="Crop" 
+                  crossOrigin="anonymous" 
+                  style={{ display: 'block', maxWidth: '100%' }} 
                 />
               </div>
             </div>
