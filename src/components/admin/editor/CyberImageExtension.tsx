@@ -28,9 +28,10 @@ const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
 
   return (
     <NodeViewWrapper 
-      className={`relative group cyber-image-node clear-both inline-block max-w-full`}
+      className={`relative group cyber-image-node clear-both max-w-full`}
       style={{ 
         display: node.attrs.align === 'center' ? 'block' : 'inline-block',
+        width: node.attrs.align === 'center' ? 'fit-content' : 'max-content',
         float: node.attrs.align === 'left' ? 'left' : node.attrs.align === 'right' ? 'right' : 'none',
         margin: node.attrs.align === 'center' ? '1rem auto' : '1rem 0',
       }}
