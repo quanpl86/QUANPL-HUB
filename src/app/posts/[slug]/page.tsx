@@ -187,7 +187,7 @@ export default async function PostPage({ params }: PostPageProps) {
       {/* Cover Image as a Poster */}
       {post.image_url && (
         <div className="container mx-auto px-6 mb-16 md:mb-24">
-          <div className="relative aspect-video w-full max-w-[1200px] mx-auto rounded-xl md:rounded-3xl overflow-hidden bg-cyber-black/5 border border-brand-orange/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="relative aspect-video w-full max-w-[1200px] mx-auto overflow-hidden bg-cyber-black/5 border border-brand-orange/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             <Image 
               src={post.image_url} 
               alt={post.seo_keywords?.image_alt || post.title} 
