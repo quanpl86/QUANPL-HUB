@@ -50,6 +50,10 @@ const CommentSection = dynamic(() => import('@/components/blog/CommentSection').
   loading: () => <div className="mt-24 pt-16 border-t border-brand-orange/10 animate-pulse font-mono text-xs text-brand-orange uppercase tracking-widest text-center">ĐANG_TẢI_MA_TRẬN_BÌNH_LUẬN...</div>
 });
 
+const RelatedArticles = dynamic(() => import('@/components/blog/RelatedArticles').then(mod => mod.RelatedArticles), {
+  loading: () => <div className="mt-24 pt-16 border-t border-brand-orange/10 h-64 bg-brand-orange/5 animate-pulse"></div>
+});
+
 const PremiumMultimedia = dynamic(() => import('@/components/blog/PremiumMultimedia').then(mod => mod.PremiumMultimedia), {
   loading: () => <div className="h-20 bg-brand-orange/5 animate-pulse border border-brand-orange/10 mb-12"></div>
 });
@@ -89,6 +93,15 @@ export default async function PostPage({ params }: PostPageProps) {
     .eq('post_id', post.id)
     .eq('ip_address', ip)
     .single();
+
+  // Fetch 3 Recent/Related Posts
+  const { data: recentPosts } = await supabase
+    .from('posts')
+    .select('id, slug, title, excerpt, image_url, created_at, profiles(full_name), categories(name)')
+    .eq('is_published', true)
+    .neq('id', post.id)
+    .order('created_at', { ascending: false })
+    .limit(3);
 
   // Dữ liệu cấu trúc bài viết (Article Schema)
   const articleSchema = {
@@ -271,6 +284,9 @@ export default async function PostPage({ params }: PostPageProps) {
               </div>
             </div>
           )}
+          
+          {/* Related Articles Section */}
+          <RelatedArticles posts={recentPosts || []} />
           
           {/* Footer Metadata */}
           <footer className="mt-32 pt-12 border-t border-brand-orange/10 flex flex-wrap gap-12 justify-between items-center text-foreground/70 dark:text-muted tech-mono !text-[11px]">
