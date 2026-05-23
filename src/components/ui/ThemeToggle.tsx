@@ -9,13 +9,13 @@ export function ThemeToggle() {
 
   const getBgClass = () => {
     if (theme === 'dark') return 'bg-slate-800';
-    if (theme === 'sepia') return 'bg-[#e6d5b8]'; // Warm background for the switch
+    if (theme === 'sepia') return 'bg-[#e8e4db]'; // Muted Kindle frame
     return 'bg-slate-200';
   };
 
   const getThumbClass = () => {
     if (theme === 'dark') return 'left-9 bg-cyber-black';
-    if (theme === 'sepia') return 'left-5 bg-[#fdf6e3]'; // Sepia background for the thumb
+    if (theme === 'sepia') return 'left-5 bg-[#f4f0eb]'; // Kindle background
     return 'left-1 bg-white';
   };
 

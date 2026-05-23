@@ -49,13 +49,13 @@ html {
 }
 
 .sepia {
-  --background: #fdf6e3; /* Warm paper yellow */
-  --foreground: #4a3e33; /* Dark sepia brown */
-  --card-bg: #f4ebd8; /* Slightly darker paper for cards */
-  --card-border: rgba(181, 137, 0, 0.2);
-  --card-shadow: rgba(74, 62, 51, 0.08);
-  --muted: #7c6f64; /* Muted brown */
-  --grid-color: rgba(181, 137, 0, 0.1); /* Subtle warm grid */
+  --background: #f4f0eb; /* Soft Kindle Warm Light */
+  --foreground: #2b2b2b; /* Soft E-ink black */
+  --card-bg: #f9f7f2; /* Lighter shade for cards */
+  --card-border: rgba(43, 43, 43, 0.08);
+  --card-shadow: rgba(43, 43, 43, 0.05);
+  --muted: #6b6b6b; /* Muted E-ink grey */
+  --grid-color: rgba(43, 43, 43, 0.05); /* Subtle grid */
 }
 
 html, body {
