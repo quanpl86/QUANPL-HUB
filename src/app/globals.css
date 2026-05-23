@@ -23,6 +23,7 @@
   --card-shadow: rgba(15, 23, 42, 0.1);
   --muted: #334155; /* Slate 700 - Tăng tương phản cho nền sáng */
   --grid-color: rgba(249, 115, 22, 0.15); /* Lưới rõ hơn cho nền sáng */
+  --blog-bg: #e3e3e3; /* Figma style light gray */
 }
 
 .dark {
@@ -33,6 +34,7 @@
   --card-shadow: rgba(0, 0, 0, 0.5);
   --muted: #94a3b8; /* Slate 400 */
   --grid-color: rgba(249, 115, 22, 0.05); /* Lưới nhạt hơn cho nền tối */
+  --blog-bg: #121212; /* Dark mode blog background */
 }
 
 html, body {
