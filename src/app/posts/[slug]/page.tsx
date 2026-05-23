@@ -54,6 +54,8 @@ const RelatedArticles = dynamic(() => import('@/components/blog/RelatedArticles'
   loading: () => <div className="mt-24 pt-16 border-t border-brand-orange/10 h-64 bg-brand-orange/5 animate-pulse"></div>
 });
 
+import { CollapsibleTags } from '@/components/blog/CollapsibleTags';
+
 const PremiumMultimedia = dynamic(() => import('@/components/blog/PremiumMultimedia').then(mod => mod.PremiumMultimedia), {
   loading: () => <div className="h-20 bg-brand-orange/5 animate-pulse border border-brand-orange/10 mb-12"></div>
 });
@@ -264,15 +266,7 @@ export default async function PostPage({ params }: PostPageProps) {
           {/* Post Tags (Bottom) */}
           {post.tags && post.tags.length > 0 && (
             <div className="mt-16 pt-8 border-t border-brand-orange/10 flex flex-wrap gap-3">
-              {post.tags.map((tag: string, idx: number) => (
-                <Link 
-                  key={idx}
-                  href={`/blog?tag=${encodeURIComponent(tag)}`}
-                  className="px-4 py-2 bg-foreground/5 border border-foreground/20 rounded-full text-xs tech-mono uppercase tracking-widest text-foreground/80 hover:bg-brand-orange/10 hover:text-brand-orange hover:border-brand-orange/40 transition-colors"
-                >
-                  {tag}
-                </Link>
-              ))}
+              <CollapsibleTags tags={post.tags} maxVisible={10} />
             </div>
           )}
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { CollapsibleTags } from './CollapsibleTags';
 
 interface Post {
   id: string;
@@ -73,11 +74,12 @@ export function RelatedArticles({ posts }: RelatedArticlesProps) {
                   <span className="px-3 py-1.5 bg-foreground/5 border border-foreground/20 rounded-full text-[10px] tech-mono uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 hover:border-foreground/40 transition-colors">
                     {categoryName}
                   </span>
-                  {post.tags?.map((tag, idx) => (
-                    <span key={idx} className="px-3 py-1.5 bg-foreground/5 border border-foreground/20 rounded-full text-[10px] tech-mono uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 hover:border-foreground/40 transition-colors">
-                      {tag}
-                    </span>
-                  ))}
+                  <CollapsibleTags 
+                    tags={post.tags || []} 
+                    maxVisible={2} 
+                    baseClassName="px-3 py-1.5 bg-foreground/5 border border-foreground/20 rounded-full text-[10px] tech-mono uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 hover:border-foreground/40 transition-colors"
+                    asLinks={false}
+                  />
                 </div>
               </div>
             </Link>
