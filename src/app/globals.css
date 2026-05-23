@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem; /* Offset for fixed header when jumping to anchors */
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 @theme {
   --color-brand-orange: #f97316;
   --color-cyber-black: var(--card-bg);
