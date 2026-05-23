@@ -116,7 +116,7 @@ export default async function PostPage({ params }: PostPageProps) {
       <JsonLd data={articleSchema} />
       
       {/* Hero Header Full-width */}
-      <div className="relative h-[80vh] min-h-[600px] w-full overflow-hidden border-b border-brand-orange/20 bg-cyber-black">
+      <div className="relative h-[80vh] min-h-[600px] w-full overflow-hidden border-b border-brand-orange/30 bg-cyber-black">
         {post.image_url ? (
           <Image 
             src={post.image_url} 
@@ -124,13 +124,15 @@ export default async function PostPage({ params }: PostPageProps) {
             fill
             sizes="100vw"
             priority
-            className="object-cover opacity-60 dark:opacity-50"
+            className="object-cover opacity-70"
           />
         ) : (
           <div className="w-full h-full bg-cyber-black" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        
+        {/* Dark overlay for contrast */}
+        <div className="absolute inset-0 bg-black/40" />
+        {/* Gradient to blend the bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-cyber-black via-cyber-black/60 to-transparent" />
         
         <div className="absolute inset-0 flex items-end">
           <div className="container mx-auto px-6 pb-24">
@@ -140,22 +142,22 @@ export default async function PostPage({ params }: PostPageProps) {
                   {(Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED'}
                 </span>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-[1px] bg-brand-orange/40"></div>
-                  <span className="tech-mono text-foreground">
+                  <div className="w-12 h-[1px] bg-brand-orange/60"></div>
+                  <span className="tech-mono text-white/90 font-bold drop-shadow-md">
                     {post.created_at ? new Date(post.created_at).toLocaleDateString('vi-VN') : 'NEURAL_LINK_PENDING'}
                   </span>
                 </div>
               </div>
-              <h1 className="cyber-h1 !text-5xl md:!text-7xl lg:!text-8xl mb-10 drop-shadow-[0_10px_30px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+              <h1 className="cyber-h1 !text-5xl md:!text-7xl lg:!text-8xl mb-10 text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
                 {post.title}
               </h1>
               <div className="flex items-center gap-6 mt-12 group">
-                <div className="w-14 h-14 rounded-full border-2 border-brand-orange/40 flex items-center justify-center bg-background/80 backdrop-blur-md shadow-lg">
+                <div className="w-14 h-14 rounded-full border-2 border-brand-orange/60 flex items-center justify-center bg-black/50 backdrop-blur-md shadow-[0_0_15px_rgba(249,115,22,0.3)]">
                   <span className="font-orbitron text-brand-orange font-bold text-lg">Q</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="tech-mono text-brand-orange/80 dark:text-brand-orange/60 mb-1">AUTHORISED BY:</span>
-                  <span className="cyber-h3 !text-sm tracking-widest">
+                  <span className="tech-mono text-brand-orange mb-1 font-bold">AUTHORISED BY:</span>
+                  <span className="cyber-h3 !text-sm tracking-widest text-white drop-shadow-md">
                     {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON ADMIN'}
                   </span>
                 </div>
