@@ -54,6 +54,8 @@ const RelatedArticles = dynamic(() => import('@/components/blog/RelatedArticles'
   loading: () => <div className="mt-24 pt-16 border-t border-brand-orange/10 h-64 bg-brand-orange/5 animate-pulse"></div>
 });
 
+import { ExpandableTags } from '@/components/blog/ExpandableTags';
+
 const PremiumMultimedia = dynamic(() => import('@/components/blog/PremiumMultimedia').then(mod => mod.PremiumMultimedia), {
   loading: () => <div className="h-20 bg-brand-orange/5 animate-pulse border border-brand-orange/10 mb-12"></div>
 });
@@ -193,12 +195,11 @@ export default async function PostPage({ params }: PostPageProps) {
                 const categoryName = (Array.isArray(post.categories) ? (post.categories as any)[0]?.name : (post.categories as any)?.name) || 'REDACTED';
                 const categorySlug = (Array.isArray(post.categories) ? (post.categories as any)[0]?.slug : (post.categories as any)?.slug) || 'all';
                 return (
-                  <Link 
-                    href={`/blog?category=${categorySlug}`}
-                    className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border border-foreground/30 rounded-full text-foreground/80 hover:border-brand-orange hover:text-brand-orange transition-colors"
-                  >
-                    {categoryName}
-                  </Link>
+                  <ExpandableTags 
+                    categoryName={categoryName}
+                    categorySlug={categorySlug}
+                    tags={post.tags}
+                  />
                 );
               })()}
             </div>
@@ -260,20 +261,6 @@ export default async function PostPage({ params }: PostPageProps) {
             className="king-dragon-content prose prose-brand max-w-none"
             dangerouslySetInnerHTML={{ __html: sanitize(post.content || '') }}
           />
-
-          {/* Post Tags (Bottom) */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="mt-16 pt-8 border-t border-brand-orange/10 flex flex-wrap gap-3">
-              {post.tags.map((tag: string, idx: number) => (
-                <span 
-                  key={idx}
-                  className="px-4 py-2 bg-foreground/5 border border-foreground/20 rounded-full text-xs tech-mono uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 transition-colors cursor-default"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
 
           {/* Interactions Section */}
           <div className="mt-20 flex justify-center">
