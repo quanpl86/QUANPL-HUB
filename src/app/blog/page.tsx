@@ -1,6 +1,42 @@
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { ExploreContent } from '@/components/layout/ExploreContent';
 
+// Utility for smart/fuzzy tag matching
+function removeAccents(str: string) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function isTagMatch(postTags: string[], searchTag: string) {
+  if (!postTags || !searchTag) return false;
+  
+  const normalizedSearch = removeAccents(searchTag).trim();
+  if (!normalizedSearch) return false;
+
+  return postTags.some(t => {
+    const normalizedPostTag = removeAccents(t).trim();
+    
+    // 1. Substring match in either direction (e.g. "robot" matches "robotics", "ai" matches "generative ai")
+    if (normalizedPostTag.includes(normalizedSearch) || normalizedSearch.includes(normalizedPostTag)) {
+      return true;
+    }
+    
+    // 2. Word-level similarity (e.g. "Giáo dục AI" matches "AI Giáo dục")
+    const searchWords = normalizedSearch.split(/\s+/);
+    const tagWords = normalizedPostTag.split(/\s+/);
+    
+    const significantSearchWords = searchWords.filter(w => w.length > 2);
+    if (significantSearchWords.length > 0) {
+      const matchCount = significantSearchWords.filter(sw => 
+        tagWords.some(tw => tw.includes(sw) || sw.includes(tw))
+      ).length;
+      // If at least 50% of significant words match
+      if (matchCount / significantSearchWords.length >= 0.5) return true;
+    }
+
+    return false;
+  });
+}
+
 export default async function BlogPage({
   searchParams,
 }: {
@@ -38,7 +74,7 @@ export default async function BlogPage({
       match = match && post.categories?.slug === category;
     }
     if (tag) {
-      match = match && post.tags?.includes(tag);
+      match = match && isTagMatch(post.tags || [], tag);
     }
     return match;
   }) || [];
