@@ -13,9 +13,16 @@ export const ImageCropModal = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const [cropper, setCropper] = useState<CropperJS | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    if (isOpen && imageRef.current) {
+    if (isOpen) {
+      setImageLoaded(false);
+    }
+  }, [isOpen, src]);
+
+  useEffect(() => {
+    if (isOpen && imageRef.current && imageLoaded) {
       const cropperInstance = new CropperJS(imageRef.current, {
         viewMode: 1,
         autoCropArea: 1,
@@ -86,13 +93,22 @@ export const ImageCropModal = ({
             </div>
 
             <div className="relative flex-grow bg-black overflow-hidden p-4 flex items-center justify-center">
-              <div className="w-full h-full max-h-full max-w-full">
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black">
+                  <div className="w-8 h-8 border-2 border-brand-orange/30 border-t-brand-orange rounded-full animate-spin mb-4"></div>
+                  <div className="text-brand-orange font-mono text-[10px] tracking-widest uppercase animate-pulse">
+                    ĐANG TẢI ẢNH VÀ CÔNG CỤ CROP...
+                  </div>
+                </div>
+              )}
+              <div className="w-full h-full max-h-full max-w-full" style={{ opacity: imageLoaded ? 1 : 0, transition: 'opacity 0.3s' }}>
                 <img 
                   ref={imageRef} 
                   src={src} 
                   alt="Crop" 
                   crossOrigin="anonymous" 
-                  style={{ display: 'block', maxWidth: '100%' }} 
+                  style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }}
+                  onLoad={() => setImageLoaded(true)}
                 />
               </div>
             </div>
