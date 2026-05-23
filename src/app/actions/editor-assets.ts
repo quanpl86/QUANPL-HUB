@@ -14,9 +14,10 @@ const allowedImageTypes = new Set([
   'image/svg+xml',
 ]);
 
-function slugFileName(name: string) {
+function slugFileName(name: string, customName?: string) {
   const extension = name.split('.').pop()?.toLowerCase() || 'png';
-  const base = name
+  const baseSource = customName || name;
+  const base = baseSource
     .replace(/\.[^/.]+$/, '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -28,7 +29,7 @@ function slugFileName(name: string) {
   return `${base || 'asset'}-${Date.now()}.${extension}`;
 }
 
-async function uploadToSupabase(file: File, buffer: ArrayBuffer) {
+async function uploadToSupabase(file: File, buffer: ArrayBuffer, customName?: string) {
   const supabase = getSupabaseAdmin();
   const bucket = process.env.SUPABASE_EDITOR_ASSET_BUCKET || 'post-assets';
   const now = new Date();
@@ -36,7 +37,7 @@ async function uploadToSupabase(file: File, buffer: ArrayBuffer) {
     'editor',
     String(now.getFullYear()),
     String(now.getMonth() + 1).padStart(2, '0'),
-    slugFileName(file.name),
+    slugFileName(file.name, customName),
   ].join('/');
 
   const { data: buckets } = await supabase.storage.listBuckets();
@@ -67,9 +68,9 @@ async function uploadToSupabase(file: File, buffer: ArrayBuffer) {
   return { success: true, url: data.publicUrl, path: filePath, provider: 'supabase' as const };
 }
 
-async function uploadToGithub(file: File, buffer: ArrayBuffer) {
+async function uploadToGithub(file: File, buffer: ArrayBuffer, customName?: string) {
   const token = process.env.GITHUB_ASSET_TOKEN;
-  const repo = process.env.GITHUB_ASSET_REPO;
+  const repo = process.env.GITHUB_ASSET_REPO || 'quanpl86/imgBlog';
   const branch = process.env.GITHUB_ASSET_BRANCH || 'main';
   const basePath = process.env.GITHUB_ASSET_PATH || 'public/editor-assets';
 
@@ -81,7 +82,8 @@ async function uploadToGithub(file: File, buffer: ArrayBuffer) {
   }
 
   const bytes = Buffer.from(buffer);
-  const filePath = `${basePath.replace(/\/$/, '')}/${slugFileName(file.name)}`;
+  const fileName = slugFileName(file.name, customName);
+  const filePath = `${basePath.replace(/\/$/, '')}/${fileName}`;
   const endpoint = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
   const response = await fetch(endpoint, {
@@ -112,6 +114,7 @@ export async function uploadEditorAsset(formData: FormData) {
 
   const file = formData.get('file');
   const provider = (formData.get('provider') || 'supabase') as UploadProvider;
+  const customName = formData.get('customName') as string | undefined;
 
   if (!(file instanceof File)) {
     return { success: false, error: 'Không tìm thấy file ảnh hợp lệ.' };
@@ -128,8 +131,8 @@ export async function uploadEditorAsset(formData: FormData) {
   const buffer = await file.arrayBuffer();
 
   if (provider === 'github') {
-    return uploadToGithub(file, buffer);
+    return uploadToGithub(file, buffer, customName);
   }
 
-  return uploadToSupabase(file, buffer);
+  return uploadToSupabase(file, buffer, customName);
 }

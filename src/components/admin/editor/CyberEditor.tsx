@@ -54,7 +54,7 @@ import { uploadEditorAsset } from '@/app/actions/editor-assets';
 import { toast } from 'sonner';
 
 type EditorMode = 'simple' | 'matrix' | 'agent';
-type PromptType = 'image' | 'youtube' | 'scratch' | 'sketchfab' | 'link';
+type PromptType = 'image' | 'youtube' | 'scratch' | 'sketchfab' | 'link' | 'upload_meta';
 type WorkflowMarkdownStep = {
   label: string;
   title: string;
@@ -271,9 +271,10 @@ const CustomCodeBlockLowlight = CodeBlockLowlight.extend({
 export function CyberEditor({ content, onChange }: { content: string, onChange: (html: string) => void }) {
   const [mode, setMode] = useState<EditorMode>('agent');
   const [isFullView, setIsFullView] = useState(false);
-  const [assetProvider, setAssetProvider] = useState<'supabase' | 'github'>('supabase');
+  const [assetProvider, setAssetProvider] = useState<'supabase' | 'github'>('github');
   const [isUploadingAsset, setIsUploadingAsset] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [promptConfig, setPromptConfig] = useState<{
     isOpen: boolean; title: string; placeholder: string; defaultValue: string; 
     type: PromptType | null; secondaryPlaceholder?: string;
@@ -353,7 +354,39 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
 
   if (!editor) return null;
 
-  const handlePromptConfirm = (value: string, secondaryValue?: string) => {
+  const handlePromptConfirm = async (value: string, secondaryValue?: string) => {
+    if (promptConfig.type === 'upload_meta') {
+      const fileToUpload = pendingFile;
+      setPendingFile(null);
+      setPromptConfig(p => ({ ...p, isOpen: false }));
+      
+      if (!fileToUpload) return;
+      
+      const formData = new FormData();
+      formData.append('file', fileToUpload);
+      formData.append('provider', assetProvider);
+      if (value) formData.append('customName', value);
+
+      setIsUploadingAsset(true);
+      try {
+        const result = await uploadEditorAsset(formData);
+
+        if (!result.success || !('url' in result) || !result.url) {
+          toast.error('error' in result ? result.error : 'Không thể tải ảnh lên.');
+          return;
+        }
+
+        editor.chain().focus().setImage({ src: result.url as string, alt: secondaryValue || '' }).run();
+        toast.success(`Đã tải ảnh lên ${result.provider === 'github' ? 'GitHub' : 'Supabase'} và chèn vào bài viết.`);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Không thể tải ảnh lên.');
+      } finally {
+        setIsUploadingAsset(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     if (!value) { setPromptConfig(p => ({ ...p, isOpen: false })); return; }
     switch (promptConfig.type) {
       case 'image': editor.chain().focus().setImage({ src: value, alt: secondaryValue || '' }).run(); break;
@@ -430,30 +463,11 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     }).run();
   };
 
-  const handleAssetUpload = async (file?: File) => {
+  const handleAssetUpload = (file?: File) => {
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('provider', assetProvider);
-
-    setIsUploadingAsset(true);
-    try {
-      const result = await uploadEditorAsset(formData);
-
-      if (!result.success || !('url' in result) || !result.url) {
-        toast.error('error' in result ? result.error : 'Không thể tải ảnh lên.');
-        return;
-      }
-
-      editor.chain().focus().setImage({ src: result.url as string, alt: file.name }).run();
-      toast.success(`Đã tải ảnh lên ${result.provider === 'github' ? 'GitHub' : 'Supabase'} và chèn vào bài viết.`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Không thể tải ảnh lên.');
-    } finally {
-      setIsUploadingAsset(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
+    setPendingFile(file);
+    const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
+    openPrompt('upload_meta', 'THÔNG TIN ẢNH TẢI LÊN', 'Tên file (tùy chọn)...', fileNameWithoutExt, 'Alt text (tùy chọn)...');
   };
 
   return (
