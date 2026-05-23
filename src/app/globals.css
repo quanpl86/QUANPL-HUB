@@ -49,13 +49,13 @@ html {
 }
 
 .theme-reading {
-  --background: #f4f4f4; /* Neutral e-ink grey background */
+  --background: #fbf0d9; /* Warm paper yellow background */
   --foreground: #111111; /* Near pure black for maximum text contrast */
-  --card-bg: #ffffff; /* Pure white for cards to stand out */
-  --card-border: rgba(0, 0, 0, 0.15);
-  --card-shadow: rgba(0, 0, 0, 0.05);
+  --card-bg: #f5e8cd; /* Slightly darker parchment for cards */
+  --card-border: rgba(17, 17, 17, 0.15);
+  --card-shadow: rgba(17, 17, 17, 0.05);
   --muted: #555555; /* Dark grey for secondary text */
-  --grid-color: rgba(0, 0, 0, 0.05); /* Very subtle grid */
+  --grid-color: rgba(17, 17, 17, 0.05); /* Very subtle grid */
   --color-brand-orange: #111111; /* Override brand orange to black for pure B&W experience */
 }
 
