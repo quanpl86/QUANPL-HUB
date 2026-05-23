@@ -59,12 +59,9 @@ html {
   --color-brand-orange: #222222; /* Override brand orange to dark grey */
 }
 
-/* Make all media black and white in reading mode */
-.theme-reading img,
-.theme-reading video,
-.theme-reading iframe,
-.theme-reading svg.text-brand-orange {
-  filter: grayscale(100%) contrast(1.15);
+/* Make ENTIRE PAGE black and white in reading mode to kill all stray colors */
+html.theme-reading {
+  filter: grayscale(100%);
 }
 
 html, body {
