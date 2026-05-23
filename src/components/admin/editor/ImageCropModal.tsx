@@ -84,7 +84,7 @@ export const ImageCropModal = ({
                   responsive={true}
                   autoCropArea={1}
                   checkOrientation={false}
-                  onInitialized={(instance) => {
+                  onInitialized={(instance: any) => {
                     setCropper(instance);
                   }}
                   guides={true}
