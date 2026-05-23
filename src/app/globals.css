@@ -49,14 +49,14 @@ html {
 }
 
 .theme-reading {
-  --background: #f4f4f4; /* Neutral e-ink grey background */
-  --foreground: #111111; /* Near pure black for maximum text contrast */
-  --card-bg: #ffffff; /* Pure white for cards to stand out */
-  --card-border: rgba(0, 0, 0, 0.15);
-  --card-shadow: rgba(0, 0, 0, 0.05);
-  --muted: #555555; /* Dark grey for secondary text */
-  --grid-color: rgba(0, 0, 0, 0.05); /* Very subtle grid */
-  --color-brand-orange: #111111; /* Override brand orange to black for pure B&W experience */
+  --background: #ebebeb; /* Exact match to e-reader screen in reference photo */
+  --foreground: #222222; /* High contrast dark grey text, like e-ink */
+  --card-bg: #f2f2f2; /* Slightly lighter for cards */
+  --card-border: rgba(34, 34, 34, 0.15);
+  --card-shadow: rgba(34, 34, 34, 0.05);
+  --muted: #555555; /* Muted e-ink grey */
+  --grid-color: rgba(34, 34, 34, 0.05); /* Subtle grid */
+  --color-brand-orange: #222222; /* Override brand orange to dark grey */
 }
 
 /* Make all media black and white in reading mode */
