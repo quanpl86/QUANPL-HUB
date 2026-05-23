@@ -201,16 +201,6 @@ export default async function PostPage({ params }: PostPageProps) {
                   </Link>
                 );
               })()}
-              
-              {/* Additional Tags */}
-              {post.tags?.map((tag: string, idx: number) => (
-                <span 
-                  key={idx}
-                  className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border border-foreground/30 rounded-full text-foreground/80 cursor-default"
-                >
-                  {tag}
-                </span>
-              ))}
             </div>
           </div>
         </div>
@@ -270,6 +260,20 @@ export default async function PostPage({ params }: PostPageProps) {
             className="king-dragon-content prose prose-brand max-w-none"
             dangerouslySetInnerHTML={{ __html: sanitize(post.content || '') }}
           />
+
+          {/* Post Tags (Bottom) */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-16 pt-8 border-t border-brand-orange/10 flex flex-wrap gap-3">
+              {post.tags.map((tag: string, idx: number) => (
+                <span 
+                  key={idx}
+                  className="px-4 py-2 bg-foreground/5 border border-foreground/20 rounded-full text-xs tech-mono uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 transition-colors cursor-default"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Interactions Section */}
           <div className="mt-20 flex justify-center">
