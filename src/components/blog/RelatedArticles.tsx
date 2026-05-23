@@ -8,6 +8,7 @@ interface Post {
   title: string;
   excerpt: string;
   image_url: string;
+  created_at: string;
   profiles: any;
   categories: any;
   tags?: string[];
