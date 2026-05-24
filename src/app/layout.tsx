@@ -30,7 +30,12 @@ export const metadata: Metadata = {
     template: '%s | KING DRAGON HUB'
   },
   description: 'Nền tảng chia sẻ kiến thức chuyên sâu về Lập trình, AI, Robotics và Phát triển bản thân. Matrix thông tin dành cho những nhà khai phá.',
-  keywords: ['kingdragon', 'coding', 'robotics', 'ai', 'technology', 'blog hub'],
+  keywords: [
+    'Giáo dục STEM', 'Trí tuệ nhân tạo (AI) trong giáo dục', 'Phương pháp giảng dạy STEM',
+    'Triển khai khóa học', 'Thiết kế giáo án STEM', 'Tư duy máy tính (Computational Thinking)',
+    'Robotics', 'Nền tảng công nghệ giáo dục', 'SEO Giáo dục', 'GEO (Generative Engine Optimization)',
+    'AIO (AI Optimization)', 'KING DRAGON HUB'
+  ],
   authors: [{ name: 'KING DRAGON' }],
   creator: 'KING DRAGON',
   openGraph: {
