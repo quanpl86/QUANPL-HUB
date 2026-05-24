@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Eye, Monitor, Smartphone, Layout } from 'lucide-react';
 import Image from 'next/image';
 import { sanitize } from '@/lib/sanitize';
+import { renderMathInHtml } from '@/lib/math-renderer';
 
 interface PreviewModalProps {
   isOpen: boolean;
@@ -170,7 +171,7 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
 
                     <section 
                       className="king-dragon-content prose prose-brand max-w-none"
-                      dangerouslySetInnerHTML={{ __html: sanitize(data.content || '<p class="text-muted italic opacity-50 uppercase tracking-widest text-sm">// ĐANG_CHỜ_TRUYỀN_TẢI_NỘI_DUNG //</p>') }}
+                      dangerouslySetInnerHTML={{ __html: sanitize(renderMathInHtml(data.content || '<p class="text-muted italic opacity-50 uppercase tracking-widest text-sm">// ĐANG_CHỜ_TRUYỀN_TẢI_NỘI_DUNG //</p>')) }}
                     />
                   </div>
                 </div>

@@ -566,3 +566,46 @@ body {
   margin-top: 1rem;
   color: var(--muted);
 }
+
+.king-dragon-content .kd-math-block,
+.ProseMirror .kd-editor-math-block {
+  display: block;
+  margin: 1.75rem auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.4rem 0;
+  text-align: center;
+}
+
+.king-dragon-content .kd-math-inline,
+.ProseMirror .kd-editor-math-inline {
+  display: inline-flex;
+  max-width: 100%;
+  vertical-align: -0.18em;
+}
+
+.king-dragon-content .katex,
+.ProseMirror .katex {
+  font-size: 1.08em;
+}
+
+.king-dragon-content .katex-display {
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.3rem 0;
+}
+
+.ProseMirror .kd-math-source-hidden {
+  color: transparent !important;
+  font-size: 0 !important;
+  letter-spacing: 0 !important;
+  line-height: 0 !important;
+  user-select: none;
+}
+
+.ProseMirror .kd-editor-math-block {
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  background: rgba(249, 115, 22, 0.04);
+  border-radius: 0.75rem;
+}

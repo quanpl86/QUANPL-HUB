@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { sanitize } from '@/lib/sanitize';
 import { parseHtmlWithToc } from '@/lib/toc-parser';
+import { renderMathInHtml } from '@/lib/math-renderer';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 
 interface PostPageProps {
@@ -308,7 +309,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
           {/* Table of Contents (Auto-generated from headings) */}
           {(() => {
-            const { toc, html: tocHtml } = parseHtmlWithToc(post.content || '');
+            const { toc, html: tocHtml } = parseHtmlWithToc(renderMathInHtml(post.content || ''));
             return (
               <>
                 <TableOfContents items={toc} />

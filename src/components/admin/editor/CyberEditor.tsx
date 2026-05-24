@@ -37,9 +37,13 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model';
+import { Extension } from '@tiptap/core';
+import { Plugin } from '@tiptap/pm/state';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { all, createLowlight } from 'lowlight';
 import { motion } from 'framer-motion';
 import { marked } from 'marked';
+import { extractMathTokens, renderLatex } from '@/lib/math-renderer';
 
 const lowlight = createLowlight(all);
 
@@ -270,6 +274,43 @@ const CustomCodeBlockLowlight = CodeBlockLowlight.extend({
   },
 });
 
+const MathPreview = Extension.create({
+  name: 'mathPreview',
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        props: {
+          decorations(state) {
+            const decorations: Decoration[] = [];
+
+            state.doc.descendants((node, position, parent) => {
+              if (!node.isText || !node.text || parent?.type.name === 'codeBlock') return;
+
+              const tokens = extractMathTokens(node.text);
+              tokens.forEach((token) => {
+                const mathHtml = renderLatex(token.latex, token.displayMode);
+                if (!mathHtml) return;
+
+                const from = position + token.start;
+                const to = position + token.end;
+                const element = document.createElement(token.displayMode ? 'div' : 'span');
+                element.className = token.displayMode ? 'kd-editor-math-block' : 'kd-editor-math-inline';
+                element.innerHTML = mathHtml;
+
+                decorations.push(Decoration.inline(from, to, { class: 'kd-math-source-hidden' }));
+                decorations.push(Decoration.widget(from, element, { side: -1 }));
+              });
+            });
+
+            return DecorationSet.create(state.doc, decorations);
+          },
+        },
+      }),
+    ];
+  },
+});
+
 // --- Main Editor Component ---
 export function CyberEditor({ content, onChange }: { content: string, onChange: (html: string) => void }) {
   const [mode, setMode] = useState<EditorMode>('agent');
@@ -306,6 +347,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     TaskList, TaskItem.configure({ nested: true }),
     Typography, Superscript, Subscript,
     Color, TextStyle, Link, Underline,
+    MathPreview,
     CharacterCount.configure({ limit: 50000 }),
     BubbleMenuExtension,
     FloatingMenuExtension,

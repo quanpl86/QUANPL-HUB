@@ -53,6 +53,7 @@
     "highlight.js": "^11.11.1",
     "imagetracerjs": "^1.2.6",
     "jsdom": "^29.1.1",
+    "katex": "^0.17.0",
     "lowlight": "^3.3.0",
     "lucide-react": "^1.11.0",
     "marked": "^18.0.2",
