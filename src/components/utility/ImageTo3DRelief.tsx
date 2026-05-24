@@ -374,8 +374,8 @@ export default function ImageTo3DRelief() {
             
             <Stage environment="city" intensity={0.5}>
               <Center>
-                <group ref={groupRef} rotation={[Math.PI, 0, 0]} scale={[isMirrored ? -1 : 1, 1, 1]}>
-                  {svgString && <SvgTo3D svgString={svgString} baseDepth={baseDepth} extrusionDepth={extrusionDepth} colorLayers={colorLayers} />}
+                <group ref={groupRef} rotation={[Math.PI, 0, 0]}>
+                  {svgString && <SvgTo3D svgString={svgString} baseDepth={baseDepth} extrusionDepth={extrusionDepth} colorLayers={colorLayers} isMirrored={isMirrored} />}
                 </group>
               </Center>
             </Stage>
@@ -412,17 +412,35 @@ export default function ImageTo3DRelief() {
   );
 }
 
+// Hàm hỗ trợ lật ngược geometry và chuẩn hóa lại vector normal
+function mirrorGeometry(geom: THREE.BufferGeometry) {
+  geom.scale(-1, 1, 1);
+  const index = geom.getIndex();
+  if (index) {
+    for (let i = 0; i < index.count; i += 3) {
+      const a = index.getX(i);
+      const c = index.getX(i + 2);
+      index.setX(i, c);
+      index.setX(i + 2, a);
+    }
+  }
+  geom.computeVertexNormals();
+  return geom;
+}
+
 // Sub-component to parse SVG and render ExtrudeGeometries
 function SvgTo3D({ 
   svgString, 
   baseDepth, 
   extrusionDepth,
-  colorLayers
+  colorLayers,
+  isMirrored
 }: { 
   svgString: string, 
   baseDepth: number, 
   extrusionDepth: number,
-  colorLayers: { hex: string, visible: boolean }[]
+  colorLayers: { hex: string, visible: boolean }[],
+  isMirrored: boolean
 }) {
   const meshes: React.ReactNode[] = [];
   
@@ -472,9 +490,11 @@ function SvgTo3D({
         baseShape.lineTo(minX - margin, maxY + margin);
         baseShape.lineTo(minX - margin, minY - margin);
 
+        let baseGeom = new THREE.ExtrudeGeometry(baseShape, { depth: baseDepth, bevelEnabled: false });
+        if (isMirrored) baseGeom = mirrorGeometry(baseGeom);
+
         layerMeshes.push(
-          <mesh key={`base-${layer.hex}`} position={[0, 0, 0]}>
-            <extrudeGeometry args={[baseShape, { depth: baseDepth, bevelEnabled: false }]} />
+          <mesh key={`base-${layer.hex}`} position={[0, 0, 0]} geometry={baseGeom}>
             <meshStandardMaterial color="#eeeeee" roughness={0.8} />
           </mesh>
         );
@@ -484,14 +504,11 @@ function SvgTo3D({
       layerPaths.forEach((path, pathIdx) => {
         const shapes = SVGLoader.createShapes(path);
         shapes.forEach((shape, shapeIdx) => {
+          let shapeGeom = new THREE.ExtrudeGeometry(shape, { depth: extrusionDepth > 0.1 ? extrusionDepth : 0.1, bevelEnabled: false });
+          if (isMirrored) shapeGeom = mirrorGeometry(shapeGeom);
+
           layerMeshes.push(
-            <mesh key={`shape-${layer.hex}-${pathIdx}-${shapeIdx}`} position={[0, 0, baseDepth]}>
-              <extrudeGeometry 
-                args={[
-                  shape, 
-                  { depth: extrusionDepth > 0.1 ? extrusionDepth : 0.1, bevelEnabled: false }
-                ]} 
-              />
+            <mesh key={`shape-${layer.hex}-${pathIdx}-${shapeIdx}`} position={[0, 0, baseDepth]} geometry={shapeGeom}>
               <meshStandardMaterial 
                 color={path.color} 
                 roughness={0.4} 
