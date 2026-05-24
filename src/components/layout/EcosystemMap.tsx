@@ -17,7 +17,7 @@ const ecosystemPillars = [
     title: 'Robotics & Giả lập',
     icon: <Cpu className="w-8 h-8 text-blue-500" />,
     description: 'Hệ thống nền tảng giả lập 3D chuẩn thi đấu quốc tế. Giúp học sinh thực hành Robotics và IoT mà không bị rào cản về thiết bị phần cứng.',
-    items: ['Nền tảng giả lập 3D', 'Sa bàn WRO / FLL', 'Mô phỏng Cảm biến IoT'],
+    items: ['Nền tảng giả lập 3D', 'Sa bàn thử thách thi đấu', 'Mô phỏng Cảm biến IoT'],
     link: '/blog?category=robotics',
     color: 'from-blue-500/20 to-blue-500/5'
   },
