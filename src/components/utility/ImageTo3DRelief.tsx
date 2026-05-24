@@ -19,7 +19,7 @@ export default function ImageTo3DRelief() {
   // Settings
   const [baseDepth, setBaseDepth] = useState<number>(1.5);
   const [extrusionDepth, setExtrusionDepth] = useState<number>(2.0);
-  const [colorsCount, setColorsCount] = useState<number>(4);
+  const [colorsCount, setColorsCount] = useState<number>(8);
   const [simplify, setSimplify] = useState<number>(0.2);
   const [isMirrored, setIsMirrored] = useState<boolean>(true); // Default true for stamp making
 
@@ -317,16 +317,18 @@ export default function ImageTo3DRelief() {
 
             <div className="space-y-2 pt-4 border-t border-foreground/10">
               <div className="flex justify-between text-sm">
-                <span className="text-foreground/80 font-medium">Giới hạn số màu</span>
+                <span className="text-foreground/80 font-medium">Giới hạn số màu (Palette)</span>
                 <span className="text-foreground font-bold">{colorsCount}</span>
               </div>
               <input 
                 type="range" 
-                min="2" max="16" step="1" 
+                min="2" max="32" step="1" 
                 value={colorsCount} 
                 onChange={(e) => setColorsCount(parseInt(e.target.value))}
                 className="w-full accent-brand-orange"
               />
+              <p className="text-[10px] text-foreground/50 mt-1">Kéo lên cao (8-16) nếu ảnh bị mất các mảng màu nhỏ (như nét viền đen). Sau đó tự ẩn các mảng màu không cần thiết.</p>
+            </div>
             </div>
             
             <div className="space-y-2">
