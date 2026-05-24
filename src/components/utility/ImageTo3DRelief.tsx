@@ -70,6 +70,14 @@ export default function ImageTo3DRelief() {
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, width, height);
       
+      // Lật ngược hình ảnh TRƯỚC KHI trace màu nếu tùy chọn Mirror đang bật.
+      // Giải pháp này giúp bóc tách mã SVG ngược hoàn hảo ngay từ đầu, 
+      // tránh hoàn toàn lỗi đảo vector pháp tuyến (normals) khi xuất file STL.
+      if (isMirrored) {
+        ctx.translate(width, 0);
+        ctx.scale(-1, 1);
+      }
+      
       ctx.drawImage(img, 0, 0, width, height);
       const imgData = ctx.getImageData(0, 0, width, height);
 
@@ -375,7 +383,7 @@ export default function ImageTo3DRelief() {
             <Stage environment="city" intensity={0.5}>
               <Center>
                 <group ref={groupRef} rotation={[Math.PI, 0, 0]}>
-                  {svgString && <SvgTo3D svgString={svgString} baseDepth={baseDepth} extrusionDepth={extrusionDepth} colorLayers={colorLayers} isMirrored={isMirrored} />}
+                  {svgString && <SvgTo3D svgString={svgString} baseDepth={baseDepth} extrusionDepth={extrusionDepth} colorLayers={colorLayers} />}
                 </group>
               </Center>
             </Stage>
@@ -412,63 +420,17 @@ export default function ImageTo3DRelief() {
   );
 }
 
-// Hàm hỗ trợ lật ngược geometry và chuẩn hóa lại vector normal
-function mirrorGeometry<T extends THREE.BufferGeometry>(geom: T): T {
-  geom.scale(-1, 1, 1);
-  const index = geom.getIndex();
-  if (index) {
-    for (let i = 0; i < index.count; i += 3) {
-      const a = index.getX(i);
-      const c = index.getX(i + 2);
-      index.setX(i, c);
-      index.setX(i + 2, a);
-    }
-  } else {
-    // Unindexed geometry
-    const pos = geom.getAttribute('position');
-    const norm = geom.getAttribute('normal');
-    const uv = geom.getAttribute('uv');
-    if (pos) {
-      for (let i = 0; i < pos.count; i += 3) {
-        // Swap vertex i and i+2
-        const x0 = pos.getX(i), y0 = pos.getY(i), z0 = pos.getZ(i);
-        const x2 = pos.getX(i+2), y2 = pos.getY(i+2), z2 = pos.getZ(i+2);
-        pos.setXYZ(i, x2, y2, z2);
-        pos.setXYZ(i+2, x0, y0, z0);
-
-        if (norm) {
-          const nx0 = norm.getX(i), ny0 = norm.getY(i), nz0 = norm.getZ(i);
-          const nx2 = norm.getX(i+2), ny2 = norm.getY(i+2), nz2 = norm.getZ(i+2);
-          norm.setXYZ(i, nx2, ny2, nz2);
-          norm.setXYZ(i+2, nx0, ny0, nz0);
-        }
-
-        if (uv) {
-          const u0 = uv.getX(i), v0 = uv.getY(i);
-          const u2 = uv.getX(i+2), v2 = uv.getY(i+2);
-          uv.setXY(i, u2, v2);
-          uv.setXY(i+2, u0, v0);
-        }
-      }
-    }
-  }
-  geom.computeVertexNormals();
-  return geom;
-}
-
 // Sub-component to parse SVG and render ExtrudeGeometries
 function SvgTo3D({ 
   svgString, 
   baseDepth, 
   extrusionDepth,
-  colorLayers,
-  isMirrored
+  colorLayers
 }: { 
   svgString: string, 
   baseDepth: number, 
   extrusionDepth: number,
-  colorLayers: { hex: string, visible: boolean }[],
-  isMirrored: boolean
+  colorLayers: { hex: string, visible: boolean }[]
 }) {
   const meshes: React.ReactNode[] = [];
   
@@ -518,11 +480,9 @@ function SvgTo3D({
         baseShape.lineTo(minX - margin, maxY + margin);
         baseShape.lineTo(minX - margin, minY - margin);
 
-        let baseGeom = new THREE.ExtrudeGeometry(baseShape, { depth: baseDepth, bevelEnabled: false });
-        if (isMirrored) baseGeom = mirrorGeometry(baseGeom);
-
         layerMeshes.push(
-          <mesh key={`base-${layer.hex}`} position={[0, 0, 0]} geometry={baseGeom}>
+          <mesh key={`base-${layer.hex}`} position={[0, 0, 0]}>
+            <extrudeGeometry args={[baseShape, { depth: baseDepth, bevelEnabled: false }]} />
             <meshStandardMaterial color="#eeeeee" roughness={0.8} />
           </mesh>
         );
@@ -532,11 +492,14 @@ function SvgTo3D({
       layerPaths.forEach((path, pathIdx) => {
         const shapes = SVGLoader.createShapes(path);
         shapes.forEach((shape, shapeIdx) => {
-          let shapeGeom = new THREE.ExtrudeGeometry(shape, { depth: extrusionDepth > 0.1 ? extrusionDepth : 0.1, bevelEnabled: false });
-          if (isMirrored) shapeGeom = mirrorGeometry(shapeGeom);
-
           layerMeshes.push(
-            <mesh key={`shape-${layer.hex}-${pathIdx}-${shapeIdx}`} position={[0, 0, baseDepth]} geometry={shapeGeom}>
+            <mesh key={`shape-${layer.hex}-${pathIdx}-${shapeIdx}`} position={[0, 0, baseDepth]}>
+              <extrudeGeometry 
+                args={[
+                  shape, 
+                  { depth: extrusionDepth > 0.1 ? extrusionDepth : 0.1, bevelEnabled: false }
+                ]} 
+              />
               <meshStandardMaterial 
                 color={path.color} 
                 roughness={0.4} 
