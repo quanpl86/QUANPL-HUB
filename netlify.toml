@@ -8,6 +8,7 @@ package = "@netlify/plugin-nextjs"
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+  NODE_OPTIONS = "--max_old_space_size=4096"
 
 [functions]
   node_bundler = "esbuild"
