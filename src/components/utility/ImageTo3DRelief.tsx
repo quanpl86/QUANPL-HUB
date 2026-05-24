@@ -413,7 +413,7 @@ export default function ImageTo3DRelief() {
 }
 
 // Hàm hỗ trợ lật ngược geometry và chuẩn hóa lại vector normal
-function mirrorGeometry(geom: THREE.BufferGeometry) {
+function mirrorGeometry<T extends THREE.BufferGeometry>(geom: T): T {
   geom.scale(-1, 1, 1);
   const index = geom.getIndex();
   if (index) {
