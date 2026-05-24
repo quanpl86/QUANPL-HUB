@@ -231,10 +231,10 @@ export default async function PostPage({ params }: PostPageProps) {
                 <span className="font-orbitron text-brand-orange font-bold text-xs">Q</span>
               </div>
               <div className="flex items-center gap-2 font-[family-name:var(--font-inter)] text-sm">
-                <span className="font-semibold text-foreground">
-                  {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON Admin'}
-                </span>
-                <span className="text-foreground/70 hidden md:inline">Authorised System Architect</span>
+                <Link href="/author/quanpl86" className="font-semibold text-foreground hover:text-brand-orange transition-colors">
+                  {(Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON (Quan PL)'}
+                </Link>
+                <span className="text-foreground/70 hidden md:inline">System Architect & STEM Educator</span>
               </div>
             </div>
 
