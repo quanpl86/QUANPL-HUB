@@ -129,7 +129,7 @@ export default async function PostPage({ params }: PostPageProps) {
   // Fetch Series Posts if applicable
   const seriesTag = post.tags?.find((tag: string) => tag.startsWith('Series: '));
   const seriesName = seriesTag ? seriesTag.replace('Series: ', '').trim() : null;
-  let seriesPosts = [];
+  let seriesPosts: any[] = [];
   
   if (seriesTag) {
     const { data: sData } = await supabase
