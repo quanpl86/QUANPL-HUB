@@ -1,5 +1,3 @@
-import { JSDOM } from 'jsdom';
-
 export interface TocItem {
   id: string;
   text: string;
@@ -25,6 +23,7 @@ function slugify(text: string): string {
 /**
  * Parses HTML content string and extracts H2/H3 headings for Table of Contents.
  * Injects `id` attributes into the headings for jump-link navigation.
+ * Uses Regex instead of JSDOM to avoid crashing on Edge/Serverless environments (Netlify/Vercel).
  * 
  * @param htmlString - Raw HTML content from Tiptap/CMS
  * @returns Object containing the TOC items array and the modified HTML with injected IDs
@@ -32,16 +31,16 @@ function slugify(text: string): string {
 export function parseHtmlWithToc(htmlString: string): { toc: TocItem[]; html: string } {
   if (!htmlString) return { toc: [], html: '' };
 
-  const dom = new JSDOM(`<!DOCTYPE html><body>${htmlString}</body>`);
-  const doc = dom.window.document;
   const toc: TocItem[] = [];
   const usedIds = new Set<string>();
 
-  const headings = doc.querySelectorAll('h2, h3');
+  // Matches <h2 ...>text</h2> or <h3 ...>text</h3>
+  const regex = /<(h[23])([^>]*)>([\s\S]*?)<\/\1>/gi;
 
-  headings.forEach((heading) => {
-    const text = heading.textContent?.trim() || '';
-    if (!text) return;
+  const modifiedHtml = htmlString.replace(regex, (match, tag, attrs, innerHtml) => {
+    // textContent can be roughly extracted by removing inner HTML tags
+    const text = innerHtml.replace(/<[^>]+>/g, '').trim();
+    if (!text) return match; // skip empty headings
 
     let baseId = slugify(text);
     if (!baseId) baseId = 'section';
@@ -55,15 +54,19 @@ export function parseHtmlWithToc(htmlString: string): { toc: TocItem[]; html: st
     }
     usedIds.add(id);
 
-    // Inject the id attribute into the heading element
-    heading.setAttribute('id', id);
-
-    const level = heading.tagName === 'H2' ? 2 : 3;
+    const level = tag.toLowerCase() === 'h2' ? 2 : 3;
     toc.push({ id, text, level });
-  });
 
-  // Extract the modified body innerHTML (preserves original structure)
-  const modifiedHtml = doc.body.innerHTML;
+    // Inject id into attrs.
+    let newAttrs = attrs;
+    if (/id="[^"]*"/.test(newAttrs)) {
+      newAttrs = newAttrs.replace(/id="[^"]*"/, `id="${id}"`);
+    } else {
+      newAttrs = ` id="${id}"${newAttrs}`;
+    }
+
+    return `<${tag}${newAttrs}>${innerHtml}</${tag}>`;
+  });
 
   return { toc, html: modifiedHtml };
 }
