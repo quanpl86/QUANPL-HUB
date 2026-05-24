@@ -78,14 +78,15 @@ export default function ImageTo3DRelief() {
           const ImageTracer = (await import('imagetracerjs')).default || await import('imagetracerjs');
           
           const options = {
-            colorquantcycles: 3,
+            colorquantcycles: 15, // Tăng số vòng lặp K-means để tách màu chuẩn hơn
             numberofcolors: colorsCount,
+            mincolorratio: 0, // Quan trọng: 0 để không tự động xóa màu của các chi tiết nhỏ (như nét viền, cột cờ mỏng)
             strokewidth: 0,
             viewbox: true,
             scale: 1,
             ltres: simplify,
             qtres: simplify,
-            pathomit: 8
+            pathomit: 0 // Bắt buộc = 0 để giữ lại các chi tiết nhỏ
           };
           
           const svgStr = ImageTracer.imagedataToSVG(imgData, options);
