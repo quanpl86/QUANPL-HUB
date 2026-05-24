@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Linkedin, Github, Mail, BrainCircuit, GraduationCap, Code2, Layers, Cpu, CheckCircle2 } from 'lucide-react';
+import { Linkedin, Mail, BrainCircuit, GraduationCap, Code2, Layers, Cpu, CheckCircle2 } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -121,15 +121,6 @@ export default async function AuthorProfile({ params }: { params: Promise<{ id: 
                 >
                   <Linkedin className="w-4 h-4" />
                   LinkedIn
-                </a>
-                <a 
-                  href="https://github.com/quanpl86" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground/5 text-foreground hover:bg-foreground/10 transition-colors border border-foreground/10 font-medium text-sm"
-                >
-                  <Github className="w-4 h-4" />
-                  GitHub
                 </a>
                 <a 
                   href="mailto:contact@kingdragonhub.com" 
