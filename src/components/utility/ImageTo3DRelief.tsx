@@ -386,7 +386,7 @@ export default function ImageTo3DRelief() {
 
         {/* Action Bar */}
         {svgString && (
-          <div className="h-20 bg-background border-t border-foreground/10 flex items-center justify-between px-6 z-20">
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-background/90 backdrop-blur-md border-t border-foreground/10 flex items-center justify-between px-6 z-30">
             <div className="text-sm font-medium text-foreground/60">
               Đang hiển thị: <span className="text-foreground font-bold">{colorLayers.filter(l => l.visible).length} / {colorLayers.length}</span> khuôn màu
             </div>
