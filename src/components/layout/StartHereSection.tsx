@@ -9,6 +9,7 @@ const pathways = [
     icon: Bot,
     signal: 'NỀN TẢNG AI',
     cta: 'Bắt đầu với AI',
+    color: 'from-orange-500/20 to-orange-500/5'
   },
   {
     title: 'STEM cho giáo viên',
@@ -17,6 +18,7 @@ const pathways = [
     icon: GraduationCap,
     signal: 'CÔNG CỤ GIÁO VIÊN',
     cta: 'Xem lộ trình STEM',
+    color: 'from-emerald-500/20 to-emerald-500/5'
   },
   {
     title: 'Robotics Competition Engineering',
@@ -25,6 +27,7 @@ const pathways = [
     icon: Cpu,
     signal: 'PHÒNG LAB ROBOTICS',
     cta: 'Khám phá Robotics',
+    color: 'from-blue-500/20 to-blue-500/5'
   },
   {
     title: 'Second Brain và PKM',
@@ -33,6 +36,7 @@ const pathways = [
     icon: BrainCircuit,
     signal: 'HỆ THỐNG DRAGONMIND',
     cta: 'Mở DragonMind',
+    color: 'from-purple-500/20 to-purple-500/5'
   },
 ];
 
@@ -42,11 +46,11 @@ export function StartHereSection() {
       <div className="container mx-auto px-6">
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end mb-12">
           <div>
-            <div className="inline-flex items-center gap-3 border border-brand-orange/45 bg-brand-orange/10 px-4 py-2 text-brand-orange tech-mono mb-5">
-              <span className="h-2 w-2 bg-brand-orange" />
-              BẮT ĐẦU TẠI ĐÂY
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/5 border border-brand-orange/20 mb-5">
+              <span className="h-2 w-2 rounded-full bg-brand-orange" />
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">BẮT ĐẦU TẠI ĐÂY</span>
             </div>
-            <h2 className="cyber-h2">
+            <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-inter)] tracking-tight text-foreground">
               Bắt đầu đúng <span className="text-brand-orange">lộ trình</span>
             </h2>
           </div>
@@ -64,32 +68,33 @@ export function StartHereSection() {
               <Link
                 key={pathway.signal}
                 href={pathway.href}
-                className="group relative flex min-h-[300px] flex-col overflow-hidden border border-brand-orange/25 bg-cyber-black/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-orange/70 hover:shadow-[0_16px_40px_rgba(249,115,22,0.16)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut"
+                className="group relative flex min-h-[300px] flex-col p-8 rounded-2xl border border-foreground/10 bg-foreground/[0.02] hover:bg-foreground/[0.04] transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 overflow-hidden"
               >
-                <div className="absolute right-0 top-0 h-20 min-w-[5rem] px-6 flex items-center justify-center border-b border-l border-brand-orange/20 bg-brand-orange/[0.07]">
-                  <span className="tech-mono text-brand-orange/80 !text-[9px] pt-3">{pathway.signal}</span>
-                </div>
-
-                <div className="mb-8 flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center border border-brand-orange/50 bg-brand-orange/10 text-brand-orange cyber-cut-sm">
-                    <Icon size={24} aria-hidden="true" />
+                {/* Gradient overlay */}
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${pathway.color} blur-[30px] opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                
+                <div className="mb-6 flex items-center justify-between relative z-10">
+                  <div className="inline-flex p-4 rounded-xl bg-background border border-foreground/10 shadow-sm text-foreground/80 group-hover:text-brand-orange transition-colors">
+                    <Icon size={28} aria-hidden="true" />
                   </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 bg-foreground/5 px-2 py-1 rounded-md">{pathway.signal}</span>
                 </div>
 
-                <h3 className="font-orbitron text-xl font-bold leading-snug text-foreground">
+                <h3 className="text-xl font-bold font-[family-name:var(--font-inter)] text-foreground mb-4 relative z-10 leading-snug">
                   {pathway.title}
                 </h3>
-                <p className="body-base mt-4 text-muted">
+                
+                <p className="text-sm text-foreground/70 mb-8 leading-relaxed relative z-10">
                   {pathway.description}
                 </p>
 
-                <div className="mt-auto pt-8 flex items-center justify-between border-t border-brand-orange/25">
-                  <span className="font-orbitron text-sm font-bold text-brand-orange">
+                <div className="mt-auto pt-6 flex items-center justify-between border-t border-foreground/10 relative z-10">
+                  <span className="text-sm font-bold text-foreground group-hover:text-brand-orange transition-colors">
                     {pathway.cta}
                   </span>
                   <ArrowRight
                     size={18}
-                    className="text-brand-orange transition-transform duration-300 group-hover:translate-x-1"
+                    className="text-foreground/50 group-hover:text-brand-orange transition-all duration-300 group-hover:translate-x-1"
                     aria-hidden="true"
                   />
                 </div>
@@ -98,16 +103,16 @@ export function StartHereSection() {
           })}
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 border-l-4 border-brand-orange bg-brand-orange/[0.07] p-6 md:flex-row md:items-center md:justify-between">
+        <div className="mt-12 flex flex-col md:flex-row gap-6 items-center justify-between bg-foreground/[0.02] border border-foreground/10 rounded-2xl p-8">
           <div>
-            <p className="font-orbitron text-lg font-bold text-foreground">Muốn xem toàn bộ bản đồ tri thức?</p>
-            <p className="body-base text-muted mt-1">
+            <p className="text-xl font-bold font-[family-name:var(--font-inter)] text-foreground">Muốn xem toàn bộ bản đồ tri thức?</p>
+            <p className="text-sm text-foreground/70 mt-2 max-w-2xl leading-relaxed">
               Vào thư viện để tìm theo chủ đề, sắp xếp bài mới nhất và lần theo các node kiến thức đang mở.
             </p>
           </div>
           <Link
             href="/blog"
-            className="inline-flex items-center justify-center gap-2 border border-brand-orange bg-brand-orange px-5 py-3 font-orbitron text-sm font-bold uppercase text-cyber-black transition-all hover:glow-orange focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut-sm"
+            className="shrink-0 inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-brand-orange/90 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:shadow-lg hover:shadow-brand-orange/20"
           >
             Tìm bài viết theo chủ đề
             <ArrowRight size={16} aria-hidden="true" />
