@@ -86,17 +86,15 @@ export default function ImageTo3DRelief() {
           const ImageTracer = (await import('imagetracerjs')).default || await import('imagetracerjs');
           
           const options = {
-            colorquantcycles: 15, // Tăng số vòng lặp K-means để tách màu chuẩn hơn
+            colorquantcycles: 15,
             numberofcolors: colorsCount,
-            mincolorratio: 0, // Quan trọng: 0 để không tự động xóa màu của các chi tiết nhỏ (như nét viền, cột cờ mỏng)
+            mincolorratio: 0,
             strokewidth: 0,
             viewbox: true,
             scale: 1,
             ltres: simplify,
             qtres: simplify,
-            pathomit: 0, // Bắt buộc = 0 để giữ lại các chi tiết nhỏ
-            layering: 1, // Dùng chế độ Stacked (xếp chồng) thay vì Cutout để tạo các khối liền mạch, chống lỗi lủng lỗ ở viền
-            roundcoords: 2 // Làm tròn tọa độ tới 2 chữ số thập phân để chống lỗi tạo vi-tam-giác (degenerate triangles) làm rỗng ruột trong TinkerCAD
+            pathomit: 0
           };
           
           const svgStr = ImageTracer.imagedataToSVG(imgData, options);
