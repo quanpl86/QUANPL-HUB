@@ -10,6 +10,8 @@ import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
 
 export default function ImageTo3DRelief() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [sourceFile, setSourceFile] = useState<File | null>(null);
+  const [sourceMode, setSourceMode] = useState<'raster' | 'svg'>('raster');
   const [isProcessing, setIsProcessing] = useState(false);
   const [svgString, setSvgString] = useState<string | null>(null);
   
@@ -22,26 +24,81 @@ export default function ImageTo3DRelief() {
   const [colorsCount, setColorsCount] = useState<number>(8);
   const [simplify, setSimplify] = useState<number>(0.2);
   const [isMirrored, setIsMirrored] = useState<boolean>(true); // Default true for stamp making
+  const [tinkerCadSafeMode, setTinkerCadSafeMode] = useState<boolean>(true);
+  const [detailOverlap, setDetailOverlap] = useState<number>(0.25);
 
   // Scene references
   const groupRef = useRef<THREE.Group>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+    };
+  }, [imageUrl]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
       const url = URL.createObjectURL(file);
       setImageUrl(url);
+      setSourceFile(file);
+      setSourceMode(file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg') ? 'svg' : 'raster');
       setSvgString(null);
       setColorLayers([]);
     }
   };
 
+  const clearSource = () => {
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+    setImageUrl(null);
+    setSourceFile(null);
+    setSvgString(null);
+    setColorLayers([]);
+  };
+
   const processImage = async () => {
-    if (!imageUrl) return;
+    if (!imageUrl || !sourceFile) return;
     setIsProcessing(true);
     
     try {
+      if (sourceMode === 'svg') {
+        const rawSvg = await sourceFile.text();
+        const parser = new DOMParser();
+        const document = parser.parseFromString(rawSvg, 'image/svg+xml');
+        const parserError = document.querySelector('parsererror');
+
+        if (parserError) {
+          throw new Error('Invalid SVG');
+        }
+
+        const svgElement = document.querySelector('svg');
+        if (!svgElement) {
+          throw new Error('SVG root not found');
+        }
+
+        if (!svgElement.getAttribute('viewBox')) {
+          const width = parseFloat(svgElement.getAttribute('width') || '600');
+          const height = parseFloat(svgElement.getAttribute('height') || '600');
+          svgElement.setAttribute('viewBox', `0 0 ${width || 600} ${height || 600}`);
+        }
+
+        if (isMirrored) {
+          const viewBox = svgElement.getAttribute('viewBox')?.split(/\s+/).map(Number) || [0, 0, 600, 600];
+          const [, , viewBoxWidth] = viewBox;
+          const content = Array.from(svgElement.childNodes);
+          const mirrorGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          mirrorGroup.setAttribute('transform', `translate(${viewBoxWidth} 0) scale(-1 1)`);
+          content.forEach((node) => mirrorGroup.appendChild(node));
+          svgElement.appendChild(mirrorGroup);
+        }
+
+        setSvgString(new XMLSerializer().serializeToString(svgElement));
+        setIsProcessing(false);
+        return;
+      }
+
       const img = new Image();
       img.crossOrigin = "Anonymous";
       img.src = imageUrl;
@@ -133,12 +190,12 @@ export default function ImageTo3DRelief() {
           visible: true
         }));
         
-        setColorLayers(layers);
+        queueMicrotask(() => setColorLayers(layers));
       } catch (err) {
         console.error("Error parsing SVG for layers", err);
       }
     } else {
-      setColorLayers([]);
+      queueMicrotask(() => setColorLayers([]));
     }
   }, [svgString]);
 
@@ -164,9 +221,10 @@ export default function ImageTo3DRelief() {
   };
 
   const exportCurrentView = () => {
-    if (!sceneRef.current) return;
+    if (!groupRef.current) return;
     const exporter = new STLExporter();
-    const stlString = exporter.parse(sceneRef.current);
+    groupRef.current.updateMatrixWorld(true);
+    const stlString = exporter.parse(groupRef.current);
     downloadBlob(stlString, 'khuon_in_hien_tai.stl');
   };
 
@@ -189,7 +247,8 @@ export default function ImageTo3DRelief() {
       // Wait for React to re-render the 3D scene with the new visibility
       await new Promise(r => setTimeout(r, 150)); 
       
-      const stlString = exporter.parse(sceneRef.current);
+      groupRef.current?.updateMatrixWorld(true);
+      const stlString = exporter.parse(groupRef.current || sceneRef.current);
       downloadBlob(stlString, `khuon_${layer.hex.replace('#','')}.stl`);
     }
 
@@ -214,9 +273,9 @@ export default function ImageTo3DRelief() {
               <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
                 <Upload className="w-8 h-8 mb-3 text-brand-orange/70" />
                 <p className="text-sm text-foreground/80 font-medium">Bấm để tải ảnh lên</p>
-                <p className="text-xs text-foreground/50 mt-1">PNG, JPG (Tối ưu nhất với ảnh mảng màu phẳng, logo)</p>
+                <p className="text-xs text-foreground/50 mt-1">SVG khuyên dùng; PNG/JPG vẫn hỗ trợ qua trace màu</p>
               </div>
-              <input type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleImageUpload} />
+              <input type="file" className="hidden" accept="image/svg+xml,image/png,image/jpeg" onChange={handleImageUpload} />
             </label>
           ) : (
             <div className="space-y-4">
@@ -224,9 +283,22 @@ export default function ImageTo3DRelief() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imageUrl} alt="Uploaded" className="w-full h-full object-contain" />
               </div>
+              <div className="flex items-start gap-3 rounded-xl border border-brand-orange/20 bg-brand-orange/5 p-3">
+                <div className="mt-0.5 h-2 w-2 rounded-full bg-brand-orange" />
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brand-orange">
+                    {sourceMode === 'svg' ? 'SVG direct extrude' : 'PNG/JPG color trace'}
+                  </p>
+                  <p className="mt-1 text-[11px] text-foreground/55">
+                    {sourceMode === 'svg'
+                      ? 'Đọc path vector trực tiếp nên mesh sạch hơn, ít rỗng hơn khi import TinkerCAD.'
+                      : 'Ảnh raster sẽ được trace thành SVG trước; nếu mesh bị vụn, hãy thử SVG gốc.'}
+                  </p>
+                </div>
+              </div>
               <div className="flex gap-2">
                 <button 
-                  onClick={() => { setImageUrl(null); setSvgString(null); setColorLayers([]); }}
+                  onClick={clearSource}
                   className="flex-1 py-2 text-xs font-bold bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-colors"
                 >
                   Xóa ảnh
@@ -258,7 +330,7 @@ export default function ImageTo3DRelief() {
             </div>
             
             <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-              {colorLayers.map((layer, idx) => (
+              {colorLayers.map((layer) => (
                 <div key={layer.hex} className="flex items-center justify-between p-2 rounded-lg bg-background border border-foreground/5">
                   <div className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-md shadow-inner border border-foreground/10" style={{ backgroundColor: layer.color }}></div>
@@ -294,6 +366,44 @@ export default function ImageTo3DRelief() {
               </label>
             </div>
 
+            <div className="space-y-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-300">TinkerCAD-safe mesh</span>
+                  <p className="mt-1 text-[10px] text-foreground/50">
+                    Đóng lỗ path nội bộ và cho chi tiết ăn nhẹ xuống đế để tránh import thành vách rỗng.
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={tinkerCadSafeMode}
+                    onChange={(e) => setTinkerCadSafeMode(e.target.checked)}
+                  />
+                  <div className="w-9 h-5 bg-foreground/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+              </div>
+
+              {tinkerCadSafeMode && (
+                <div className="space-y-2 pt-2 border-t border-emerald-500/15">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-foreground/80 font-medium">Độ chồng khối vào đế</span>
+                    <span className="text-emerald-600 dark:text-emerald-300 font-bold">{detailOverlap} mm</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.05"
+                    max="1"
+                    step="0.05"
+                    value={detailOverlap}
+                    onChange={(e) => setDetailOverlap(parseFloat(e.target.value))}
+                    className="w-full accent-emerald-500"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-foreground/80 font-medium">Độ dày đế khuôn (Base)</span>
@@ -323,7 +433,7 @@ export default function ImageTo3DRelief() {
               />
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-foreground/10">
+            <div className={`space-y-2 pt-4 border-t border-foreground/10 ${sourceMode === 'svg' ? 'opacity-60' : ''}`}>
               <div className="flex justify-between text-sm">
                 <span className="text-foreground/80 font-medium">Giới hạn số màu (Palette)</span>
                 <span className="text-foreground font-bold">{colorsCount}</span>
@@ -333,12 +443,17 @@ export default function ImageTo3DRelief() {
                 min="2" max="32" step="1" 
                 value={colorsCount} 
                 onChange={(e) => setColorsCount(parseInt(e.target.value))}
+                disabled={sourceMode === 'svg'}
                 className="w-full accent-brand-orange"
               />
-              <p className="text-[10px] text-foreground/50 mt-1">Kéo lên cao (8-16) nếu ảnh bị mất các mảng màu nhỏ (như nét viền đen). Sau đó tự ẩn các mảng màu không cần thiết.</p>
+              <p className="text-[10px] text-foreground/50 mt-1">
+                {sourceMode === 'svg'
+                  ? 'SVG dùng màu/path gốc nên không cần trace lại palette.'
+                  : 'Kéo lên cao (8-16) nếu ảnh bị mất các mảng màu nhỏ. Sau đó tự ẩn các mảng màu không cần thiết.'}
+              </p>
             </div>
             
-            <div className="space-y-2">
+            <div className={`space-y-2 ${sourceMode === 'svg' ? 'opacity-60' : ''}`}>
               <div className="flex justify-between text-sm">
                 <span className="text-foreground/80 font-medium">Làm mượt nét (Chống răng cưa)</span>
                 <span className="text-foreground font-bold">{simplify}</span>
@@ -348,9 +463,14 @@ export default function ImageTo3DRelief() {
                 min="0.1" max="1.5" step="0.1" 
                 value={simplify} 
                 onChange={(e) => setSimplify(parseFloat(e.target.value))}
+                disabled={sourceMode === 'svg'}
                 className="w-full accent-brand-orange"
               />
-              <p className="text-[10px] text-foreground/50 mt-1">Lưu ý: Kéo chỉ số này quá cao sẽ làm đường nét bị biến dạng, cắt chéo vào nhau, dẫn đến việc **TinkerCAD bị rỗng ruột** khi import. Khuyên dùng: 0.1 - 0.5.</p>
+              <p className="text-[10px] text-foreground/50 mt-1">
+                {sourceMode === 'svg'
+                  ? 'SVG giữ nguyên path gốc, không chạy bước làm mượt trace.'
+                  : 'Lưu ý: Kéo chỉ số này quá cao sẽ làm đường nét bị biến dạng, cắt chéo vào nhau, dẫn đến việc TinkerCAD bị rỗng ruột khi import. Khuyên dùng: 0.1 - 0.5.'}
+              </p>
             </div>
           </div>
         </section>
@@ -370,7 +490,7 @@ export default function ImageTo3DRelief() {
         {!svgString && !isProcessing && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-foreground/40 pointer-events-none">
             <LayersIcon className="w-16 h-16 mb-4 opacity-20" />
-            <p className="font-medium text-lg">Upload ảnh và bấm "Tạo mặt nổi 3D" để xem trước</p>
+            <p className="font-medium text-lg">Upload ảnh và bấm &ldquo;Tạo mặt nổi 3D&rdquo; để xem trước</p>
           </div>
         )}
 
@@ -384,7 +504,16 @@ export default function ImageTo3DRelief() {
             <Stage environment="city" intensity={0.5}>
               <Center>
                 <group ref={groupRef} rotation={[Math.PI, 0, 0]}>
-                  {svgString && <SvgTo3D svgString={svgString} baseDepth={baseDepth} extrusionDepth={extrusionDepth} colorLayers={colorLayers} />}
+                  {svgString && (
+                    <SvgTo3D
+                      svgString={svgString}
+                      baseDepth={baseDepth}
+                      extrusionDepth={extrusionDepth}
+                      colorLayers={colorLayers}
+                      tinkerCadSafeMode={tinkerCadSafeMode}
+                      detailOverlap={detailOverlap}
+                    />
+                  )}
                 </group>
               </Center>
             </Stage>
@@ -397,7 +526,12 @@ export default function ImageTo3DRelief() {
         {svgString && (
           <div className="absolute bottom-0 left-0 right-0 h-20 bg-background/90 backdrop-blur-md border-t border-foreground/10 flex items-center justify-between px-6 z-30">
             <div className="text-sm font-medium text-foreground/60">
-              Đang hiển thị: <span className="text-foreground font-bold">{colorLayers.filter(l => l.visible).length} / {colorLayers.length}</span> khuôn màu
+              <div>
+                Đang hiển thị: <span className="text-foreground font-bold">{colorLayers.filter(l => l.visible).length} / {colorLayers.length}</span> khuôn màu
+              </div>
+              <div className="mt-1 text-xs text-foreground/45">
+                STL không lưu màu; muốn giữ màu trong TinkerCAD hãy xuất batch rồi import từng STL theo layer.
+              </div>
             </div>
             <div className="flex gap-3">
               <button 
@@ -426,103 +560,119 @@ function SvgTo3D({
   svgString, 
   baseDepth, 
   extrusionDepth,
-  colorLayers
+  colorLayers,
+  tinkerCadSafeMode,
+  detailOverlap
 }: { 
   svgString: string, 
   baseDepth: number, 
   extrusionDepth: number,
-  colorLayers: { hex: string, visible: boolean }[]
+  colorLayers: { hex: string, visible: boolean }[],
+  tinkerCadSafeMode: boolean,
+  detailOverlap: number
 }) {
   const meshes: React.ReactNode[] = [];
-  
+  let svgData;
+
   try {
     const loader = new SVGLoader();
-    const svgData = loader.parse(svgString);
-    
-    // Compute total bounding box for a UNIFIED base plate
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-    svgData.paths.forEach((path) => {
-      const shapes = SVGLoader.createShapes(path);
-      shapes.forEach((shape) => {
-        shape.getPoints().forEach((p) => {
-          if (p.x < minX) minX = p.x;
-          if (p.y < minY) minY = p.y;
-          if (p.x > maxX) maxX = p.x;
-          if (p.y > maxY) maxY = p.y;
-        });
-      });
-    });
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    // We render the extruded meshes per color layer
-    const pathsByColor = new Map<string, typeof svgData.paths>();
-    svgData.paths.forEach(p => {
-      const hex = '#' + p.color.getHexString().toUpperCase();
-      if (!pathsByColor.has(hex)) pathsByColor.set(hex, []);
-      pathsByColor.get(hex)!.push(p);
-    });
-
-    colorLayers.forEach((layer) => {
-      if (!layer.visible) return; // Skip if layer is disabled
-      
-      const layerPaths = pathsByColor.get(layer.hex) || [];
-      const layerMeshes: React.ReactNode[] = [];
-
-      // 1. Unified Base Plate (Rendered for EACH visible color layer so it exports with the stamp)
-      if (width > 0 && height > 0) {
-        const baseShape = new THREE.Shape();
-        const margin = Math.max(width, height) * 0.05; // 5% registration margin
-        baseShape.moveTo(minX - margin, minY - margin);
-        baseShape.lineTo(maxX + margin, minY - margin);
-        baseShape.lineTo(maxX + margin, maxY + margin);
-        baseShape.lineTo(minX - margin, maxY + margin);
-        baseShape.lineTo(minX - margin, minY - margin);
-
-        layerMeshes.push(
-          <mesh key={`base-${layer.hex}`} position={[0, 0, 0]}>
-            <extrudeGeometry args={[baseShape, { depth: baseDepth, bevelEnabled: false }]} />
-            <meshStandardMaterial color="#eeeeee" roughness={0.8} />
-          </mesh>
-        );
-      }
-
-      // 2. Extruded Details
-      layerPaths.forEach((path, pathIdx) => {
-        const shapes = SVGLoader.createShapes(path);
-        shapes.forEach((shape, shapeIdx) => {
-          layerMeshes.push(
-            <mesh key={`shape-${layer.hex}-${pathIdx}-${shapeIdx}`} position={[0, 0, baseDepth]}>
-              <extrudeGeometry 
-                args={[
-                  shape, 
-                  { depth: extrusionDepth > 0.1 ? extrusionDepth : 0.1, bevelEnabled: false }
-                ]} 
-              />
-              <meshStandardMaterial 
-                color={path.color} 
-                roughness={0.4} 
-                metalness={0.1}
-                side={THREE.DoubleSide} 
-              />
-            </mesh>
-          );
-        });
-      });
-
-      // Group meshes for this specific color layer
-      meshes.push(
-        <group key={`group-${layer.hex}`}>
-          {layerMeshes}
-        </group>
-      );
-    });
-
+    svgData = loader.parse(svgString);
   } catch (error) {
     console.error("Error parsing SVG string to 3D", error);
+    return null;
   }
+
+  // Compute total bounding box for a UNIFIED base plate
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+  svgData.paths.forEach((path) => {
+    const shapes = SVGLoader.createShapes(path);
+    shapes.forEach((shape) => {
+      shape.getPoints().forEach((p) => {
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+      });
+    });
+  });
+
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const visibleLayers = colorLayers.filter((layer) => layer.visible);
+
+  // We render the extruded meshes per color layer
+  const pathsByColor = new Map<string, typeof svgData.paths>();
+  svgData.paths.forEach(p => {
+    const hex = '#' + p.color.getHexString().toUpperCase();
+    if (!pathsByColor.has(hex)) pathsByColor.set(hex, []);
+    pathsByColor.get(hex)!.push(p);
+  });
+
+  // 1. Unified Base Plate. Keep this outside the layer loop so the current-view STL
+  // does not contain multiple overlapping slabs when several colors are visible.
+  if (visibleLayers.length > 0 && width > 0 && height > 0) {
+    const baseShape = new THREE.Shape();
+    const margin = Math.max(width, height) * 0.05; // 5% registration margin
+    baseShape.moveTo(minX - margin, minY - margin);
+    baseShape.lineTo(maxX + margin, minY - margin);
+    baseShape.lineTo(maxX + margin, maxY + margin);
+    baseShape.lineTo(minX - margin, maxY + margin);
+    baseShape.lineTo(minX - margin, minY - margin);
+
+    meshes.push(
+      <mesh key="base-unified" position={[0, 0, 0]}>
+        <extrudeGeometry args={[baseShape, { depth: baseDepth, bevelEnabled: false }]} />
+        <meshStandardMaterial color="#eeeeee" roughness={0.8} />
+      </mesh>
+    );
+  }
+
+  visibleLayers.forEach((layer) => {
+    const layerPaths = pathsByColor.get(layer.hex) || [];
+    const layerMeshes: React.ReactNode[] = [];
+    const overlap = tinkerCadSafeMode ? Math.min(detailOverlap, baseDepth * 0.8) : 0;
+
+    // 2. Extruded Details
+    layerPaths.forEach((path, pathIdx) => {
+      const shapes = SVGLoader.createShapes(path);
+      shapes.forEach((shape, shapeIdx) => {
+        const exportShape = tinkerCadSafeMode ? shape.clone() : shape;
+        if (tinkerCadSafeMode) {
+          exportShape.holes = [];
+        }
+
+        layerMeshes.push(
+          <mesh key={`shape-${layer.hex}-${pathIdx}-${shapeIdx}`} position={[0, 0, baseDepth - overlap]}>
+            <extrudeGeometry 
+              args={[
+                exportShape, 
+                {
+                  depth: (extrusionDepth > 0.1 ? extrusionDepth : 0.1) + overlap,
+                  bevelEnabled: false,
+                  curveSegments: tinkerCadSafeMode ? 8 : 12,
+                  steps: 1,
+                }
+              ]} 
+            />
+            <meshStandardMaterial 
+              color={path.color} 
+              roughness={0.4} 
+              metalness={0.1}
+              side={THREE.DoubleSide} 
+            />
+          </mesh>
+        );
+      });
+    });
+
+    // Group meshes for this specific color layer
+    meshes.push(
+      <group key={`group-${layer.hex}`}>
+        {layerMeshes}
+      </group>
+    );
+  });
 
   return <>{meshes}</>;
 }

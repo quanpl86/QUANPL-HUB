@@ -8,3 +8,26 @@ package = "@netlify/plugin-nextjs"
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = "--legacy-peer-deps"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = [
+    "@neplex/vectorizer",
+    "@neplex/vectorizer-linux-x64-gnu",
+    "@neplex/vectorizer-linux-x64-musl",
+    "@neplex/vectorizer-linux-arm64-gnu",
+    "@neplex/vectorizer-linux-arm64-musl"
+  ]
+  included_files = ["node_modules/@neplex/vectorizer*/**/*"]
+
+[[headers]]
+  for = "/utility-hub/background-remover"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+
+[[headers]]
+  for = "/vendor/background-removal/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Cross-Origin-Resource-Policy = "same-origin"
