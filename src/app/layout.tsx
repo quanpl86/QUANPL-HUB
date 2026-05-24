@@ -65,11 +65,37 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { FloatingMascot } from "@/components/ui/FloatingMascot";
 import { Toaster } from "sonner";
 
+import { JsonLd } from "@/components/seo/JsonLd";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'KING DRAGON HUB',
+    url: 'https://kingdragonhub.com',
+    logo: 'https://kingdragonhub.com/icon.png',
+    description: 'Nền tảng chia sẻ kiến thức chuyên sâu về Lập trình, AI, Robotics và Phát triển bản thân. Matrix thông tin dành cho những nhà khai phá.',
+    sameAs: [
+      'https://github.com/quanpl86'
+    ]
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'KING DRAGON HUB',
+    url: 'https://kingdragonhub.com',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://kingdragonhub.com/?q={search_term_string}',
+      'query-input': 'required name=search_term_string'
+    }
+  };
+
   return (
     <html
       lang="vi"
@@ -77,6 +103,8 @@ export default function RootLayout({
       className={`${beVietnamPro.variable} ${spaceGrotesk.variable} ${inter.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col font-sans transition-colors duration-300">
+        <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
         <ThemeProvider>
           <Header />
           <main className="flex-grow">

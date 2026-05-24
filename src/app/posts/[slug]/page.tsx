@@ -61,6 +61,7 @@ const RelatedArticles = dynamic(() => import('@/components/blog/RelatedArticles'
 });
 
 import { CollapsibleTags } from '@/components/blog/CollapsibleTags';
+import { SeriesNavigation } from '@/components/blog/SeriesNavigation';
 
 const PremiumMultimedia = dynamic(() => import('@/components/blog/PremiumMultimedia').then(mod => mod.PremiumMultimedia), {
   loading: () => <div className="h-20 bg-brand-orange/5 animate-pulse border border-brand-orange/10 mb-12"></div>
@@ -110,6 +111,20 @@ export default async function PostPage({ params }: PostPageProps) {
     .neq('id', post.id)
     .order('created_at', { ascending: false })
     .limit(3);
+
+  // Fetch Series Posts if applicable
+  const seriesTag = post.tags?.find((tag: string) => tag.startsWith('Series: '));
+  const seriesName = seriesTag ? seriesTag.replace('Series: ', '').trim() : null;
+  let seriesPosts = [];
+  
+  if (seriesTag) {
+    const { data: sData } = await supabase
+      .from('posts')
+      .select('id, slug, title, created_at')
+      .eq('is_published', true)
+      .contains('tags', [seriesTag]);
+    if (sData) seriesPosts = sData;
+  }
 
   // Dữ liệu cấu trúc bài viết (Article Schema + E-E-A-T)
   const authorName = (Array.isArray(post.profiles) ? (post.profiles as any)[0]?.full_name : (post.profiles as any)?.full_name) || 'KING DRAGON';
@@ -291,6 +306,15 @@ export default async function PostPage({ params }: PostPageProps) {
               </>
             );
           })()}
+
+          {/* Series Navigation */}
+          {seriesName && seriesPosts.length > 1 && (
+            <SeriesNavigation 
+              seriesName={seriesName} 
+              posts={seriesPosts} 
+              currentPostId={post.id} 
+            />
+          )}
 
           {/* Post Tags (Bottom) */}
           {post.tags && post.tags.length > 0 && (
