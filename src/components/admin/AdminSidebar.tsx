@@ -22,9 +22,9 @@ export const AdminSidebar = memo(function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="min-w-[256px] w-[256px] border-r border-brand-orange/10 bg-cyber-black/5 dark:bg-cyber-black/20 h-full hidden lg:flex flex-col p-4 gap-1">
-      <div className="mb-8 px-4 border-b border-brand-orange/10 pb-4">
-        <p className="tech-mono text-brand-orange drop-shadow-[0_0_8px_rgba(255,87,34,0.3)]">
+    <aside className="min-w-[256px] w-[256px] border-r border-brand-orange/25 bg-cyber-black/5 dark:bg-cyber-black/20 h-full hidden lg:flex flex-col p-4 gap-1">
+      <div className="mb-8 px-4 border-b border-brand-orange/25 pb-4">
+        <p className="tech-mono text-brand-orange drop-shadow-[0_0_8px_rgba(255,87,34,0.35)]">
           Trung_tâm_điều_hành
         </p>
       </div>
@@ -39,14 +39,14 @@ export const AdminSidebar = memo(function AdminSidebar() {
             href={item.href}
             prefetch={true}
             className={`
-              flex items-center gap-3 px-4 py-3 font-orbitron text-[11px] uppercase tracking-wider transition-all duration-200 font-bold
+              group flex items-center gap-3 px-4 py-3 font-orbitron text-[11px] uppercase tracking-wider transition-all duration-200 font-bold
               ${isActive 
-                ? 'bg-brand-orange/10 text-brand-orange border-l-2 border-brand-orange translate-x-1' 
-                : 'text-muted hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 border-l-2 border-transparent hover:translate-x-1'
+                ? 'bg-brand-orange/[0.14] text-brand-orange border-l-2 border-brand-orange translate-x-1 shadow-[inset_8px_0_18px_rgba(249,115,22,0.08)]'
+                : 'text-foreground/80 hover:text-brand-orange hover:bg-brand-orange/[0.06] dark:hover:bg-white/5 border-l-2 border-transparent hover:border-brand-orange/35 hover:translate-x-1'
               }
             `}
           >
-            <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-brand-orange' : 'text-muted'}`} />
+            <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-brand-orange' : 'text-foreground/65 group-hover:text-brand-orange'}`} />
             <span>{item.label}</span>
           </Link>
         );

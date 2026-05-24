@@ -245,7 +245,7 @@ body {
 
 .king-dragon-content .kd-timeline,
 .ProseMirror .kd-timeline {
-  margin: 2.5rem 0;
+  margin: 2.75rem 0;
   position: relative;
 }
 
@@ -263,120 +263,105 @@ body {
 
 .king-dragon-content .kd-timeline-list,
 .ProseMirror .kd-timeline-list {
-  background: var(--background);
-  border: 1px solid rgba(249, 115, 22, 0.15);
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-  padding: 2rem 1.5rem;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid rgba(249, 115, 22, 0.45);
+  box-shadow: none;
   position: relative;
-  overflow: hidden;
   display: grid;
-  gap: 1.5rem;
+  gap: 1.55rem;
+  overflow: visible;
+  padding: 0 0 0 1.35rem;
 }
 
 .king-dragon-content .kd-timeline-list::after,
 .ProseMirror .kd-timeline-list::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.03) 0%, transparent 100%);
-  pointer-events: none;
+  display: none;
 }
 
 
 .king-dragon-content .kd-timeline-list::before,
 .ProseMirror .kd-timeline-list::before {
-  background: rgba(249, 115, 22, 0.2);
-  bottom: 2.5rem;
-  content: '';
-  left: 38px;
-  position: absolute;
-  top: 2.5rem;
-  width: 2px;
+  display: none;
 }
 
 .king-dragon-content .kd-timeline-step,
 .ProseMirror .kd-timeline-step {
   display: grid;
-  gap: 1.25rem;
-  grid-template-columns: 30px 1fr;
+  gap: 0.85rem;
+  grid-template-columns: 1.2rem 1fr;
   position: relative;
 }
 
 .king-dragon-content .kd-timeline-content,
 .ProseMirror .kd-timeline-content {
-  background: rgba(15, 23, 42, 0.02);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 0.5rem;
-  padding: 1.25rem 1.5rem;
-  transition: all 0.3s ease;
+  background: transparent;
+  border: 0;
+  padding: 0 0 0.15rem 0.15rem;
 }
 
 .king-dragon-content .kd-timeline-content:hover,
 .ProseMirror .kd-timeline-content:hover {
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(249, 115, 22, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-  transform: translateX(4px);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
 }
 
 .king-dragon-content .kd-timeline-marker,
 .ProseMirror .kd-timeline-marker {
   align-self: start;
-  background: var(--background);
-  border: 2px solid #f97316;
-  border-radius: 6px;
-  box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
-  color: #f97316;
+  background: #0f172a;
+  border: 1px solid #f97316;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px var(--background);
+  color: #fff7ed;
   display: grid;
   font-family: var(--font-space-grotesk), monospace;
-  font-size: 0.75rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  height: 30px;
+  height: 1.2rem;
   line-height: 1;
   place-items: center;
   position: relative;
-  width: 30px;
+  width: 1.2rem;
   z-index: 1;
-  margin-top: 0.25rem;
+  margin-left: -1.98rem;
+  margin-top: 0.18rem;
 }
 
 .king-dragon-content .kd-timeline-label,
 .ProseMirror .kd-timeline-label {
-  color: #f97316 !important;
+  color: rgba(249, 115, 22, 0.86) !important;
   display: inline-block;
   font-family: var(--font-space-grotesk), monospace;
-  font-size: 0.65rem !important;
+  font-size: 0.68rem !important;
   font-style: normal;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  margin: 0 0 0.5rem !important;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.45rem !important;
   text-transform: uppercase;
-  background: rgba(249, 115, 22, 0.1);
-  padding: 0.2rem 0.5rem;
-  border-radius: 3px;
+  background: transparent;
+  padding: 0;
 }
 
 .king-dragon-content .kd-timeline-heading,
 .ProseMirror .kd-timeline-heading {
   color: var(--foreground) !important;
-  font-size: 1.15rem !important;
+  font-size: 1rem !important;
   font-weight: 700 !important;
-  letter-spacing: -0.01em !important;
+  letter-spacing: 0 !important;
   line-height: 1.4 !important;
-  margin: 0 0 0.5rem !important;
+  margin: 0 0 0.3rem !important;
   text-transform: none !important;
 }
 
 .king-dragon-content .kd-timeline-body,
 .ProseMirror .kd-timeline-body {
   color: var(--foreground) !important;
-  opacity: 0.75 !important;
-  font-size: 0.95rem !important;
-  line-height: 1.6 !important;
+  opacity: 0.86 !important;
+  font-size: 1rem !important;
+  line-height: 1.68 !important;
   margin: 0 !important;
 }
 

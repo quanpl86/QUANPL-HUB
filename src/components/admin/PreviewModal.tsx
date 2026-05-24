@@ -20,6 +20,16 @@ interface PreviewModalProps {
 
 export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
   const [viewMode, setViewMode] = React.useState<'desktop' | 'mobile'>('desktop');
+  const blogPreviewTheme = {
+    '--background': '#f8fafc',
+    '--foreground': '#0f172a',
+    '--card-bg': '#ffffff',
+    '--card-border': 'rgba(15, 23, 42, 0.1)',
+    '--muted': '#334155',
+    '--grid-color': 'rgba(249, 115, 22, 0.15)',
+    backgroundColor: '#f8fafc',
+    color: '#0f172a',
+  } as React.CSSProperties;
 
   return (
     <AnimatePresence>
@@ -28,14 +38,14 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 md:p-10"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-xl p-4 md:p-10"
         >
           {/* Header Controls */}
           <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-[110] bg-gradient-to-b from-black/80 to-transparent">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 text-brand-orange">
                 <Eye size={20} />
-                <span className="font-orbitron font-bold text-sm tracking-widest uppercase">Matrix_Preview</span>
+                <span className="font-orbitron font-bold text-sm tracking-widest uppercase">Blog_Detail_Preview</span>
               </div>
               
               {/* View Mode Toggles */}
@@ -67,80 +77,99 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className={`bg-cyber-gray border border-brand-orange/20 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all duration-500 flex flex-col h-full ${
+            className={`border border-brand-orange/25 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all duration-500 flex flex-col h-full ${
               viewMode === 'desktop' ? 'w-full max-w-6xl' : 'w-full max-w-[420px]'
             }`}
+            style={blogPreviewTheme}
           >
             {/* Simulation Header */}
-            <div className="bg-cyber-black border-b border-brand-orange/10 px-6 py-3 flex items-center gap-3">
+            <div className="border-b border-brand-orange/20 px-6 py-3 flex items-center gap-3" style={blogPreviewTheme}>
               <div className="flex gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/20"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/30"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/30"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/30"></div>
               </div>
               <div className="flex-grow text-center">
-                <span className="font-mono text-[9px] text-muted-foreground uppercase tracking-[0.4em]">Trình_chiếu_mô_phỏng // v1.0</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.4em]" style={{ color: 'rgba(15, 23, 42, 0.6)' }}>Blog_detail_layout // preview</span>
               </div>
             </div>
 
             {/* Actual Content (Scrollable) */}
-            <div className="flex-grow overflow-y-auto bg-cyber-gray">
-              <article className="pb-20">
-                {/* Hero Header */}
-                <div className="relative h-[50vh] min-h-[300px] w-full overflow-hidden border-b border-brand-orange/10 bg-[#0a0a0a]">
+            <div className="flex-grow overflow-y-auto" style={blogPreviewTheme}>
+              <article className="min-h-full pb-20 selection:bg-brand-orange selection:text-white" style={blogPreviewTheme}>
+                {/* Editorial Header */}
+                <div className="container mx-auto px-6 pt-16 pb-10">
+                  <div className="max-w-[1200px] mx-auto">
+                    <div className="tech-mono text-[0.7rem] tracking-[0.1em] mb-6 uppercase font-bold" style={{ color: '#0f172a' }}>
+                      PREVIEW_MODE
+                    </div>
+
+                    <h1 className="font-[family-name:var(--font-inter)] font-medium text-[2.7rem] md:text-[4.25rem] lg:text-[4.8rem] leading-[1.05] tracking-[-0.03em] mb-12 w-full" style={{ color: '#0f172a' }}>
+                      {data.title || 'TIÊU_ĐỀ_BẢN_NHÁP'}
+                    </h1>
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full border border-brand-orange/40 flex items-center justify-center bg-brand-orange/10 overflow-hidden">
+                          <span className="font-orbitron text-brand-orange font-bold text-xs">Q</span>
+                        </div>
+                        <div className="flex items-center gap-2 font-[family-name:var(--font-inter)] text-sm">
+                          <span className="font-semibold" style={{ color: '#0f172a' }}>KING DRAGON Admin</span>
+                          <span className="hidden md:inline" style={{ color: 'rgba(15, 23, 42, 0.7)' }}>Authorised System Architect</span>
+                        </div>
+                      </div>
+
+                      <span className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border rounded-full" style={{ borderColor: 'rgba(15, 23, 42, 0.3)', color: 'rgba(15, 23, 42, 0.8)' }}>
+                        {data.category_name || 'REDACTED'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cover Image as a Poster */}
+                <div className="container mx-auto px-6 mb-16 md:mb-20">
+                  <div className="relative aspect-video w-full max-w-[1200px] mx-auto overflow-hidden border border-brand-orange/20" style={{ backgroundColor: '#f8fafc' }}>
                   {data.image_url ? (
-                    <Image 
-                      src={data.image_url} 
-                      alt={data.title || 'Preview Image'} 
-                      fill
-                      sizes="100vw"
-                      className="object-cover opacity-50" 
-                    />
+                    <>
+                      <div className="absolute inset-0 w-full h-full opacity-40 dark:opacity-30">
+                        <Image
+                          src={data.image_url}
+                          alt=""
+                          fill
+                          sizes="100vw"
+                          className="object-cover blur-[80px] scale-125"
+                        />
+                      </div>
+                      <Image
+                        src={data.image_url}
+                        alt={data.title || 'Preview Image'}
+                        fill
+                        sizes="(max-width: 1200px) 100vw, 1200px"
+                        className="object-contain z-10"
+                      />
+                    </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center opacity-10">
                       <Layout size={120} className="text-brand-orange" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                  
-                  <div className="absolute inset-0 flex items-end">
-                    <div className="container mx-auto px-6 pb-12">
-                      <div className="max-w-4xl">
-                        <div className="mb-4">
-                          <span className="px-4 py-1 bg-brand-orange text-cyber-black font-orbitron text-[9px] font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(255,87,34,0.3)]">
-                            {data.category_name || 'CHƯA_PHÂN_LOẠI'}
-                          </span>
-                        </div>
-                        <h1 className="font-orbitron font-bold text-3xl md:text-5xl text-white mb-6 leading-tight uppercase tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                          {data.title || 'TIÊU_ĐỀ_BẢN_NHÁP'}
-                        </h1>
-                        <div className="flex items-center gap-3 text-white/60 font-mono text-[10px] uppercase tracking-widest">
-                          <div className="w-8 h-8 rounded-full bg-brand-orange/20 border border-brand-orange/40 flex items-center justify-center text-brand-orange font-bold font-orbitron">Q</div>
-                          <span>ĐƯỢC DUYỆT BỞI: QUẢN TRỊ VIÊN</span>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
                 {/* Body Content */}
-                <div className="container mx-auto px-6 mt-12">
+                <div className="container mx-auto px-6 mt-8 md:mt-16">
                   <div className="max-w-4xl mx-auto">
                     {data.excerpt && (
-                      <div className="mb-12 relative">
-                        <div className="absolute -left-4 top-0 bottom-0 w-1 bg-brand-orange/40"></div>
-                        <p className="text-xl font-mono text-brand-orange/90 leading-relaxed italic pl-4">
-                          "{data.excerpt}"
+                      <div className="mb-12 relative group">
+                        <div className="absolute -left-12 top-0 bottom-0 w-2 bg-brand-orange/60 shadow-[0_0_20px_rgba(255,87,34,0.2)] transform -skew-x-12 transition-all group-hover:w-3"></div>
+                        <p className="body-lg !text-xl md:!text-2xl lg:!text-3xl font-light pl-6 tracking-wide italic" style={{ color: 'rgba(15, 23, 42, 0.8)' }}>
+                          {data.excerpt}
                         </p>
                       </div>
                     )}
 
                     <section 
-                      className="prose dark:prose-invert prose-brand max-w-none 
-                        prose-headings:font-orbitron prose-headings:uppercase prose-headings:tracking-wider prose-headings:text-white
-                        prose-p:font-sans prose-p:text-lg prose-p:leading-[1.8] prose-p:text-slate-300
-                        prose-strong:text-brand-orange prose-a:text-brand-orange
-                        prose-blockquote:border-brand-orange prose-blockquote:bg-brand-orange/5"
+                      className="king-dragon-content prose prose-brand max-w-none"
                       dangerouslySetInnerHTML={{ __html: sanitize(data.content || '<p class="text-muted italic opacity-50 uppercase tracking-widest text-sm">// ĐANG_CHỜ_TRUYỀN_TẢI_NỘI_DUNG //</p>') }}
                     />
                   </div>

@@ -38,11 +38,11 @@ const pathways = [
 
 export function StartHereSection() {
   return (
-    <section id="start-here" className="bg-background py-20 border-t border-brand-orange/10">
+    <section id="start-here" className="bg-background py-20 border-t border-brand-orange/20">
       <div className="container mx-auto px-6">
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end mb-12">
           <div>
-            <div className="inline-flex items-center gap-3 border border-brand-orange/30 bg-brand-orange/10 px-4 py-2 text-brand-orange tech-mono mb-5">
+            <div className="inline-flex items-center gap-3 border border-brand-orange/45 bg-brand-orange/10 px-4 py-2 text-brand-orange tech-mono mb-5">
               <span className="h-2 w-2 bg-brand-orange" />
               BẮT ĐẦU TẠI ĐÂY
             </div>
@@ -64,14 +64,14 @@ export function StartHereSection() {
               <Link
                 key={pathway.signal}
                 href={pathway.href}
-                className="group relative flex min-h-[300px] flex-col overflow-hidden border border-brand-orange/15 bg-cyber-black/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-orange/50 hover:shadow-[0_16px_40px_rgba(249,115,22,0.12)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut"
+                className="group relative flex min-h-[300px] flex-col overflow-hidden border border-brand-orange/25 bg-cyber-black/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-orange/70 hover:shadow-[0_16px_40px_rgba(249,115,22,0.16)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut"
               >
-                <div className="absolute right-0 top-0 h-20 min-w-[5rem] px-6 flex items-center justify-center border-b border-l border-brand-orange/10 bg-brand-orange/5">
-                  <span className="tech-mono text-brand-orange/50 !text-[9px] pt-3">{pathway.signal}</span>
+                <div className="absolute right-0 top-0 h-20 min-w-[5rem] px-6 flex items-center justify-center border-b border-l border-brand-orange/20 bg-brand-orange/[0.07]">
+                  <span className="tech-mono text-brand-orange/80 !text-[9px] pt-3">{pathway.signal}</span>
                 </div>
 
                 <div className="mb-8 flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center border border-brand-orange/30 bg-brand-orange/10 text-brand-orange cyber-cut-sm">
+                  <div className="flex h-12 w-12 items-center justify-center border border-brand-orange/50 bg-brand-orange/10 text-brand-orange cyber-cut-sm">
                     <Icon size={24} aria-hidden="true" />
                   </div>
                 </div>
@@ -83,7 +83,7 @@ export function StartHereSection() {
                   {pathway.description}
                 </p>
 
-                <div className="mt-auto pt-8 flex items-center justify-between border-t border-brand-orange/10">
+                <div className="mt-auto pt-8 flex items-center justify-between border-t border-brand-orange/25">
                   <span className="font-orbitron text-sm font-bold text-brand-orange">
                     {pathway.cta}
                   </span>
@@ -98,7 +98,7 @@ export function StartHereSection() {
           })}
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 border-l-4 border-brand-orange bg-brand-orange/5 p-6 md:flex-row md:items-center md:justify-between">
+        <div className="mt-10 flex flex-col gap-4 border-l-4 border-brand-orange bg-brand-orange/[0.07] p-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="font-orbitron text-lg font-bold text-foreground">Muốn xem toàn bộ bản đồ tri thức?</p>
             <p className="body-base text-muted mt-1">

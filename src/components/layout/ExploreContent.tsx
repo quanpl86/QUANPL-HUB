@@ -86,7 +86,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
   };
 
   return (
-    <section id="explore" className="pt-12 pb-24 bg-cyber-black/20 border-t border-brand-orange/10 scroll-mt-20">
+    <section id="explore" className="pt-12 pb-24 bg-cyber-black/20 border-t border-brand-orange/20 scroll-mt-20">
       <div className="container mx-auto px-6">
         {/* Header & Search Area */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-12 border-l-4 border-brand-orange pl-6">
@@ -94,17 +94,17 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
             {title || (
               <h2 key="default-explore-title" className="cyber-h2">Khám phá <span className="text-brand-orange">TRI THỨC</span></h2>
             )}
-            <p className="tech-mono text-muted !text-[9px] mt-2 tracking-[0.4em]">{`// ${subtitle} //`}</p>
+            <p className="tech-mono text-foreground/75 !text-[9px] mt-2 tracking-[0.4em]">{`// ${subtitle} //`}</p>
           </div>
           
           <div className="w-full lg:w-96 relative group">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-brand-orange/50 group-focus-within:text-brand-orange transition-colors">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-brand-orange/80 group-focus-within:text-brand-orange transition-colors">
               <Search size={18} />
             </div>
             <input 
               type="text"
               placeholder="TÌM KIẾM TRONG KHO LƯU TRỮ..."
-              className="w-full bg-cyber-black/40 border border-brand-orange/20 focus:border-brand-orange py-4 pl-12 pr-4 tech-mono text-foreground outline-none transition-all placeholder:text-muted/40"
+              className="w-full bg-cyber-black/40 border border-brand-orange/35 focus:border-brand-orange py-4 pl-12 pr-4 tech-mono text-foreground outline-none transition-all placeholder:text-muted/55"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
@@ -167,9 +167,9 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
           {sortedPosts.length > 0 ? (
             sortedPosts.map((post) => (
               <Link key={post.id} href={`/posts/${post.slug}`} className="group h-full">
-                <StaticCyberCard className="h-full flex flex-col md:flex-row border-brand-orange/5 hover:border-brand-orange/20 transition-all duration-500 overflow-hidden">
+                <StaticCyberCard className="h-full flex flex-col md:flex-row border-brand-orange/20 hover:border-brand-orange/55 transition-all duration-500 overflow-hidden">
                   {/* Image Area - Thư viện ảnh bên trái ở màn hình lớn hơn mobile */}
-                  <div className="w-full md:w-2/5 aspect-[16/9] md:aspect-auto overflow-hidden bg-brand-orange/5 relative">
+                  <div className="w-full md:w-2/5 aspect-[16/9] md:aspect-auto overflow-hidden bg-brand-orange/10 relative">
                     {post.image_url && (
                       <Image 
                         src={post.image_url} 
@@ -180,17 +180,17 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
                       />
                     )}
                     <div className="absolute top-0 right-0 p-2">
-                       <span className="text-[8px] tech-mono bg-brand-orange/20 text-brand-orange px-2 py-0.5">CÔNG KHAI</span>
+                       <span className="text-[8px] tech-mono bg-brand-orange text-white px-2 py-0.5">CÔNG KHAI</span>
                     </div>
                   </div>
 
                   {/* Content Area */}
                   <div className="flex-1 p-6 flex flex-col justify-center">
-                    <span className="tech-mono text-brand-orange/60 block mb-2 !text-[9px]">[{post.categories?.name || 'BẢN GHI'}]</span>
+                    <span className="tech-mono text-brand-orange block mb-2 !text-[9px]">[{post.categories?.name || 'BẢN GHI'}]</span>
                     <h3 className="cyber-h3 mb-4 group-hover:text-brand-orange transition-colors line-clamp-2 !tracking-tight">{post.title}</h3>
                     
                     {/* Excerpt */}
-                    <p className="body-base text-foreground/90 line-clamp-3 mb-4 font-medium italic border-l-2 border-brand-orange/30 pl-4">
+                    <p className="body-base text-foreground/90 line-clamp-3 mb-4 font-medium italic border-l-2 border-brand-orange/70 pl-4">
                       {post.excerpt}
                     </p>
 
@@ -199,14 +199,14 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
                       {post.content?.replace(/<[^>]*>/g, '').slice(0, 300)}...
                     </p>
                     
-                    <div className="mt-auto pt-4 border-t border-brand-orange/5 flex items-center justify-between">
+                    <div className="mt-auto pt-4 border-t border-brand-orange/20 flex items-center justify-between">
                       <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2 tech-mono text-muted !text-[9px]">
                           <Calendar size={12} />
                           {new Date(post.created_at).toLocaleDateString()}
                         </div>
-                        <div className="hidden sm:flex items-center gap-2 tech-mono text-brand-orange/40 !text-[8px]">
-                          <span className="w-1 h-1 bg-brand-orange/40 rounded-full"></span>
+                        <div className="hidden sm:flex items-center gap-2 tech-mono text-brand-orange/80 !text-[8px]">
+                          <span className="w-1 h-1 bg-brand-orange rounded-full"></span>
                           EST_READ: {Math.ceil((post.content?.length || 0) / 1000)} MIN
                         </div>
                       </div>
@@ -214,7 +214,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'T�
                         <span className="tech-mono text-[10px] text-brand-orange font-bold tracking-wider">
                           TRUY_CẬP_DỮ_LIỆU
                         </span>
-                        <div className="w-8 h-[1px] bg-brand-orange/30 group-hover/btn:w-12 transition-all duration-300"></div>
+                        <div className="w-8 h-[1px] bg-brand-orange/70 group-hover/btn:w-12 transition-all duration-300"></div>
                         <span className="text-brand-orange transform group-hover/btn:translate-x-1 transition-transform duration-300 text-xs">
                           {">"}
                         </span>

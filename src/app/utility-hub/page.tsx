@@ -76,11 +76,11 @@ const roadmap = [
 export default function UtilityHubPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <section className="relative overflow-hidden border-b border-brand-orange/10 bg-cyber-gray dragon-grid py-20">
-        <div className="absolute -right-28 top-12 h-80 w-80 rounded-full bg-brand-orange/10 blur-[90px]" />
+      <section className="relative overflow-hidden border-b border-brand-orange/25 bg-cyber-gray dragon-grid py-20">
+        <div className="absolute -right-28 top-12 h-80 w-80 rounded-full bg-brand-orange/15 blur-[90px]" />
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-3 border border-brand-orange/30 bg-brand-orange/10 px-4 py-2 text-brand-orange tech-mono mb-6">
+            <div className="inline-flex items-center gap-3 border border-brand-orange/45 bg-brand-orange/10 px-4 py-2 text-brand-orange tech-mono mb-6">
               <span className="h-2 w-2 bg-brand-orange animate-pulse" />
               LỘ TRÌNH TIỆN ÍCH
             </div>
@@ -95,7 +95,7 @@ export default function UtilityHubPage() {
               {roadmap.map((item) => (
                 <span
                   key={item}
-                  className="border border-brand-orange/20 bg-cyber-black/40 px-4 py-2 tech-mono text-muted"
+                  className="border border-brand-orange/35 bg-cyber-black/40 px-4 py-2 tech-mono text-foreground/80"
                 >
                   {item}
                 </span>
@@ -117,7 +117,7 @@ export default function UtilityHubPage() {
             </div>
             <Link
               href="/blog?q=utility"
-              className="inline-flex items-center justify-center gap-2 border border-brand-orange/30 px-5 py-3 font-orbitron text-sm font-bold uppercase text-brand-orange transition-all hover:bg-brand-orange/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut-sm"
+              className="inline-flex items-center justify-center gap-2 border border-brand-orange/50 px-5 py-3 font-orbitron text-sm font-bold uppercase text-brand-orange transition-all hover:bg-brand-orange/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background cyber-cut-sm"
             >
               Ghi chú phát triển
               <ArrowRight size={16} aria-hidden="true" />
@@ -131,24 +131,24 @@ export default function UtilityHubPage() {
               return (
                 <article
                   key={tool.title}
-                  className="relative flex min-h-[290px] flex-col overflow-hidden border border-brand-orange/15 bg-cyber-black/50 p-6 cyber-cut"
+                  className="relative flex min-h-[290px] flex-col overflow-hidden border border-brand-orange/25 bg-cyber-black/50 p-6 cyber-cut"
                 >
-                  <div className="absolute right-0 top-0 h-20 min-w-[5rem] px-6 flex items-center justify-center border-b border-l border-brand-orange/10 bg-brand-orange/5">
-                    <span className="tech-mono text-brand-orange/60 !text-[9px] pt-3">{tool.status}</span>
+                  <div className="absolute right-0 top-0 h-20 min-w-[5rem] px-6 flex items-center justify-center border-b border-l border-brand-orange/25 bg-brand-orange/[0.07]">
+                    <span className="tech-mono text-brand-orange/85 !text-[9px] pt-3">{tool.status}</span>
                   </div>
                   <div className="mb-7 flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center border border-brand-orange/30 bg-brand-orange/10 text-brand-orange cyber-cut-sm">
+                    <div className="flex h-12 w-12 items-center justify-center border border-brand-orange/50 bg-brand-orange/10 text-brand-orange cyber-cut-sm">
                       <Icon size={24} aria-hidden="true" />
                     </div>
                   </div>
                   <h3 className="font-orbitron text-xl font-bold text-foreground">{tool.title}</h3>
                   <p className="body-base text-muted mt-4">{tool.description}</p>
-                  <div className="mt-auto pt-8 border-t border-brand-orange/10">
-                    <p className="tech-mono text-brand-orange/50 !text-[9px] mb-3">{tool.formats}</p>
+                  <div className="mt-auto pt-8 border-t border-brand-orange/25">
+                    <p className="tech-mono text-brand-orange/85 !text-[9px] mb-3">{tool.formats}</p>
                     <button
                       type="button"
                       disabled
-                      className="inline-flex cursor-not-allowed items-center justify-center gap-2 border border-brand-orange/20 px-4 py-2 font-orbitron text-xs font-bold uppercase text-muted opacity-80 cyber-cut-sm"
+                      className="inline-flex cursor-not-allowed items-center justify-center gap-2 border border-brand-orange/35 px-4 py-2 font-orbitron text-xs font-bold uppercase text-foreground/75 cyber-cut-sm"
                     >
                       Đang thiết kế
                       <FlaskConical size={14} aria-hidden="true" />
@@ -164,8 +164,8 @@ export default function UtilityHubPage() {
       <section className="pb-20">
         <div className="container mx-auto px-6">
           <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="border border-brand-orange/15 bg-brand-orange/5 p-6 cyber-cut">
-              <div className="flex h-14 w-14 items-center justify-center border border-brand-orange/30 bg-brand-orange/10 text-brand-orange cyber-cut-sm mb-6">
+            <div className="border border-brand-orange/25 bg-brand-orange/[0.07] p-6 cyber-cut">
+              <div className="flex h-14 w-14 items-center justify-center border border-brand-orange/50 bg-brand-orange/10 text-brand-orange cyber-cut-sm mb-6">
                 <Sparkles size={26} aria-hidden="true" />
               </div>
               <h2 className="font-orbitron text-2xl font-bold text-foreground">Nguyên tắc thiết kế tool</h2>
@@ -179,8 +179,8 @@ export default function UtilityHubPage() {
               </div>
             </div>
 
-            <div className="border border-brand-orange/15 bg-cyber-black/40 p-6 cyber-cut">
-              <div className="flex h-14 w-14 items-center justify-center border border-brand-orange/30 bg-brand-orange/10 text-brand-orange cyber-cut-sm mb-6">
+            <div className="border border-brand-orange/25 bg-cyber-black/40 p-6 cyber-cut">
+              <div className="flex h-14 w-14 items-center justify-center border border-brand-orange/50 bg-brand-orange/10 text-brand-orange cyber-cut-sm mb-6">
                 <ImageUp size={26} aria-hidden="true" />
               </div>
               <h2 className="font-orbitron text-2xl font-bold text-foreground">Module ưu tiên: Image Toolkit</h2>
@@ -190,11 +190,11 @@ export default function UtilityHubPage() {
                 đến tách nền và vector hóa.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <span className="inline-flex items-center gap-2 border border-brand-orange/20 px-4 py-2 tech-mono text-brand-orange/70">
+                <span className="inline-flex items-center gap-2 border border-brand-orange/45 px-4 py-2 tech-mono text-brand-orange">
                   <FileImage size={14} aria-hidden="true" />
                   AN TOÀN DỮ LIỆU ĐẦU VÀO
                 </span>
-                <span className="inline-flex items-center gap-2 border border-brand-orange/20 px-4 py-2 tech-mono text-brand-orange/70">
+                <span className="inline-flex items-center gap-2 border border-brand-orange/45 px-4 py-2 tech-mono text-brand-orange">
                   <Sparkles size={14} aria-hidden="true" />
                   XEM TRƯỚC KẾT QUẢ
                 </span>
