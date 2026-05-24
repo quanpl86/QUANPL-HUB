@@ -66,6 +66,10 @@ export default function ImageTo3DRelief() {
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error("Canvas context not available");
       
+      // Tô nền trắng để xử lý lỗi ảnh PNG trong suốt bị thuật toán hiểu nhầm là màu đen (rgb 0 0 0)
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, width, height);
+      
       ctx.drawImage(img, 0, 0, width, height);
       const imgData = ctx.getImageData(0, 0, width, height);
 
