@@ -15,12 +15,12 @@ import {
 
 const featuredTools = [
   {
-    title: 'Chuyển ảnh sang vector',
-    description: 'Biến logo, icon hoặc hình minh họa raster thành SVG/vector để dùng trong bài giảng, thiết kế và STEM kit.',
+    title: 'Tạo tranh 3D mặt nổi',
+    description: 'Biến logo, ảnh màu solid thành mặt nổi 3D (Relief) để xuất file STL in 3D.',
     icon: Wand2,
     status: 'SẴN SÀNG',
-    formats: 'TỪ PNG/JPG SANG SVG',
-    href: '/utility-hub/image-vectorizer',
+    formats: 'TỪ PNG/JPG SANG STL',
+    href: '/utility-hub/image-to-3d-relief',
     color: 'from-orange-500/20 to-orange-500/5'
   },
   {
@@ -35,8 +35,9 @@ const featuredTools = [
     title: 'Tách nền ảnh',
     description: 'Tạo ảnh nền trong suốt cho nhân vật, sản phẩm, mô hình robot hoặc tư liệu lớp học.',
     icon: Scissors,
-    status: 'ĐÃ LÊN KẾ HOẠCH',
+    status: 'SẴN SÀNG',
     formats: 'ẢNH -> NỀN TRONG SUỐT',
+    href: '/utility-hub/background-remover',
     color: 'from-emerald-500/20 to-emerald-500/5'
   },
   {
