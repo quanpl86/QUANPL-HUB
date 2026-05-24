@@ -291,7 +291,7 @@ export default function ImageTo3DRelief() {
 
 // Sub-component to parse SVG and render ExtrudeGeometries
 function SvgTo3D({ svgString, baseDepth, extrusionDepth }: { svgString: string, baseDepth: number, extrusionDepth: number }) {
-  const meshes: JSX.Element[] = [];
+  const meshes: React.ReactNode[] = [];
   
   try {
     const loader = new SVGLoader();

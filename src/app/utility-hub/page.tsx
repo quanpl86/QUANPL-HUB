@@ -24,6 +24,15 @@ const featuredTools = [
     color: 'from-orange-500/20 to-orange-500/5'
   },
   {
+    title: 'Chuyển ảnh sang vector',
+    description: 'Biến logo, icon hoặc hình minh họa raster thành SVG/vector để dùng trong bài giảng, thiết kế và STEM kit.',
+    icon: Wand2,
+    status: 'SẴN SÀNG',
+    formats: 'TỪ PNG/JPG SANG SVG',
+    href: '/utility-hub/image-vectorizer',
+    color: 'from-yellow-500/20 to-yellow-500/5'
+  },
+  {
     title: 'Chuyển định dạng ảnh',
     description: 'Đổi nhanh giữa PNG, JPG, WebP và AVIF, ưu tiên chất lượng ổn định và file nhẹ cho website.',
     icon: RefreshCw,
