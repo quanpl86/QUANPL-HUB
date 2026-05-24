@@ -423,6 +423,34 @@ function mirrorGeometry<T extends THREE.BufferGeometry>(geom: T): T {
       index.setX(i, c);
       index.setX(i + 2, a);
     }
+  } else {
+    // Unindexed geometry
+    const pos = geom.getAttribute('position');
+    const norm = geom.getAttribute('normal');
+    const uv = geom.getAttribute('uv');
+    if (pos) {
+      for (let i = 0; i < pos.count; i += 3) {
+        // Swap vertex i and i+2
+        const x0 = pos.getX(i), y0 = pos.getY(i), z0 = pos.getZ(i);
+        const x2 = pos.getX(i+2), y2 = pos.getY(i+2), z2 = pos.getZ(i+2);
+        pos.setXYZ(i, x2, y2, z2);
+        pos.setXYZ(i+2, x0, y0, z0);
+
+        if (norm) {
+          const nx0 = norm.getX(i), ny0 = norm.getY(i), nz0 = norm.getZ(i);
+          const nx2 = norm.getX(i+2), ny2 = norm.getY(i+2), nz2 = norm.getZ(i+2);
+          norm.setXYZ(i, nx2, ny2, nz2);
+          norm.setXYZ(i+2, nx0, ny0, nz0);
+        }
+
+        if (uv) {
+          const u0 = uv.getX(i), v0 = uv.getY(i);
+          const u2 = uv.getX(i+2), v2 = uv.getY(i+2);
+          uv.setXY(i, u2, v2);
+          uv.setXY(i+2, u0, v0);
+        }
+      }
+    }
   }
   geom.computeVertexNormals();
   return geom;
