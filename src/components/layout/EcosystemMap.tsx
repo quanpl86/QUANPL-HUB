@@ -16,8 +16,8 @@ const ecosystemPillars = [
     id: 'robotics',
     title: 'Robotics & Giả lập',
     icon: <Cpu className="w-8 h-8 text-blue-500" />,
-    description: 'Hệ thống giả lập 3D (GEARS Simulator) chuẩn thi đấu quốc tế. Giúp học sinh thực hành Robotics và IoT mà không bị rào cản về thiết bị phần cứng.',
-    items: ['GEARS Simulator', 'Sa bàn WRO / FLL', 'Mô phỏng Cảm biến IoT'],
+    description: 'Hệ thống nền tảng giả lập 3D chuẩn thi đấu quốc tế. Giúp học sinh thực hành Robotics và IoT mà không bị rào cản về thiết bị phần cứng.',
+    items: ['Nền tảng giả lập 3D', 'Sa bàn WRO / FLL', 'Mô phỏng Cảm biến IoT'],
     link: '/blog?category=robotics',
     color: 'from-blue-500/20 to-blue-500/5'
   },
@@ -26,7 +26,7 @@ const ecosystemPillars = [
     title: 'Phương Pháp Khung',
     icon: <Layers className="w-8 h-8 text-emerald-500" />,
     description: 'Áp dụng các chuẩn giáo dục quốc tế với phương pháp "Spiral Curriculum" (Xoắn ốc học thuật) để học sinh nắm bắt kiến thức bền vững từ lớp 3 đến lớp 12.',
-    items: ['IOSTEM Framework', 'Spiral Curriculum', 'Lesson Plans chuẩn'],
+    items: ['Khung chương trình chuẩn', 'Spiral Curriculum', 'Lesson Plans chuẩn'],
     link: '/blog?category=pedagogy',
     color: 'from-emerald-500/20 to-emerald-500/5'
   },
