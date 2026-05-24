@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Linkedin, Mail, BrainCircuit, GraduationCap, Code2, Layers, Cpu, CheckCircle2 } from 'lucide-react';
+import { Mail, BrainCircuit, GraduationCap, Code2, Layers, Cpu, CheckCircle2 } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -117,10 +117,9 @@ export default async function AuthorProfile({ params }: { params: Promise<{ id: 
                   href={authorData.linkedin} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors border border-[#0A66C2]/20 font-medium text-sm"
+                  className="flex items-center justify-center px-4 py-2 rounded-lg bg-[#0A66C2]/10 text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors border border-[#0A66C2]/20 font-bold text-sm"
                 >
-                  <Linkedin className="w-4 h-4" />
-                  LinkedIn
+                  LinkedIn Profile
                 </a>
                 <a 
                   href="mailto:contact@kingdragonhub.com" 
@@ -188,7 +187,8 @@ export default async function AuthorProfile({ params }: { params: Promise<{ id: 
             <div className="p-6 rounded-2xl border border-brand-orange/20 bg-brand-orange/5">
               <h3 className="text-lg font-bold font-[family-name:var(--font-inter)] text-brand-orange mb-4">Mục tiêu hướng tới</h3>
               <p className="text-sm text-foreground/70 leading-relaxed mb-6">
-                "Ứng dụng công nghệ không chỉ là dạy học sinh biết code, mà là trang bị cho các em tư duy giải quyết vấn đề bằng máy tính trong một thế giới được vận hành bởi AI."
+                &ldquo;Ứng dụng công nghệ không chỉ là dạy học sinh biết code, mà là trang bị cho các em tư duy giải quyết
+                vấn đề bằng máy tính trong một thế giới được vận hành bởi AI.&rdquo;
               </p>
               <Link href="/blog" className="text-sm font-bold text-brand-orange hover:underline flex items-center gap-1">
                 Đọc các bài viết của tôi &rarr;
