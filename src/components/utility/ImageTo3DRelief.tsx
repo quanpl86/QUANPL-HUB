@@ -340,16 +340,17 @@ export default function ImageTo3DRelief() {
             
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-foreground/80 font-medium">Làm mượt nét</span>
+                <span className="text-foreground/80 font-medium">Làm mượt nét (Chống răng cưa)</span>
                 <span className="text-foreground font-bold">{simplify}</span>
               </div>
               <input 
                 type="range" 
-                min="0.1" max="5" step="0.1" 
+                min="0.1" max="1.5" step="0.1" 
                 value={simplify} 
                 onChange={(e) => setSimplify(parseFloat(e.target.value))}
                 className="w-full accent-brand-orange"
               />
+              <p className="text-[10px] text-foreground/50 mt-1">Lưu ý: Kéo chỉ số này quá cao sẽ làm đường nét bị biến dạng, cắt chéo vào nhau, dẫn đến việc **TinkerCAD bị rỗng ruột** khi import. Khuyên dùng: 0.1 - 0.5.</p>
             </div>
           </div>
         </section>
