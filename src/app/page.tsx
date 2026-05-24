@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/layout/HeroSection";
 import { getSupabaseServer } from '@/lib/supabase-server';
 import { ExploreContent } from '@/components/layout/ExploreContent';
 import { StartHereSection } from '@/components/layout/StartHereSection';
+import { EcosystemMap } from '@/components/layout/EcosystemMap';
 
 export default async function Home({
   searchParams,
@@ -47,6 +48,7 @@ export default async function Home({
     <div className="flex flex-col min-h-screen">
       <HeroSection />
       <StartHereSection />
+      <EcosystemMap />
       
       <ExploreContent 
         initialPosts={filteredPosts} 

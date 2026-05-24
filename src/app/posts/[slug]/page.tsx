@@ -103,14 +103,28 @@ export default async function PostPage({ params }: PostPageProps) {
     .eq('ip_address', ip)
     .single();
 
-  // Fetch 3 Recent/Related Posts
-  const { data: recentPosts } = await supabase
+  // Fetch up to 20 posts in the same category for semantic scoring
+  const { data: categoryPosts } = await supabase
     .from('posts')
     .select('id, slug, title, excerpt, image_url, created_at, profiles(full_name), categories(name), tags')
     .eq('is_published', true)
+    .eq('category_id', post.category_id)
     .neq('id', post.id)
-    .order('created_at', { ascending: false })
-    .limit(3);
+    .limit(20);
+
+  let scoredPosts = categoryPosts || [];
+  if (post.tags && post.tags.length > 0) {
+    scoredPosts = scoredPosts.map(p => {
+      const overlap = (p.tags || []).filter((t: string) => post.tags.includes(t)).length;
+      return { ...p, overlap };
+    }).sort((a, b) => {
+      if (b.overlap !== a.overlap) return b.overlap - a.overlap;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  } else {
+    scoredPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
+  const recentPosts = scoredPosts.slice(0, 3);
 
   // Fetch Series Posts if applicable
   const seriesTag = post.tags?.find((tag: string) => tag.startsWith('Series: '));
