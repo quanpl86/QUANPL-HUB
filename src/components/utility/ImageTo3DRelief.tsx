@@ -329,7 +329,6 @@ export default function ImageTo3DRelief() {
               />
               <p className="text-[10px] text-foreground/50 mt-1">Kéo lên cao (8-16) nếu ảnh bị mất các mảng màu nhỏ (như nét viền đen). Sau đó tự ẩn các mảng màu không cần thiết.</p>
             </div>
-            </div>
             
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
