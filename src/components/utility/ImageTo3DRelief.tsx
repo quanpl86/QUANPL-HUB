@@ -307,7 +307,7 @@ export default function ImageTo3DRelief() {
               </div>
               <input 
                 type="range" 
-                min="0.5" max="10" step="0.5" 
+                min="0.5" max="50" step="0.5" 
                 value={extrusionDepth} 
                 onChange={(e) => setExtrusionDepth(parseFloat(e.target.value))}
                 className="w-full accent-brand-orange"
