@@ -162,6 +162,10 @@
 
 - [ ] Hoàn thiện trang Cài đặt hệ thống (`/admin/setup`).
 - [ ] Kết nối dữ liệu thực tế cho Dashboard Admin.
+- [x] Thêm trang Lịch nội dung (`/admin/content-schedule`) để nhập kế hoạch post, tự tạo lịch release và theo dõi trạng thái draft / in_progress / done.
+- [x] Thêm Prompt Pack Builder cho từng lịch bài viết, gồm Rule, Post Brief, Context bài trước, chỉnh sửa trước khi copy cho AI Agent.
+- [x] Thêm migration và server actions Supabase cho Content Schedule để lưu lịch bài, trạng thái, ngày đăng, prompt pack và context bài trước.
+- [x] Thêm Instruction Library cho AI Agent: chọn instruction, xem trước, thêm, sửa, xóa và lưu Supabase.
 - [ ] Thêm quản lý Learning Paths / Series trong admin nếu schema hỗ trợ.
 	- [/] Nâng cấp trình editor thành Content Studio:
 	  - [x] Thêm block quy trình / timeline cho nội dung dạng stepper.
