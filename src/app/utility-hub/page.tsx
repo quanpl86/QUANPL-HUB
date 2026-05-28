@@ -83,8 +83,9 @@ const featuredTools = [
     title: 'Đóng gói asset',
     description: 'Chuẩn hóa tên file, kích thước và định dạng để đưa asset vào bài viết, slide hoặc thư viện học liệu.',
     icon: Archive,
-    status: 'LỘ TRÌNH',
+    status: 'SẴN SÀNG',
     formats: 'ĐÓNG GÓI TÀI NGUYÊN BATCH',
+    href: '/utility-hub/asset-packager',
     color: 'from-cyan-500/20 to-cyan-500/5'
   },
   {
