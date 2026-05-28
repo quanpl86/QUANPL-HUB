@@ -1,0 +1,4439 @@
+[
+  {
+    "id": 1,
+    "title": "Cyberpunk Neon",
+    "author": "TEKY Design",
+    "colors": [
+      "#F9A826",
+      "#FF3366",
+      "#00F0FF",
+      "#1A1A2E"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Neo Brutalism",
+    "author": "TEKY Web",
+    "colors": [
+      "#FF5722",
+      "#FDE047",
+      "#4ADE80",
+      "#1F2937"
+    ]
+  },
+  {
+    "id": 3,
+    "title": "STEM Learning",
+    "author": "QUAN-PL",
+    "colors": [
+      "#3B82F6",
+      "#10B981",
+      "#F59E0B",
+      "#EF4444"
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Nord Dark",
+    "author": "Community",
+    "colors": [
+      "#2E3440",
+      "#3B4252",
+      "#434C5E",
+      "#4C566A",
+      "#88C0D0"
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Dracula",
+    "author": "Community",
+    "colors": [
+      "#282A36",
+      "#FF79C6",
+      "#BD93F9",
+      "#50FA7B",
+      "#F1FA8C"
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Pastel Dreams",
+    "author": "Designers",
+    "colors": [
+      "#FFB7B2",
+      "#FFDAC1",
+      "#E2F0CB",
+      "#B5EAD7",
+      "#C7CEEA"
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Ocean Deep",
+    "author": "Nature",
+    "colors": [
+      "#03045E",
+      "#023E8A",
+      "#0077B6",
+      "#0096C7",
+      "#00B4D8"
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Sunset Vibes",
+    "author": "Nature",
+    "colors": [
+      "#FF7B54",
+      "#FFB26B",
+      "#FFD56F",
+      "#939B62"
+    ]
+  },
+  {
+    "id": 9,
+    "title": "Forest Camp",
+    "author": "Explorer",
+    "colors": [
+      "#2D4263",
+      "#C84B31",
+      "#ECDBBA",
+      "#191919"
+    ]
+  },
+  {
+    "id": 10,
+    "title": "Vintage 80s",
+    "author": "Retro",
+    "colors": [
+      "#FF90B3",
+      "#FFC2C2",
+      "#FFE2E2",
+      "#F9F9F9"
+    ]
+  },
+  {
+    "id": 11,
+    "title": "Material You",
+    "author": "Google",
+    "colors": [
+      "#F8BBD0",
+      "#E1BEE7",
+      "#D1C4E9",
+      "#C5CAE9"
+    ]
+  },
+  {
+    "id": 12,
+    "title": "Tokyo Night",
+    "author": "Theme",
+    "colors": [
+      "#1A1B26",
+      "#F7768E",
+      "#9ECE6A",
+      "#7AA2F7",
+      "#BB9AF7"
+    ]
+  },
+  {
+    "id": 13,
+    "title": "Coffee Shop",
+    "author": "Cozy",
+    "colors": [
+      "#4A3F35",
+      "#2F2519",
+      "#A87C51",
+      "#D4A373",
+      "#FAEDCD"
+    ]
+  },
+  {
+    "id": 14,
+    "title": "Synthwave",
+    "author": "Retro",
+    "colors": [
+      "#241734",
+      "#2E2157",
+      "#FD3777",
+      "#F706CF",
+      "#FD1D53"
+    ]
+  },
+  {
+    "id": 15,
+    "title": "Monokai",
+    "author": "Theme",
+    "colors": [
+      "#272822",
+      "#F92672",
+      "#A6E22E",
+      "#FD971F",
+      "#66D9EF"
+    ]
+  },
+  {
+    "id": 16,
+    "title": "Gruvbox",
+    "author": "Theme",
+    "colors": [
+      "#282828",
+      "#CC241D",
+      "#98971A",
+      "#D79921",
+      "#458588"
+    ]
+  },
+  {
+    "id": 17,
+    "title": "Coral Reef",
+    "author": "Ocean",
+    "colors": [
+      "#F28F3B",
+      "#C85A17",
+      "#588B8B",
+      "#FFFFFF"
+    ]
+  },
+  {
+    "id": 18,
+    "title": "Winter Ice",
+    "author": "Nature",
+    "colors": [
+      "#E0F7FA",
+      "#B2EBF2",
+      "#80DEEA",
+      "#4DD0E1",
+      "#26C6DA"
+    ]
+  },
+  {
+    "id": 19,
+    "title": "Autumn Leaves",
+    "author": "Nature",
+    "colors": [
+      "#8B0000",
+      "#B22222",
+      "#FF4500",
+      "#FF8C00",
+      "#FFD700"
+    ]
+  },
+  {
+    "id": 20,
+    "title": "Neon Lights",
+    "author": "City",
+    "colors": [
+      "#FF00FF",
+      "#00FFFF",
+      "#00FF00",
+      "#FFFF00",
+      "#FF0000"
+    ]
+  },
+  {
+    "id": 21,
+    "title": "Breeze",
+    "author": "KDE",
+    "colors": [
+      "#232629",
+      "#31363B",
+      "#3DAEE9",
+      "#1D99F3",
+      "#EFF0F1"
+    ]
+  },
+  {
+    "id": 22,
+    "title": "Solarized Light",
+    "author": "Ethan Schoonover",
+    "colors": [
+      "#FDF6E3",
+      "#EEE8D5",
+      "#93A1A1",
+      "#839496",
+      "#B58900"
+    ]
+  },
+  {
+    "id": 23,
+    "title": "Solarized Dark",
+    "author": "Ethan Schoonover",
+    "colors": [
+      "#002B36",
+      "#073642",
+      "#586E75",
+      "#657B83",
+      "#268BD2"
+    ]
+  },
+  {
+    "id": 24,
+    "title": "Sweet Candy",
+    "author": "Kids",
+    "colors": [
+      "#FF99CC",
+      "#FFCCCC",
+      "#FFFF99",
+      "#CCFFCC",
+      "#99CCFF"
+    ]
+  },
+  {
+    "id": 25,
+    "title": "Fireplace",
+    "author": "Cozy",
+    "colors": [
+      "#F0A500",
+      "#E45826",
+      "#C0392B",
+      "#7B241C",
+      "#17202A"
+    ]
+  },
+  {
+    "id": 26,
+    "title": "Matcha Tea",
+    "author": "Zen",
+    "colors": [
+      "#C8E6C9",
+      "#A5D6A7",
+      "#81C784",
+      "#66BB6A",
+      "#4CAF50"
+    ]
+  },
+  {
+    "id": 27,
+    "title": "Royal Purple",
+    "author": "Majestic",
+    "colors": [
+      "#4A148C",
+      "#7B1FA2",
+      "#9C27B0",
+      "#E1BEE7",
+      "#F3E5F5"
+    ]
+  },
+  {
+    "id": 28,
+    "title": "Minimalist Grey",
+    "author": "Modern",
+    "colors": [
+      "#212121",
+      "#424242",
+      "#616161",
+      "#9E9E9E",
+      "#F5F5F5"
+    ]
+  },
+  {
+    "id": 29,
+    "title": "Space Explorer",
+    "author": "Sci-Fi",
+    "colors": [
+      "#0B0C10",
+      "#1F2833",
+      "#C5C6C7",
+      "#66FCF1",
+      "#45A29E"
+    ]
+  },
+  {
+    "id": 30,
+    "title": "Cherry Blossom",
+    "author": "Spring",
+    "colors": [
+      "#FFB7B2",
+      "#FF9A9E",
+      "#FECFEF",
+      "#F6E8EA",
+      "#22223B"
+    ]
+  },
+  {
+    "id": 31,
+    "title": "Midnight City",
+    "author": "Urban",
+    "colors": [
+      "#112240",
+      "#233554",
+      "#0A192F",
+      "#64FFDA",
+      "#CCD6F6"
+    ]
+  },
+  {
+    "id": 32,
+    "title": "Desert Sand",
+    "author": "Earth",
+    "colors": [
+      "#EDC7B7",
+      "#EEE2DC",
+      "#BAB2B5",
+      "#123C69",
+      "#AC3B61"
+    ]
+  },
+  {
+    "id": 33,
+    "title": "Aqua Splash",
+    "author": "Fresh",
+    "colors": [
+      "#E3E2DF",
+      "#E3AFBC",
+      "#9A1750",
+      "#EE4C7C",
+      "#5D001E"
+    ]
+  },
+  {
+    "id": 34,
+    "title": "Retro Arcade",
+    "author": "Gamer",
+    "colors": [
+      "#282C34",
+      "#E06C75",
+      "#98C379",
+      "#E5C07B",
+      "#61AFEF"
+    ]
+  },
+  {
+    "id": 35,
+    "title": "Lavender Field",
+    "author": "Calm",
+    "colors": [
+      "#E0BBE4",
+      "#957DAD",
+      "#D291BC",
+      "#FEC8D8",
+      "#FFDFD3"
+    ]
+  },
+  {
+    "id": 36,
+    "title": "Berry Jam",
+    "author": "Sweet",
+    "colors": [
+      "#42032C",
+      "#D36B00",
+      "#E6D2AA",
+      "#F1EFDC",
+      "#8B104E"
+    ]
+  },
+  {
+    "id": 37,
+    "title": "Mint Chocolate",
+    "author": "Dessert",
+    "colors": [
+      "#F1FAEE",
+      "#A8DADC",
+      "#457B9D",
+      "#1D3557",
+      "#E63946"
+    ]
+  },
+  {
+    "id": 38,
+    "title": "Golden Hour",
+    "author": "Photography",
+    "colors": [
+      "#FFD6A5",
+      "#FDFFB6",
+      "#CAFFBF",
+      "#9BF6FF",
+      "#A0C4FF"
+    ]
+  },
+  {
+    "id": 39,
+    "title": "Volcano Ash",
+    "author": "Nature",
+    "colors": [
+      "#37474F",
+      "#263238",
+      "#455A64",
+      "#FF5722",
+      "#E64A19"
+    ]
+  },
+  {
+    "id": 40,
+    "title": "Cyber Sec",
+    "author": "Hacker",
+    "colors": [
+      "#000000",
+      "#0D1117",
+      "#161B22",
+      "#00FF00",
+      "#3FB950"
+    ]
+  },
+  {
+    "id": 41,
+    "title": "Apple Minimal",
+    "author": "Clean",
+    "colors": [
+      "#F5F5F7",
+      "#1D1D1F",
+      "#0066CC",
+      "#E8E8ED",
+      "#86868B"
+    ]
+  },
+  {
+    "id": 42,
+    "title": "Deep Cosmos",
+    "author": "Space",
+    "colors": [
+      "#090A0F",
+      "#1B1725",
+      "#302B41",
+      "#595071",
+      "#B49FCC"
+    ]
+  },
+  {
+    "id": 43,
+    "title": "Vibrant Web",
+    "author": "UI/UX",
+    "colors": [
+      "#F72585",
+      "#7209B7",
+      "#3A0CA3",
+      "#4361EE",
+      "#4CC9F0"
+    ]
+  },
+  {
+    "id": 44,
+    "title": "Earthy Tones",
+    "author": "Organic",
+    "colors": [
+      "#606C38",
+      "#283618",
+      "#FEFAE0",
+      "#DDA15E",
+      "#BC6C25"
+    ]
+  },
+  {
+    "id": 45,
+    "title": "Vaporwave",
+    "author": "Aesthetics",
+    "colors": [
+      "#FF71CE",
+      "#01CDFE",
+      "#05FFA1",
+      "#B967FF",
+      "#FFFB96"
+    ]
+  },
+  {
+    "id": 46,
+    "title": "Pumpkin Spice",
+    "author": "Autumn",
+    "colors": [
+      "#D35400",
+      "#E67E22",
+      "#F39C12",
+      "#F1C40F",
+      "#2C3E50"
+    ]
+  },
+  {
+    "id": 47,
+    "title": "Macaron",
+    "author": "Bakery",
+    "colors": [
+      "#B5EAD7",
+      "#FF9AA2",
+      "#FFB7B2",
+      "#FFDAC1",
+      "#E2F0CB"
+    ]
+  },
+  {
+    "id": 48,
+    "title": "Peacock",
+    "author": "Luxury",
+    "colors": [
+      "#1A1A24",
+      "#0C4C8A",
+      "#26A69A",
+      "#B2DFDB",
+      "#004D40"
+    ]
+  },
+  {
+    "id": 49,
+    "title": "Lemonade",
+    "author": "Summer",
+    "colors": [
+      "#FEE440",
+      "#F15BB5",
+      "#00BBF9",
+      "#00F5D4",
+      "#9B5DE5"
+    ]
+  },
+  {
+    "id": 50,
+    "title": "Gothic Romance",
+    "author": "Dark",
+    "colors": [
+      "#2A0800",
+      "#4D0000",
+      "#730000",
+      "#D9D9D9",
+      "#1A1A1A"
+    ]
+  },
+  {
+    "id": 51,
+    "title": "Business Blue",
+    "author": "Corporate",
+    "colors": [
+      "#0A2540",
+      "#635BFF",
+      "#00D4FF",
+      "#F6F9FC",
+      "#425466"
+    ]
+  },
+  {
+    "id": 52,
+    "title": "Neon Genesis",
+    "author": "Anime",
+    "colors": [
+      "#5D2E8C",
+      "#2EC4B6",
+      "#FF9F1C",
+      "#E71D36",
+      "#FDFFFC"
+    ]
+  },
+  {
+    "id": 53,
+    "title": "Silent Hill",
+    "author": "Horror",
+    "colors": [
+      "#3E3E3E",
+      "#2A2A2A",
+      "#6C7A89",
+      "#D2D7D3",
+      "#1E824C"
+    ]
+  },
+  {
+    "id": 54,
+    "title": "Sunny Days",
+    "author": "Joy",
+    "colors": [
+      "#FFC300",
+      "#FF5733",
+      "#C70039",
+      "#900C3F",
+      "#581845"
+    ]
+  },
+  {
+    "id": 55,
+    "title": "Arctic Wind",
+    "author": "Cold",
+    "colors": [
+      "#EAF2F8",
+      "#D4E6F1",
+      "#A9CCE3",
+      "#7FB3D5",
+      "#5499C7"
+    ]
+  },
+  {
+    "id": 56,
+    "title": "Raspberry Pi",
+    "author": "Geek",
+    "colors": [
+      "#C51A4A",
+      "#FFFFFF",
+      "#8CC04B",
+      "#2B2B2B",
+      "#F0F0F0"
+    ]
+  },
+  {
+    "id": 57,
+    "title": "Wild West",
+    "author": "Cowboy",
+    "colors": [
+      "#5C4033",
+      "#8B5A2B",
+      "#CD853F",
+      "#DEB887",
+      "#F5DEB3"
+    ]
+  },
+  {
+    "id": 58,
+    "title": "Toxic Waste",
+    "author": "Sci-Fi",
+    "colors": [
+      "#000000",
+      "#212121",
+      "#32FF00",
+      "#146800",
+      "#B2FF59"
+    ]
+  },
+  {
+    "id": 59,
+    "title": "Cotton Candy",
+    "author": "Kids",
+    "colors": [
+      "#FFB3BA",
+      "#FFDFBA",
+      "#FFFFBA",
+      "#BAFFC9",
+      "#BAE1FF"
+    ]
+  },
+  {
+    "id": 60,
+    "title": "Deep Purple",
+    "author": "Music",
+    "colors": [
+      "#311B92",
+      "#512DA8",
+      "#673AB7",
+      "#9575CD",
+      "#D1C4E9"
+    ]
+  },
+  {
+    "id": 61,
+    "title": "Omolon",
+    "author": "uiGradients",
+    "colors": [
+      "#091E3A",
+      "#2F80ED",
+      "#2D9EE0"
+    ]
+  },
+  {
+    "id": 62,
+    "title": "Farhan",
+    "author": "uiGradients",
+    "colors": [
+      "#9400D3",
+      "#4B0082"
+    ]
+  },
+  {
+    "id": 63,
+    "title": "Purple",
+    "author": "uiGradients",
+    "colors": [
+      "#c84e89",
+      "#F15F79"
+    ]
+  },
+  {
+    "id": 64,
+    "title": "Ibtesam",
+    "author": "uiGradients",
+    "colors": [
+      "#00F5A0",
+      "#00D9F5"
+    ]
+  },
+  {
+    "id": 65,
+    "title": "Radioactive Heat",
+    "author": "uiGradients",
+    "colors": [
+      "#F7941E",
+      "#72C6EF",
+      "#00A651"
+    ]
+  },
+  {
+    "id": 66,
+    "title": "The Sky And The Sea",
+    "author": "uiGradients",
+    "colors": [
+      "#F7941E",
+      "#004E8F"
+    ]
+  },
+  {
+    "id": 67,
+    "title": "From Ice To Fire",
+    "author": "uiGradients",
+    "colors": [
+      "#72C6EF",
+      "#004E8F"
+    ]
+  },
+  {
+    "id": 68,
+    "title": "Blue & Orange",
+    "author": "uiGradients",
+    "colors": [
+      "#FD8112",
+      "#0085CA"
+    ]
+  },
+  {
+    "id": 69,
+    "title": "Purple Dream",
+    "author": "uiGradients",
+    "colors": [
+      "#bf5ae0",
+      "#a811da"
+    ]
+  },
+  {
+    "id": 70,
+    "title": "Blu",
+    "author": "uiGradients",
+    "colors": [
+      "#00416A",
+      "#E4E5E6"
+    ]
+  },
+  {
+    "id": 71,
+    "title": "Summer Breeze",
+    "author": "uiGradients",
+    "colors": [
+      "#fbed96",
+      "#abecd6"
+    ]
+  },
+  {
+    "id": 72,
+    "title": "Ver",
+    "author": "uiGradients",
+    "colors": [
+      "#FFE000",
+      "#799F0C"
+    ]
+  },
+  {
+    "id": 73,
+    "title": "Ver Black",
+    "author": "uiGradients",
+    "colors": [
+      "#F7F8F8",
+      "#ACBB78"
+    ]
+  },
+  {
+    "id": 74,
+    "title": "Combi",
+    "author": "uiGradients",
+    "colors": [
+      "#00416A",
+      "#799F0C",
+      "#FFE000"
+    ]
+  },
+  {
+    "id": 75,
+    "title": "Anwar",
+    "author": "uiGradients",
+    "colors": [
+      "#334d50",
+      "#cbcaa5"
+    ]
+  },
+  {
+    "id": 76,
+    "title": "Bluelagoo",
+    "author": "uiGradients",
+    "colors": [
+      "#0052D4",
+      "#4364F7",
+      "#6FB1FC"
+    ]
+  },
+  {
+    "id": 77,
+    "title": "Lunada",
+    "author": "uiGradients",
+    "colors": [
+      "#5433FF",
+      "#20BDFF",
+      "#A5FECB"
+    ]
+  },
+  {
+    "id": 78,
+    "title": "Reaqua",
+    "author": "uiGradients",
+    "colors": [
+      "#799F0C",
+      "#ACBB78"
+    ]
+  },
+  {
+    "id": 79,
+    "title": "Mango",
+    "author": "uiGradients",
+    "colors": [
+      "#ffe259",
+      "#ffa751"
+    ]
+  },
+  {
+    "id": 80,
+    "title": "Bupe",
+    "author": "uiGradients",
+    "colors": [
+      "#00416A",
+      "#E4E5E6"
+    ]
+  },
+  {
+    "id": 81,
+    "title": "Rea",
+    "author": "uiGradients",
+    "colors": [
+      "#FFE000",
+      "#799F0C"
+    ]
+  },
+  {
+    "id": 82,
+    "title": "Windy",
+    "author": "uiGradients",
+    "colors": [
+      "#acb6e5",
+      "#86fde8"
+    ]
+  },
+  {
+    "id": 83,
+    "title": "Royal Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#536976",
+      "#292E49"
+    ]
+  },
+  {
+    "id": 84,
+    "title": "Royal Blue + Petrol",
+    "author": "uiGradients",
+    "colors": [
+      "#BBD2C5",
+      "#536976",
+      "#292E49"
+    ]
+  },
+  {
+    "id": 85,
+    "title": "Copper",
+    "author": "uiGradients",
+    "colors": [
+      "#B79891",
+      "#94716B"
+    ]
+  },
+  {
+    "id": 86,
+    "title": "Anamnisar",
+    "author": "uiGradients",
+    "colors": [
+      "#9796f0",
+      "#fbc7d4"
+    ]
+  },
+  {
+    "id": 87,
+    "title": "Petrol",
+    "author": "uiGradients",
+    "colors": [
+      "#BBD2C5",
+      "#536976"
+    ]
+  },
+  {
+    "id": 88,
+    "title": "Sky",
+    "author": "uiGradients",
+    "colors": [
+      "#076585",
+      "#fff"
+    ]
+  },
+  {
+    "id": 89,
+    "title": "Sel",
+    "author": "uiGradients",
+    "colors": [
+      "#00467F",
+      "#A5CC82"
+    ]
+  },
+  {
+    "id": 90,
+    "title": "Afternoon",
+    "author": "uiGradients",
+    "colors": [
+      "#000C40",
+      "#607D8B"
+    ]
+  },
+  {
+    "id": 91,
+    "title": "Skyline",
+    "author": "uiGradients",
+    "colors": [
+      "#1488CC",
+      "#2B32B2"
+    ]
+  },
+  {
+    "id": 92,
+    "title": "DIMIGO",
+    "author": "uiGradients",
+    "colors": [
+      "#ec008c",
+      "#fc6767"
+    ]
+  },
+  {
+    "id": 93,
+    "title": "Purple Love",
+    "author": "uiGradients",
+    "colors": [
+      "#cc2b5e",
+      "#753a88"
+    ]
+  },
+  {
+    "id": 94,
+    "title": "Sexy Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#2193b0",
+      "#6dd5ed"
+    ]
+  },
+  {
+    "id": 95,
+    "title": "Blooker20",
+    "author": "uiGradients",
+    "colors": [
+      "#e65c00",
+      "#F9D423"
+    ]
+  },
+  {
+    "id": 96,
+    "title": "Sea Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#2b5876",
+      "#4e4376"
+    ]
+  },
+  {
+    "id": 97,
+    "title": "Nimvelo",
+    "author": "uiGradients",
+    "colors": [
+      "#314755",
+      "#26a0da"
+    ]
+  },
+  {
+    "id": 98,
+    "title": "Hazel",
+    "author": "uiGradients",
+    "colors": [
+      "#77A1D3",
+      "#79CBCA",
+      "#E684AE"
+    ]
+  },
+  {
+    "id": 99,
+    "title": "Noon to Dusk",
+    "author": "uiGradients",
+    "colors": [
+      "#ff6e7f",
+      "#bfe9ff"
+    ]
+  },
+  {
+    "id": 100,
+    "title": "YouTube",
+    "author": "uiGradients",
+    "colors": [
+      "#e52d27",
+      "#b31217"
+    ]
+  },
+  {
+    "id": 101,
+    "title": "Cool Brown",
+    "author": "uiGradients",
+    "colors": [
+      "#603813",
+      "#b29f94"
+    ]
+  },
+  {
+    "id": 102,
+    "title": "Harmonic Energy",
+    "author": "uiGradients",
+    "colors": [
+      "#16A085",
+      "#F4D03F"
+    ]
+  },
+  {
+    "id": 103,
+    "title": "Playing with Reds",
+    "author": "uiGradients",
+    "colors": [
+      "#D31027",
+      "#EA384D"
+    ]
+  },
+  {
+    "id": 104,
+    "title": "Sunny Days",
+    "author": "uiGradients",
+    "colors": [
+      "#EDE574",
+      "#E1F5C4"
+    ]
+  },
+  {
+    "id": 105,
+    "title": "Green Beach",
+    "author": "uiGradients",
+    "colors": [
+      "#02AAB0",
+      "#00CDAC"
+    ]
+  },
+  {
+    "id": 106,
+    "title": "Intuitive Purple",
+    "author": "uiGradients",
+    "colors": [
+      "#DA22FF",
+      "#9733EE"
+    ]
+  },
+  {
+    "id": 107,
+    "title": "Emerald Water",
+    "author": "uiGradients",
+    "colors": [
+      "#348F50",
+      "#56B4D3"
+    ]
+  },
+  {
+    "id": 108,
+    "title": "Lemon Twist",
+    "author": "uiGradients",
+    "colors": [
+      "#3CA55C",
+      "#B5AC49"
+    ]
+  },
+  {
+    "id": 109,
+    "title": "Monte Carlo",
+    "author": "uiGradients",
+    "colors": [
+      "#CC95C0",
+      "#DBD4B4",
+      "#7AA1D2"
+    ]
+  },
+  {
+    "id": 110,
+    "title": "Horizon",
+    "author": "uiGradients",
+    "colors": [
+      "#003973",
+      "#E5E5BE"
+    ]
+  },
+  {
+    "id": 111,
+    "title": "Rose Water",
+    "author": "uiGradients",
+    "colors": [
+      "#E55D87",
+      "#5FC3E4"
+    ]
+  },
+  {
+    "id": 112,
+    "title": "Frozen",
+    "author": "uiGradients",
+    "colors": [
+      "#403B4A",
+      "#E7E9BB"
+    ]
+  },
+  {
+    "id": 113,
+    "title": "Mango Pulp",
+    "author": "uiGradients",
+    "colors": [
+      "#F09819",
+      "#EDDE5D"
+    ]
+  },
+  {
+    "id": 114,
+    "title": "Bloody Mary",
+    "author": "uiGradients",
+    "colors": [
+      "#FF512F",
+      "#DD2476"
+    ]
+  },
+  {
+    "id": 115,
+    "title": "Aubergine",
+    "author": "uiGradients",
+    "colors": [
+      "#AA076B",
+      "#61045F"
+    ]
+  },
+  {
+    "id": 116,
+    "title": "Aqua Marine",
+    "author": "uiGradients",
+    "colors": [
+      "#1A2980",
+      "#26D0CE"
+    ]
+  },
+  {
+    "id": 117,
+    "title": "Sunrise",
+    "author": "uiGradients",
+    "colors": [
+      "#FF512F",
+      "#F09819"
+    ]
+  },
+  {
+    "id": 118,
+    "title": "Purple Paradise",
+    "author": "uiGradients",
+    "colors": [
+      "#1D2B64",
+      "#F8CDDA"
+    ]
+  },
+  {
+    "id": 119,
+    "title": "Stripe",
+    "author": "uiGradients",
+    "colors": [
+      "#1FA2FF",
+      "#12D8FA",
+      "#A6FFCB"
+    ]
+  },
+  {
+    "id": 120,
+    "title": "Sea Weed",
+    "author": "uiGradients",
+    "colors": [
+      "#4CB8C4",
+      "#3CD3AD"
+    ]
+  },
+  {
+    "id": 121,
+    "title": "Pinky",
+    "author": "uiGradients",
+    "colors": [
+      "#DD5E89",
+      "#F7BB97"
+    ]
+  },
+  {
+    "id": 122,
+    "title": "Cherry",
+    "author": "uiGradients",
+    "colors": [
+      "#EB3349",
+      "#F45C43"
+    ]
+  },
+  {
+    "id": 123,
+    "title": "Mojito",
+    "author": "uiGradients",
+    "colors": [
+      "#1D976C",
+      "#93F9B9"
+    ]
+  },
+  {
+    "id": 124,
+    "title": "Juicy Orange",
+    "author": "uiGradients",
+    "colors": [
+      "#FF8008",
+      "#FFC837"
+    ]
+  },
+  {
+    "id": 125,
+    "title": "Mirage",
+    "author": "uiGradients",
+    "colors": [
+      "#16222A",
+      "#3A6073"
+    ]
+  },
+  {
+    "id": 126,
+    "title": "Steel Gray",
+    "author": "uiGradients",
+    "colors": [
+      "#1F1C2C",
+      "#928DAB"
+    ]
+  },
+  {
+    "id": 127,
+    "title": "Kashmir",
+    "author": "uiGradients",
+    "colors": [
+      "#614385",
+      "#516395"
+    ]
+  },
+  {
+    "id": 128,
+    "title": "Electric Violet",
+    "author": "uiGradients",
+    "colors": [
+      "#4776E6",
+      "#8E54E9"
+    ]
+  },
+  {
+    "id": 129,
+    "title": "Venice Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#085078",
+      "#85D8CE"
+    ]
+  },
+  {
+    "id": 130,
+    "title": "Bora Bora",
+    "author": "uiGradients",
+    "colors": [
+      "#2BC0E4",
+      "#EAECC6"
+    ]
+  },
+  {
+    "id": 131,
+    "title": "Moss",
+    "author": "uiGradients",
+    "colors": [
+      "#134E5E",
+      "#71B280"
+    ]
+  },
+  {
+    "id": 132,
+    "title": "Shroom Haze",
+    "author": "uiGradients",
+    "colors": [
+      "#5C258D",
+      "#4389A2"
+    ]
+  },
+  {
+    "id": 133,
+    "title": "Mystic",
+    "author": "uiGradients",
+    "colors": [
+      "#757F9A",
+      "#D7DDE8"
+    ]
+  },
+  {
+    "id": 134,
+    "title": "Midnight City",
+    "author": "uiGradients",
+    "colors": [
+      "#232526",
+      "#414345"
+    ]
+  },
+  {
+    "id": 135,
+    "title": "Sea Blizz",
+    "author": "uiGradients",
+    "colors": [
+      "#1CD8D2",
+      "#93EDC7"
+    ]
+  },
+  {
+    "id": 136,
+    "title": "Opa",
+    "author": "uiGradients",
+    "colors": [
+      "#3D7EAA",
+      "#FFE47A"
+    ]
+  },
+  {
+    "id": 137,
+    "title": "Titanium",
+    "author": "uiGradients",
+    "colors": [
+      "#283048",
+      "#859398"
+    ]
+  },
+  {
+    "id": 138,
+    "title": "Mantle",
+    "author": "uiGradients",
+    "colors": [
+      "#24C6DC",
+      "#514A9D"
+    ]
+  },
+  {
+    "id": 139,
+    "title": "Dracula",
+    "author": "uiGradients",
+    "colors": [
+      "#DC2424",
+      "#4A569D"
+    ]
+  },
+  {
+    "id": 140,
+    "title": "Peach",
+    "author": "uiGradients",
+    "colors": [
+      "#ED4264",
+      "#FFEDBC"
+    ]
+  },
+  {
+    "id": 141,
+    "title": "Moonrise",
+    "author": "uiGradients",
+    "colors": [
+      "#DAE2F8",
+      "#D6A4A4"
+    ]
+  },
+  {
+    "id": 142,
+    "title": "Clouds",
+    "author": "uiGradients",
+    "colors": [
+      "#ECE9E6",
+      "#FFFFFF"
+    ]
+  },
+  {
+    "id": 143,
+    "title": "Stellar",
+    "author": "uiGradients",
+    "colors": [
+      "#7474BF",
+      "#348AC7"
+    ]
+  },
+  {
+    "id": 144,
+    "title": "Bourbon",
+    "author": "uiGradients",
+    "colors": [
+      "#EC6F66",
+      "#F3A183"
+    ]
+  },
+  {
+    "id": 145,
+    "title": "Calm Darya",
+    "author": "uiGradients",
+    "colors": [
+      "#5f2c82",
+      "#49a09d"
+    ]
+  },
+  {
+    "id": 146,
+    "title": "Influenza",
+    "author": "uiGradients",
+    "colors": [
+      "#C04848",
+      "#480048"
+    ]
+  },
+  {
+    "id": 147,
+    "title": "Shrimpy",
+    "author": "uiGradients",
+    "colors": [
+      "#e43a15",
+      "#e65245"
+    ]
+  },
+  {
+    "id": 148,
+    "title": "Army",
+    "author": "uiGradients",
+    "colors": [
+      "#414d0b",
+      "#727a17"
+    ]
+  },
+  {
+    "id": 149,
+    "title": "Miaka",
+    "author": "uiGradients",
+    "colors": [
+      "#FC354C",
+      "#0ABFBC"
+    ]
+  },
+  {
+    "id": 150,
+    "title": "Pinot Noir",
+    "author": "uiGradients",
+    "colors": [
+      "#4b6cb7",
+      "#182848"
+    ]
+  },
+  {
+    "id": 151,
+    "title": "Day Tripper",
+    "author": "uiGradients",
+    "colors": [
+      "#f857a6",
+      "#ff5858"
+    ]
+  },
+  {
+    "id": 152,
+    "title": "Namn",
+    "author": "uiGradients",
+    "colors": [
+      "#a73737",
+      "#7a2828"
+    ]
+  },
+  {
+    "id": 153,
+    "title": "Blurry Beach",
+    "author": "uiGradients",
+    "colors": [
+      "#d53369",
+      "#cbad6d"
+    ]
+  },
+  {
+    "id": 154,
+    "title": "Vasily",
+    "author": "uiGradients",
+    "colors": [
+      "#e9d362",
+      "#333333"
+    ]
+  },
+  {
+    "id": 155,
+    "title": "A Lost Memory",
+    "author": "uiGradients",
+    "colors": [
+      "#DE6262",
+      "#FFB88C"
+    ]
+  },
+  {
+    "id": 156,
+    "title": "Petrichor",
+    "author": "uiGradients",
+    "colors": [
+      "#666600",
+      "#999966"
+    ]
+  },
+  {
+    "id": 157,
+    "title": "Jonquil",
+    "author": "uiGradients",
+    "colors": [
+      "#FFEEEE",
+      "#DDEFBB"
+    ]
+  },
+  {
+    "id": 158,
+    "title": "Sirius Tamed",
+    "author": "uiGradients",
+    "colors": [
+      "#EFEFBB",
+      "#D4D3DD"
+    ]
+  },
+  {
+    "id": 159,
+    "title": "Kyoto",
+    "author": "uiGradients",
+    "colors": [
+      "#c21500",
+      "#ffc500"
+    ]
+  },
+  {
+    "id": 160,
+    "title": "Misty Meadow",
+    "author": "uiGradients",
+    "colors": [
+      "#215f00",
+      "#e4e4d9"
+    ]
+  },
+  {
+    "id": 161,
+    "title": "Aqualicious",
+    "author": "uiGradients",
+    "colors": [
+      "#50C9C3",
+      "#96DEDA"
+    ]
+  },
+  {
+    "id": 162,
+    "title": "Moor",
+    "author": "uiGradients",
+    "colors": [
+      "#616161",
+      "#9bc5c3"
+    ]
+  },
+  {
+    "id": 163,
+    "title": "Almost",
+    "author": "uiGradients",
+    "colors": [
+      "#ddd6f3",
+      "#faaca8"
+    ]
+  },
+  {
+    "id": 164,
+    "title": "Forever Lost",
+    "author": "uiGradients",
+    "colors": [
+      "#5D4157",
+      "#A8CABA"
+    ]
+  },
+  {
+    "id": 165,
+    "title": "Winter",
+    "author": "uiGradients",
+    "colors": [
+      "#E6DADA",
+      "#274046"
+    ]
+  },
+  {
+    "id": 166,
+    "title": "Nelson",
+    "author": "uiGradients",
+    "colors": [
+      "#f2709c",
+      "#ff9472"
+    ]
+  },
+  {
+    "id": 167,
+    "title": "Autumn",
+    "author": "uiGradients",
+    "colors": [
+      "#DAD299",
+      "#B0DAB9"
+    ]
+  },
+  {
+    "id": 168,
+    "title": "Candy",
+    "author": "uiGradients",
+    "colors": [
+      "#D3959B",
+      "#BFE6BA"
+    ]
+  },
+  {
+    "id": 169,
+    "title": "Reef",
+    "author": "uiGradients",
+    "colors": [
+      "#00d2ff",
+      "#3a7bd5"
+    ]
+  },
+  {
+    "id": 170,
+    "title": "The Strain",
+    "author": "uiGradients",
+    "colors": [
+      "#870000",
+      "#190A05"
+    ]
+  },
+  {
+    "id": 171,
+    "title": "Dirty Fog",
+    "author": "uiGradients",
+    "colors": [
+      "#B993D6",
+      "#8CA6DB"
+    ]
+  },
+  {
+    "id": 172,
+    "title": "Earthly",
+    "author": "uiGradients",
+    "colors": [
+      "#649173",
+      "#DBD5A4"
+    ]
+  },
+  {
+    "id": 173,
+    "title": "Virgin",
+    "author": "uiGradients",
+    "colors": [
+      "#C9FFBF",
+      "#FFAFBD"
+    ]
+  },
+  {
+    "id": 174,
+    "title": "Ash",
+    "author": "uiGradients",
+    "colors": [
+      "#606c88",
+      "#3f4c6b"
+    ]
+  },
+  {
+    "id": 175,
+    "title": "Cherryblossoms",
+    "author": "uiGradients",
+    "colors": [
+      "#FBD3E9",
+      "#BB377D"
+    ]
+  },
+  {
+    "id": 176,
+    "title": "Parklife",
+    "author": "uiGradients",
+    "colors": [
+      "#ADD100",
+      "#7B920A"
+    ]
+  },
+  {
+    "id": 177,
+    "title": "Dance To Forget",
+    "author": "uiGradients",
+    "colors": [
+      "#FF4E50",
+      "#F9D423"
+    ]
+  },
+  {
+    "id": 178,
+    "title": "Starfall",
+    "author": "uiGradients",
+    "colors": [
+      "#F0C27B",
+      "#4B1248"
+    ]
+  },
+  {
+    "id": 179,
+    "title": "Red Mist",
+    "author": "uiGradients",
+    "colors": [
+      "#000000",
+      "#e74c3c"
+    ]
+  },
+  {
+    "id": 180,
+    "title": "Teal Love",
+    "author": "uiGradients",
+    "colors": [
+      "#AAFFA9",
+      "#11FFBD"
+    ]
+  },
+  {
+    "id": 181,
+    "title": "Neon Life",
+    "author": "uiGradients",
+    "colors": [
+      "#B3FFAB",
+      "#12FFF7"
+    ]
+  },
+  {
+    "id": 182,
+    "title": "Man of Steel",
+    "author": "uiGradients",
+    "colors": [
+      "#780206",
+      "#061161"
+    ]
+  },
+  {
+    "id": 183,
+    "title": "Amethyst",
+    "author": "uiGradients",
+    "colors": [
+      "#9D50BB",
+      "#6E48AA"
+    ]
+  },
+  {
+    "id": 184,
+    "title": "Cheer Up Emo Kid",
+    "author": "uiGradients",
+    "colors": [
+      "#556270",
+      "#FF6B6B"
+    ]
+  },
+  {
+    "id": 185,
+    "title": "Shore",
+    "author": "uiGradients",
+    "colors": [
+      "#70e1f5",
+      "#ffd194"
+    ]
+  },
+  {
+    "id": 186,
+    "title": "Facebook Messenger",
+    "author": "uiGradients",
+    "colors": [
+      "#00c6ff",
+      "#0072ff"
+    ]
+  },
+  {
+    "id": 187,
+    "title": "SoundCloud",
+    "author": "uiGradients",
+    "colors": [
+      "#fe8c00",
+      "#f83600"
+    ]
+  },
+  {
+    "id": 188,
+    "title": "Behongo",
+    "author": "uiGradients",
+    "colors": [
+      "#52c234",
+      "#061700"
+    ]
+  },
+  {
+    "id": 189,
+    "title": "ServQuick",
+    "author": "uiGradients",
+    "colors": [
+      "#485563",
+      "#29323c"
+    ]
+  },
+  {
+    "id": 190,
+    "title": "Friday",
+    "author": "uiGradients",
+    "colors": [
+      "#83a4d4",
+      "#b6fbff"
+    ]
+  },
+  {
+    "id": 191,
+    "title": "Martini",
+    "author": "uiGradients",
+    "colors": [
+      "#FDFC47",
+      "#24FE41"
+    ]
+  },
+  {
+    "id": 192,
+    "title": "Metallic Toad",
+    "author": "uiGradients",
+    "colors": [
+      "#abbaab",
+      "#ffffff"
+    ]
+  },
+  {
+    "id": 193,
+    "title": "Between The Clouds",
+    "author": "uiGradients",
+    "colors": [
+      "#73C8A9",
+      "#373B44"
+    ]
+  },
+  {
+    "id": 194,
+    "title": "Crazy Orange I",
+    "author": "uiGradients",
+    "colors": [
+      "#D38312",
+      "#A83279"
+    ]
+  },
+  {
+    "id": 195,
+    "title": "Hersheys",
+    "author": "uiGradients",
+    "colors": [
+      "#1e130c",
+      "#9a8478"
+    ]
+  },
+  {
+    "id": 196,
+    "title": "Talking To Mice Elf",
+    "author": "uiGradients",
+    "colors": [
+      "#948E99",
+      "#2E1437"
+    ]
+  },
+  {
+    "id": 197,
+    "title": "Purple Bliss",
+    "author": "uiGradients",
+    "colors": [
+      "#360033",
+      "#0b8793"
+    ]
+  },
+  {
+    "id": 198,
+    "title": "Predawn",
+    "author": "uiGradients",
+    "colors": [
+      "#FFA17F",
+      "#00223E"
+    ]
+  },
+  {
+    "id": 199,
+    "title": "Endless River",
+    "author": "uiGradients",
+    "colors": [
+      "#43cea2",
+      "#185a9d"
+    ]
+  },
+  {
+    "id": 200,
+    "title": "Pastel Orange at the Sun",
+    "author": "uiGradients",
+    "colors": [
+      "#ffb347",
+      "#ffcc33"
+    ]
+  },
+  {
+    "id": 201,
+    "title": "Twitch",
+    "author": "uiGradients",
+    "colors": [
+      "#6441A5",
+      "#2a0845"
+    ]
+  },
+  {
+    "id": 202,
+    "title": "Atlas",
+    "author": "uiGradients",
+    "colors": [
+      "#FEAC5E",
+      "#C779D0",
+      "#4BC0C8"
+    ]
+  },
+  {
+    "id": 203,
+    "title": "Instagram",
+    "author": "uiGradients",
+    "colors": [
+      "#833ab4",
+      "#fd1d1d",
+      "#fcb045"
+    ]
+  },
+  {
+    "id": 204,
+    "title": "Flickr",
+    "author": "uiGradients",
+    "colors": [
+      "#ff0084",
+      "#33001b"
+    ]
+  },
+  {
+    "id": 205,
+    "title": "Vine",
+    "author": "uiGradients",
+    "colors": [
+      "#00bf8f",
+      "#001510"
+    ]
+  },
+  {
+    "id": 206,
+    "title": "Turquoise flow",
+    "author": "uiGradients",
+    "colors": [
+      "#136a8a",
+      "#267871"
+    ]
+  },
+  {
+    "id": 207,
+    "title": "Portrait",
+    "author": "uiGradients",
+    "colors": [
+      "#8e9eab",
+      "#eef2f3"
+    ]
+  },
+  {
+    "id": 208,
+    "title": "Virgin America",
+    "author": "uiGradients",
+    "colors": [
+      "#7b4397",
+      "#dc2430"
+    ]
+  },
+  {
+    "id": 209,
+    "title": "Koko Caramel",
+    "author": "uiGradients",
+    "colors": [
+      "#D1913C",
+      "#FFD194"
+    ]
+  },
+  {
+    "id": 210,
+    "title": "Fresh Turboscent",
+    "author": "uiGradients",
+    "colors": [
+      "#F1F2B5",
+      "#135058"
+    ]
+  },
+  {
+    "id": 211,
+    "title": "Green to dark",
+    "author": "uiGradients",
+    "colors": [
+      "#6A9113",
+      "#141517"
+    ]
+  },
+  {
+    "id": 212,
+    "title": "Ukraine",
+    "author": "uiGradients",
+    "colors": [
+      "#004FF9",
+      "#FFF94C"
+    ]
+  },
+  {
+    "id": 213,
+    "title": "Curiosity blue",
+    "author": "uiGradients",
+    "colors": [
+      "#525252",
+      "#3d72b4"
+    ]
+  },
+  {
+    "id": 214,
+    "title": "Dark Knight",
+    "author": "uiGradients",
+    "colors": [
+      "#BA8B02",
+      "#181818"
+    ]
+  },
+  {
+    "id": 215,
+    "title": "Piglet",
+    "author": "uiGradients",
+    "colors": [
+      "#ee9ca7",
+      "#ffdde1"
+    ]
+  },
+  {
+    "id": 216,
+    "title": "Lizard",
+    "author": "uiGradients",
+    "colors": [
+      "#304352",
+      "#d7d2cc"
+    ]
+  },
+  {
+    "id": 217,
+    "title": "Sage Persuasion",
+    "author": "uiGradients",
+    "colors": [
+      "#CCCCB2",
+      "#757519"
+    ]
+  },
+  {
+    "id": 218,
+    "title": "Between Night and Day",
+    "author": "uiGradients",
+    "colors": [
+      "#2c3e50",
+      "#3498db"
+    ]
+  },
+  {
+    "id": 219,
+    "title": "Timber",
+    "author": "uiGradients",
+    "colors": [
+      "#fc00ff",
+      "#00dbde"
+    ]
+  },
+  {
+    "id": 220,
+    "title": "Passion",
+    "author": "uiGradients",
+    "colors": [
+      "#e53935",
+      "#e35d5b"
+    ]
+  },
+  {
+    "id": 221,
+    "title": "Clear Sky",
+    "author": "uiGradients",
+    "colors": [
+      "#005C97",
+      "#363795"
+    ]
+  },
+  {
+    "id": 222,
+    "title": "Master Card",
+    "author": "uiGradients",
+    "colors": [
+      "#f46b45",
+      "#eea849"
+    ]
+  },
+  {
+    "id": 223,
+    "title": "Back To Earth",
+    "author": "uiGradients",
+    "colors": [
+      "#00C9FF",
+      "#92FE9D"
+    ]
+  },
+  {
+    "id": 224,
+    "title": "Deep Purple",
+    "author": "uiGradients",
+    "colors": [
+      "#673AB7",
+      "#512DA8"
+    ]
+  },
+  {
+    "id": 225,
+    "title": "Little Leaf",
+    "author": "uiGradients",
+    "colors": [
+      "#76b852",
+      "#8DC26F"
+    ]
+  },
+  {
+    "id": 226,
+    "title": "Netflix",
+    "author": "uiGradients",
+    "colors": [
+      "#8E0E00",
+      "#1F1C18"
+    ]
+  },
+  {
+    "id": 227,
+    "title": "Light Orange",
+    "author": "uiGradients",
+    "colors": [
+      "#FFB75E",
+      "#ED8F03"
+    ]
+  },
+  {
+    "id": 228,
+    "title": "Green and Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#c2e59c",
+      "#64b3f4"
+    ]
+  },
+  {
+    "id": 229,
+    "title": "Poncho",
+    "author": "uiGradients",
+    "colors": [
+      "#403A3E",
+      "#BE5869"
+    ]
+  },
+  {
+    "id": 230,
+    "title": "Back to the Future",
+    "author": "uiGradients",
+    "colors": [
+      "#C02425",
+      "#F0CB35"
+    ]
+  },
+  {
+    "id": 231,
+    "title": "Blush",
+    "author": "uiGradients",
+    "colors": [
+      "#B24592",
+      "#F15F79"
+    ]
+  },
+  {
+    "id": 232,
+    "title": "Inbox",
+    "author": "uiGradients",
+    "colors": [
+      "#457fca",
+      "#5691c8"
+    ]
+  },
+  {
+    "id": 233,
+    "title": "Purplin",
+    "author": "uiGradients",
+    "colors": [
+      "#6a3093",
+      "#a044ff"
+    ]
+  },
+  {
+    "id": 234,
+    "title": "Pale Wood",
+    "author": "uiGradients",
+    "colors": [
+      "#eacda3",
+      "#d6ae7b"
+    ]
+  },
+  {
+    "id": 235,
+    "title": "Haikus",
+    "author": "uiGradients",
+    "colors": [
+      "#fd746c",
+      "#ff9068"
+    ]
+  },
+  {
+    "id": 236,
+    "title": "Pizelex",
+    "author": "uiGradients",
+    "colors": [
+      "#114357",
+      "#F29492"
+    ]
+  },
+  {
+    "id": 237,
+    "title": "Joomla",
+    "author": "uiGradients",
+    "colors": [
+      "#1e3c72",
+      "#2a5298"
+    ]
+  },
+  {
+    "id": 238,
+    "title": "Christmas",
+    "author": "uiGradients",
+    "colors": [
+      "#2F7336",
+      "#AA3A38"
+    ]
+  },
+  {
+    "id": 239,
+    "title": "Minnesota Vikings",
+    "author": "uiGradients",
+    "colors": [
+      "#5614B0",
+      "#DBD65C"
+    ]
+  },
+  {
+    "id": 240,
+    "title": "Miami Dolphins",
+    "author": "uiGradients",
+    "colors": [
+      "#4DA0B0",
+      "#D39D38"
+    ]
+  },
+  {
+    "id": 241,
+    "title": "Forest",
+    "author": "uiGradients",
+    "colors": [
+      "#5A3F37",
+      "#2C7744"
+    ]
+  },
+  {
+    "id": 242,
+    "title": "Nighthawk",
+    "author": "uiGradients",
+    "colors": [
+      "#2980b9",
+      "#2c3e50"
+    ]
+  },
+  {
+    "id": 243,
+    "title": "Superman",
+    "author": "uiGradients",
+    "colors": [
+      "#0099F7",
+      "#F11712"
+    ]
+  },
+  {
+    "id": 244,
+    "title": "Suzy",
+    "author": "uiGradients",
+    "colors": [
+      "#834d9b",
+      "#d04ed6"
+    ]
+  },
+  {
+    "id": 245,
+    "title": "Dark Skies",
+    "author": "uiGradients",
+    "colors": [
+      "#4B79A1",
+      "#283E51"
+    ]
+  },
+  {
+    "id": 246,
+    "title": "Deep Space",
+    "author": "uiGradients",
+    "colors": [
+      "#000000",
+      "#434343"
+    ]
+  },
+  {
+    "id": 247,
+    "title": "Decent",
+    "author": "uiGradients",
+    "colors": [
+      "#4CA1AF",
+      "#C4E0E5"
+    ]
+  },
+  {
+    "id": 248,
+    "title": "Colors Of Sky",
+    "author": "uiGradients",
+    "colors": [
+      "#E0EAFC",
+      "#CFDEF3"
+    ]
+  },
+  {
+    "id": 249,
+    "title": "Purple White",
+    "author": "uiGradients",
+    "colors": [
+      "#BA5370",
+      "#F4E2D8"
+    ]
+  },
+  {
+    "id": 250,
+    "title": "Ali",
+    "author": "uiGradients",
+    "colors": [
+      "#ff4b1f",
+      "#1fddff"
+    ]
+  },
+  {
+    "id": 251,
+    "title": "Alihossein",
+    "author": "uiGradients",
+    "colors": [
+      "#f7ff00",
+      "#db36a4"
+    ]
+  },
+  {
+    "id": 252,
+    "title": "Shahabi",
+    "author": "uiGradients",
+    "colors": [
+      "#a80077",
+      "#66ff00"
+    ]
+  },
+  {
+    "id": 253,
+    "title": "Red Ocean",
+    "author": "uiGradients",
+    "colors": [
+      "#1D4350",
+      "#A43931"
+    ]
+  },
+  {
+    "id": 254,
+    "title": "Tranquil",
+    "author": "uiGradients",
+    "colors": [
+      "#EECDA3",
+      "#EF629F"
+    ]
+  },
+  {
+    "id": 255,
+    "title": "Transfile",
+    "author": "uiGradients",
+    "colors": [
+      "#16BFFD",
+      "#CB3066"
+    ]
+  },
+  {
+    "id": 256,
+    "title": "Sylvia",
+    "author": "uiGradients",
+    "colors": [
+      "#ff4b1f",
+      "#ff9068"
+    ]
+  },
+  {
+    "id": 257,
+    "title": "Sweet Morning",
+    "author": "uiGradients",
+    "colors": [
+      "#FF5F6D",
+      "#FFC371"
+    ]
+  },
+  {
+    "id": 258,
+    "title": "Politics",
+    "author": "uiGradients",
+    "colors": [
+      "#2196f3",
+      "#f44336"
+    ]
+  },
+  {
+    "id": 259,
+    "title": "Bright Vault",
+    "author": "uiGradients",
+    "colors": [
+      "#00d2ff",
+      "#928DAB"
+    ]
+  },
+  {
+    "id": 260,
+    "title": "Solid Vault",
+    "author": "uiGradients",
+    "colors": [
+      "#3a7bd5",
+      "#3a6073"
+    ]
+  },
+  {
+    "id": 261,
+    "title": "Sunset",
+    "author": "uiGradients",
+    "colors": [
+      "#0B486B",
+      "#F56217"
+    ]
+  },
+  {
+    "id": 262,
+    "title": "Grapefruit Sunset",
+    "author": "uiGradients",
+    "colors": [
+      "#e96443",
+      "#904e95"
+    ]
+  },
+  {
+    "id": 263,
+    "title": "Deep Sea Space",
+    "author": "uiGradients",
+    "colors": [
+      "#2C3E50",
+      "#4CA1AF"
+    ]
+  },
+  {
+    "id": 264,
+    "title": "Dusk",
+    "author": "uiGradients",
+    "colors": [
+      "#2C3E50",
+      "#FD746C"
+    ]
+  },
+  {
+    "id": 265,
+    "title": "Minimal Red",
+    "author": "uiGradients",
+    "colors": [
+      "#F00000",
+      "#DC281E"
+    ]
+  },
+  {
+    "id": 266,
+    "title": "Royal",
+    "author": "uiGradients",
+    "colors": [
+      "#141E30",
+      "#243B55"
+    ]
+  },
+  {
+    "id": 267,
+    "title": "Mauve",
+    "author": "uiGradients",
+    "colors": [
+      "#42275a",
+      "#734b6d"
+    ]
+  },
+  {
+    "id": 268,
+    "title": "Frost",
+    "author": "uiGradients",
+    "colors": [
+      "#000428",
+      "#004e92"
+    ]
+  },
+  {
+    "id": 269,
+    "title": "Lush",
+    "author": "uiGradients",
+    "colors": [
+      "#56ab2f",
+      "#a8e063"
+    ]
+  },
+  {
+    "id": 270,
+    "title": "Firewatch",
+    "author": "uiGradients",
+    "colors": [
+      "#cb2d3e",
+      "#ef473a"
+    ]
+  },
+  {
+    "id": 271,
+    "title": "Sherbert",
+    "author": "uiGradients",
+    "colors": [
+      "#f79d00",
+      "#64f38c"
+    ]
+  },
+  {
+    "id": 272,
+    "title": "Blood Red",
+    "author": "uiGradients",
+    "colors": [
+      "#f85032",
+      "#e73827"
+    ]
+  },
+  {
+    "id": 273,
+    "title": "Sun on the Horizon",
+    "author": "uiGradients",
+    "colors": [
+      "#fceabb",
+      "#f8b500"
+    ]
+  },
+  {
+    "id": 274,
+    "title": "IIIT Delhi",
+    "author": "uiGradients",
+    "colors": [
+      "#808080",
+      "#3fada8"
+    ]
+  },
+  {
+    "id": 275,
+    "title": "Jupiter",
+    "author": "uiGradients",
+    "colors": [
+      "#ffd89b",
+      "#19547b"
+    ]
+  },
+  {
+    "id": 276,
+    "title": "50 Shades of Grey",
+    "author": "uiGradients",
+    "colors": [
+      "#bdc3c7",
+      "#2c3e50"
+    ]
+  },
+  {
+    "id": 277,
+    "title": "Dania",
+    "author": "uiGradients",
+    "colors": [
+      "#BE93C5",
+      "#7BC6CC"
+    ]
+  },
+  {
+    "id": 278,
+    "title": "Limeade",
+    "author": "uiGradients",
+    "colors": [
+      "#A1FFCE",
+      "#FAFFD1"
+    ]
+  },
+  {
+    "id": 279,
+    "title": "Disco",
+    "author": "uiGradients",
+    "colors": [
+      "#4ECDC4",
+      "#556270"
+    ]
+  },
+  {
+    "id": 280,
+    "title": "Love Couple",
+    "author": "uiGradients",
+    "colors": [
+      "#3a6186",
+      "#89253e"
+    ]
+  },
+  {
+    "id": 281,
+    "title": "Azure Pop",
+    "author": "uiGradients",
+    "colors": [
+      "#ef32d9",
+      "#89fffd"
+    ]
+  },
+  {
+    "id": 282,
+    "title": "Nepal",
+    "author": "uiGradients",
+    "colors": [
+      "#de6161",
+      "#2657eb"
+    ]
+  },
+  {
+    "id": 283,
+    "title": "Cosmic Fusion",
+    "author": "uiGradients",
+    "colors": [
+      "#ff00cc",
+      "#333399"
+    ]
+  },
+  {
+    "id": 284,
+    "title": "Snapchat",
+    "author": "uiGradients",
+    "colors": [
+      "#fffc00",
+      "#ffffff"
+    ]
+  },
+  {
+    "id": 285,
+    "title": "Ed's Sunset Gradient",
+    "author": "uiGradients",
+    "colors": [
+      "#ff7e5f",
+      "#feb47b"
+    ]
+  },
+  {
+    "id": 286,
+    "title": "Brady Brady Fun Fun",
+    "author": "uiGradients",
+    "colors": [
+      "#00c3ff",
+      "#ffff1c"
+    ]
+  },
+  {
+    "id": 287,
+    "title": "Black Rosé",
+    "author": "uiGradients",
+    "colors": [
+      "#f4c4f3",
+      "#fc67fa"
+    ]
+  },
+  {
+    "id": 288,
+    "title": "80's Purple",
+    "author": "uiGradients",
+    "colors": [
+      "#41295a",
+      "#2F0743"
+    ]
+  },
+  {
+    "id": 289,
+    "title": "Radar",
+    "author": "uiGradients",
+    "colors": [
+      "#A770EF",
+      "#CF8BF3",
+      "#FDB99B"
+    ]
+  },
+  {
+    "id": 290,
+    "title": "Ibiza Sunset",
+    "author": "uiGradients",
+    "colors": [
+      "#ee0979",
+      "#ff6a00"
+    ]
+  },
+  {
+    "id": 291,
+    "title": "Dawn",
+    "author": "uiGradients",
+    "colors": [
+      "#F3904F",
+      "#3B4371"
+    ]
+  },
+  {
+    "id": 292,
+    "title": "Mild",
+    "author": "uiGradients",
+    "colors": [
+      "#67B26F",
+      "#4ca2cd"
+    ]
+  },
+  {
+    "id": 293,
+    "title": "Vice City",
+    "author": "uiGradients",
+    "colors": [
+      "#3494E6",
+      "#EC6EAD"
+    ]
+  },
+  {
+    "id": 294,
+    "title": "Jaipur",
+    "author": "uiGradients",
+    "colors": [
+      "#DBE6F6",
+      "#C5796D"
+    ]
+  },
+  {
+    "id": 295,
+    "title": "Jodhpur",
+    "author": "uiGradients",
+    "colors": [
+      "#9CECFB",
+      "#65C7F7",
+      "#0052D4"
+    ]
+  },
+  {
+    "id": 296,
+    "title": "Cocoaa Ice",
+    "author": "uiGradients",
+    "colors": [
+      "#c0c0aa",
+      "#1cefff"
+    ]
+  },
+  {
+    "id": 297,
+    "title": "EasyMed",
+    "author": "uiGradients",
+    "colors": [
+      "#DCE35B",
+      "#45B649"
+    ]
+  },
+  {
+    "id": 298,
+    "title": "Rose Colored Lenses",
+    "author": "uiGradients",
+    "colors": [
+      "#E8CBC0",
+      "#636FA4"
+    ]
+  },
+  {
+    "id": 299,
+    "title": "What lies Beyond",
+    "author": "uiGradients",
+    "colors": [
+      "#F0F2F0",
+      "#000C40"
+    ]
+  },
+  {
+    "id": 300,
+    "title": "Roseanna",
+    "author": "uiGradients",
+    "colors": [
+      "#FFAFBD",
+      "#ffc3a0"
+    ]
+  },
+  {
+    "id": 301,
+    "title": "Honey Dew",
+    "author": "uiGradients",
+    "colors": [
+      "#43C6AC",
+      "#F8FFAE"
+    ]
+  },
+  {
+    "id": 302,
+    "title": "Under the Lake",
+    "author": "uiGradients",
+    "colors": [
+      "#093028",
+      "#237A57"
+    ]
+  },
+  {
+    "id": 303,
+    "title": "The Blue Lagoon",
+    "author": "uiGradients",
+    "colors": [
+      "#43C6AC",
+      "#191654"
+    ]
+  },
+  {
+    "id": 304,
+    "title": "Can You Feel The Love Tonight",
+    "author": "uiGradients",
+    "colors": [
+      "#4568DC",
+      "#B06AB3"
+    ]
+  },
+  {
+    "id": 305,
+    "title": "Very Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#0575E6",
+      "#021B79"
+    ]
+  },
+  {
+    "id": 306,
+    "title": "Love and Liberty",
+    "author": "uiGradients",
+    "colors": [
+      "#200122",
+      "#6f0000"
+    ]
+  },
+  {
+    "id": 307,
+    "title": "Orca",
+    "author": "uiGradients",
+    "colors": [
+      "#44A08D",
+      "#093637"
+    ]
+  },
+  {
+    "id": 308,
+    "title": "Venice",
+    "author": "uiGradients",
+    "colors": [
+      "#6190E8",
+      "#A7BFE8"
+    ]
+  },
+  {
+    "id": 309,
+    "title": "Pacific Dream",
+    "author": "uiGradients",
+    "colors": [
+      "#34e89e",
+      "#0f3443"
+    ]
+  },
+  {
+    "id": 310,
+    "title": "Learning and Leading",
+    "author": "uiGradients",
+    "colors": [
+      "#F7971E",
+      "#FFD200"
+    ]
+  },
+  {
+    "id": 311,
+    "title": "Celestial",
+    "author": "uiGradients",
+    "colors": [
+      "#C33764",
+      "#1D2671"
+    ]
+  },
+  {
+    "id": 312,
+    "title": "Purplepine",
+    "author": "uiGradients",
+    "colors": [
+      "#20002c",
+      "#cbb4d4"
+    ]
+  },
+  {
+    "id": 313,
+    "title": "Sha la la",
+    "author": "uiGradients",
+    "colors": [
+      "#D66D75",
+      "#E29587"
+    ]
+  },
+  {
+    "id": 314,
+    "title": "Mini",
+    "author": "uiGradients",
+    "colors": [
+      "#30E8BF",
+      "#FF8235"
+    ]
+  },
+  {
+    "id": 315,
+    "title": "Maldives",
+    "author": "uiGradients",
+    "colors": [
+      "#B2FEFA",
+      "#0ED2F7"
+    ]
+  },
+  {
+    "id": 316,
+    "title": "Cinnamint",
+    "author": "uiGradients",
+    "colors": [
+      "#4AC29A",
+      "#BDFFF3"
+    ]
+  },
+  {
+    "id": 317,
+    "title": "Html",
+    "author": "uiGradients",
+    "colors": [
+      "#E44D26",
+      "#F16529"
+    ]
+  },
+  {
+    "id": 318,
+    "title": "Coal",
+    "author": "uiGradients",
+    "colors": [
+      "#EB5757",
+      "#000000"
+    ]
+  },
+  {
+    "id": 319,
+    "title": "Sunkist",
+    "author": "uiGradients",
+    "colors": [
+      "#F2994A",
+      "#F2C94C"
+    ]
+  },
+  {
+    "id": 320,
+    "title": "Blue Skies",
+    "author": "uiGradients",
+    "colors": [
+      "#56CCF2",
+      "#2F80ED"
+    ]
+  },
+  {
+    "id": 321,
+    "title": "Chitty Chitty Bang Bang",
+    "author": "uiGradients",
+    "colors": [
+      "#007991",
+      "#78ffd6"
+    ]
+  },
+  {
+    "id": 322,
+    "title": "Visions of Grandeur",
+    "author": "uiGradients",
+    "colors": [
+      "#000046",
+      "#1CB5E0"
+    ]
+  },
+  {
+    "id": 323,
+    "title": "Crystal Clear",
+    "author": "uiGradients",
+    "colors": [
+      "#159957",
+      "#155799"
+    ]
+  },
+  {
+    "id": 324,
+    "title": "Mello",
+    "author": "uiGradients",
+    "colors": [
+      "#c0392b",
+      "#8e44ad"
+    ]
+  },
+  {
+    "id": 325,
+    "title": "Compare Now",
+    "author": "uiGradients",
+    "colors": [
+      "#EF3B36",
+      "#FFFFFF"
+    ]
+  },
+  {
+    "id": 326,
+    "title": "Meridian",
+    "author": "uiGradients",
+    "colors": [
+      "#283c86",
+      "#45a247"
+    ]
+  },
+  {
+    "id": 327,
+    "title": "Relay",
+    "author": "uiGradients",
+    "colors": [
+      "#3A1C71",
+      "#D76D77",
+      "#FFAF7B"
+    ]
+  },
+  {
+    "id": 328,
+    "title": "Alive",
+    "author": "uiGradients",
+    "colors": [
+      "#CB356B",
+      "#BD3F32"
+    ]
+  },
+  {
+    "id": 329,
+    "title": "Scooter",
+    "author": "uiGradients",
+    "colors": [
+      "#36D1DC",
+      "#5B86E5"
+    ]
+  },
+  {
+    "id": 330,
+    "title": "Terminal",
+    "author": "uiGradients",
+    "colors": [
+      "#000000",
+      "#0f9b0f"
+    ]
+  },
+  {
+    "id": 331,
+    "title": "Telegram",
+    "author": "uiGradients",
+    "colors": [
+      "#1c92d2",
+      "#f2fcfe"
+    ]
+  },
+  {
+    "id": 332,
+    "title": "Crimson Tide",
+    "author": "uiGradients",
+    "colors": [
+      "#642B73",
+      "#C6426E"
+    ]
+  },
+  {
+    "id": 333,
+    "title": "Socialive",
+    "author": "uiGradients",
+    "colors": [
+      "#06beb6",
+      "#48b1bf"
+    ]
+  },
+  {
+    "id": 334,
+    "title": "Subu",
+    "author": "uiGradients",
+    "colors": [
+      "#0cebeb",
+      "#20e3b2",
+      "#29ffc6"
+    ]
+  },
+  {
+    "id": 335,
+    "title": "Broken Hearts",
+    "author": "uiGradients",
+    "colors": [
+      "#d9a7c7",
+      "#fffcdc"
+    ]
+  },
+  {
+    "id": 336,
+    "title": "Kimoby Is The New Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#396afc",
+      "#2948ff"
+    ]
+  },
+  {
+    "id": 337,
+    "title": "Dull",
+    "author": "uiGradients",
+    "colors": [
+      "#C9D6FF",
+      "#E2E2E2"
+    ]
+  },
+  {
+    "id": 338,
+    "title": "Purpink",
+    "author": "uiGradients",
+    "colors": [
+      "#7F00FF",
+      "#E100FF"
+    ]
+  },
+  {
+    "id": 339,
+    "title": "Orange Coral",
+    "author": "uiGradients",
+    "colors": [
+      "#ff9966",
+      "#ff5e62"
+    ]
+  },
+  {
+    "id": 340,
+    "title": "Summer",
+    "author": "uiGradients",
+    "colors": [
+      "#22c1c3",
+      "#fdbb2d"
+    ]
+  },
+  {
+    "id": 341,
+    "title": "King Yna",
+    "author": "uiGradients",
+    "colors": [
+      "#1a2a6c",
+      "#b21f1f",
+      "#fdbb2d"
+    ]
+  },
+  {
+    "id": 342,
+    "title": "Velvet Sun",
+    "author": "uiGradients",
+    "colors": [
+      "#e1eec3",
+      "#f05053"
+    ]
+  },
+  {
+    "id": 343,
+    "title": "Zinc",
+    "author": "uiGradients",
+    "colors": [
+      "#ADA996",
+      "#F2F2F2",
+      "#DBDBDB",
+      "#EAEAEA"
+    ]
+  },
+  {
+    "id": 344,
+    "title": "Hydrogen",
+    "author": "uiGradients",
+    "colors": [
+      "#667db6",
+      "#0082c8",
+      "#0082c8",
+      "#667db6"
+    ]
+  },
+  {
+    "id": 345,
+    "title": "Argon",
+    "author": "uiGradients",
+    "colors": [
+      "#03001e",
+      "#7303c0",
+      "#ec38bc",
+      "#fdeff9"
+    ]
+  },
+  {
+    "id": 346,
+    "title": "Lithium",
+    "author": "uiGradients",
+    "colors": [
+      "#6D6027",
+      "#D3CBB8"
+    ]
+  },
+  {
+    "id": 347,
+    "title": "Digital Water",
+    "author": "uiGradients",
+    "colors": [
+      "#74ebd5",
+      "#ACB6E5"
+    ]
+  },
+  {
+    "id": 348,
+    "title": "Orange Fun",
+    "author": "uiGradients",
+    "colors": [
+      "#fc4a1a",
+      "#f7b733"
+    ]
+  },
+  {
+    "id": 349,
+    "title": "Rainbow Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#00F260",
+      "#0575E6"
+    ]
+  },
+  {
+    "id": 350,
+    "title": "Pink Flavour",
+    "author": "uiGradients",
+    "colors": [
+      "#800080",
+      "#ffc0cb"
+    ]
+  },
+  {
+    "id": 351,
+    "title": "Sulphur",
+    "author": "uiGradients",
+    "colors": [
+      "#CAC531",
+      "#F3F9A7"
+    ]
+  },
+  {
+    "id": 352,
+    "title": "Selenium",
+    "author": "uiGradients",
+    "colors": [
+      "#3C3B3F",
+      "#605C3C"
+    ]
+  },
+  {
+    "id": 353,
+    "title": "Delicate",
+    "author": "uiGradients",
+    "colors": [
+      "#D3CCE3",
+      "#E9E4F0"
+    ]
+  },
+  {
+    "id": 354,
+    "title": "Ohhappiness",
+    "author": "uiGradients",
+    "colors": [
+      "#00b09b",
+      "#96c93d"
+    ]
+  },
+  {
+    "id": 355,
+    "title": "Lawrencium",
+    "author": "uiGradients",
+    "colors": [
+      "#0f0c29",
+      "#302b63",
+      "#24243e"
+    ]
+  },
+  {
+    "id": 356,
+    "title": "Relaxing red",
+    "author": "uiGradients",
+    "colors": [
+      "#fffbd5",
+      "#b20a2c"
+    ]
+  },
+  {
+    "id": 357,
+    "title": "Taran Tado",
+    "author": "uiGradients",
+    "colors": [
+      "#23074d",
+      "#cc5333"
+    ]
+  },
+  {
+    "id": 358,
+    "title": "Bighead",
+    "author": "uiGradients",
+    "colors": [
+      "#c94b4b",
+      "#4b134f"
+    ]
+  },
+  {
+    "id": 359,
+    "title": "Sublime Vivid",
+    "author": "uiGradients",
+    "colors": [
+      "#FC466B",
+      "#3F5EFB"
+    ]
+  },
+  {
+    "id": 360,
+    "title": "Sublime Light",
+    "author": "uiGradients",
+    "colors": [
+      "#FC5C7D",
+      "#6A82FB"
+    ]
+  },
+  {
+    "id": 361,
+    "title": "Pun Yeta",
+    "author": "uiGradients",
+    "colors": [
+      "#108dc7",
+      "#ef8e38"
+    ]
+  },
+  {
+    "id": 362,
+    "title": "Quepal",
+    "author": "uiGradients",
+    "colors": [
+      "#11998e",
+      "#38ef7d"
+    ]
+  },
+  {
+    "id": 363,
+    "title": "Sand to Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#3E5151",
+      "#DECBA4"
+    ]
+  },
+  {
+    "id": 364,
+    "title": "Wedding Day Blues",
+    "author": "uiGradients",
+    "colors": [
+      "#40E0D0",
+      "#FF8C00",
+      "#FF0080"
+    ]
+  },
+  {
+    "id": 365,
+    "title": "Shifter",
+    "author": "uiGradients",
+    "colors": [
+      "#bc4e9c",
+      "#f80759"
+    ]
+  },
+  {
+    "id": 366,
+    "title": "Red Sunset",
+    "author": "uiGradients",
+    "colors": [
+      "#355C7D",
+      "#6C5B7B",
+      "#C06C84"
+    ]
+  },
+  {
+    "id": 367,
+    "title": "Moon Purple",
+    "author": "uiGradients",
+    "colors": [
+      "#4e54c8",
+      "#8f94fb"
+    ]
+  },
+  {
+    "id": 368,
+    "title": "Pure Lust",
+    "author": "uiGradients",
+    "colors": [
+      "#333333",
+      "#dd1818"
+    ]
+  },
+  {
+    "id": 369,
+    "title": "Slight Ocean View",
+    "author": "uiGradients",
+    "colors": [
+      "#a8c0ff",
+      "#3f2b96"
+    ]
+  },
+  {
+    "id": 370,
+    "title": "eXpresso",
+    "author": "uiGradients",
+    "colors": [
+      "#ad5389",
+      "#3c1053"
+    ]
+  },
+  {
+    "id": 371,
+    "title": "Shifty",
+    "author": "uiGradients",
+    "colors": [
+      "#636363",
+      "#a2ab58"
+    ]
+  },
+  {
+    "id": 372,
+    "title": "Vanusa",
+    "author": "uiGradients",
+    "colors": [
+      "#DA4453",
+      "#89216B"
+    ]
+  },
+  {
+    "id": 373,
+    "title": "Evening Night",
+    "author": "uiGradients",
+    "colors": [
+      "#005AA7",
+      "#FFFDE4"
+    ]
+  },
+  {
+    "id": 374,
+    "title": "Magic",
+    "author": "uiGradients",
+    "colors": [
+      "#59C173",
+      "#a17fe0",
+      "#5D26C1"
+    ]
+  },
+  {
+    "id": 375,
+    "title": "Margo",
+    "author": "uiGradients",
+    "colors": [
+      "#FFEFBA",
+      "#FFFFFF"
+    ]
+  },
+  {
+    "id": 376,
+    "title": "Blue Raspberry",
+    "author": "uiGradients",
+    "colors": [
+      "#00B4DB",
+      "#0083B0"
+    ]
+  },
+  {
+    "id": 377,
+    "title": "Citrus Peel",
+    "author": "uiGradients",
+    "colors": [
+      "#FDC830",
+      "#F37335"
+    ]
+  },
+  {
+    "id": 378,
+    "title": "Sin City Red",
+    "author": "uiGradients",
+    "colors": [
+      "#ED213A",
+      "#93291E"
+    ]
+  },
+  {
+    "id": 379,
+    "title": "Rastafari",
+    "author": "uiGradients",
+    "colors": [
+      "#1E9600",
+      "#FFF200",
+      "#FF0000"
+    ]
+  },
+  {
+    "id": 380,
+    "title": "Summer Dog",
+    "author": "uiGradients",
+    "colors": [
+      "#a8ff78",
+      "#78ffd6"
+    ]
+  },
+  {
+    "id": 381,
+    "title": "Wiretap",
+    "author": "uiGradients",
+    "colors": [
+      "#8A2387",
+      "#E94057",
+      "#F27121"
+    ]
+  },
+  {
+    "id": 382,
+    "title": "Burning Orange",
+    "author": "uiGradients",
+    "colors": [
+      "#FF416C",
+      "#FF4B2B"
+    ]
+  },
+  {
+    "id": 383,
+    "title": "Ultra Voilet",
+    "author": "uiGradients",
+    "colors": [
+      "#654ea3",
+      "#eaafc8"
+    ]
+  },
+  {
+    "id": 384,
+    "title": "By Design",
+    "author": "uiGradients",
+    "colors": [
+      "#009FFF",
+      "#ec2F4B"
+    ]
+  },
+  {
+    "id": 385,
+    "title": "Kyoo Tah",
+    "author": "uiGradients",
+    "colors": [
+      "#544a7d",
+      "#ffd452"
+    ]
+  },
+  {
+    "id": 386,
+    "title": "Kye Meh",
+    "author": "uiGradients",
+    "colors": [
+      "#8360c3",
+      "#2ebf91"
+    ]
+  },
+  {
+    "id": 387,
+    "title": "Kyoo Pal",
+    "author": "uiGradients",
+    "colors": [
+      "#dd3e54",
+      "#6be585"
+    ]
+  },
+  {
+    "id": 388,
+    "title": "Metapolis",
+    "author": "uiGradients",
+    "colors": [
+      "#659999",
+      "#f4791f"
+    ]
+  },
+  {
+    "id": 389,
+    "title": "Flare",
+    "author": "uiGradients",
+    "colors": [
+      "#f12711",
+      "#f5af19"
+    ]
+  },
+  {
+    "id": 390,
+    "title": "Witching Hour",
+    "author": "uiGradients",
+    "colors": [
+      "#c31432",
+      "#240b36"
+    ]
+  },
+  {
+    "id": 391,
+    "title": "Azur Lane",
+    "author": "uiGradients",
+    "colors": [
+      "#7F7FD5",
+      "#86A8E7",
+      "#91EAE4"
+    ]
+  },
+  {
+    "id": 392,
+    "title": "Neuromancer",
+    "author": "uiGradients",
+    "colors": [
+      "#f953c6",
+      "#b91d73"
+    ]
+  },
+  {
+    "id": 393,
+    "title": "Harvey",
+    "author": "uiGradients",
+    "colors": [
+      "#1f4037",
+      "#99f2c8"
+    ]
+  },
+  {
+    "id": 394,
+    "title": "Amin",
+    "author": "uiGradients",
+    "colors": [
+      "#8E2DE2",
+      "#4A00E0"
+    ]
+  },
+  {
+    "id": 395,
+    "title": "Memariani",
+    "author": "uiGradients",
+    "colors": [
+      "#aa4b6b",
+      "#6b6b83",
+      "#3b8d99"
+    ]
+  },
+  {
+    "id": 396,
+    "title": "Yoda",
+    "author": "uiGradients",
+    "colors": [
+      "#FF0099",
+      "#493240"
+    ]
+  },
+  {
+    "id": 397,
+    "title": "Cool Sky",
+    "author": "uiGradients",
+    "colors": [
+      "#2980B9",
+      "#6DD5FA",
+      "#FFFFFF"
+    ]
+  },
+  {
+    "id": 398,
+    "title": "Dark Ocean",
+    "author": "uiGradients",
+    "colors": [
+      "#373B44",
+      "#4286f4"
+    ]
+  },
+  {
+    "id": 399,
+    "title": "Evening Sunshine",
+    "author": "uiGradients",
+    "colors": [
+      "#b92b27",
+      "#1565C0"
+    ]
+  },
+  {
+    "id": 400,
+    "title": "JShine",
+    "author": "uiGradients",
+    "colors": [
+      "#12c2e9",
+      "#c471ed",
+      "#f64f59"
+    ]
+  },
+  {
+    "id": 401,
+    "title": "Moonlit Asteroid",
+    "author": "uiGradients",
+    "colors": [
+      "#0F2027",
+      "#203A43",
+      "#2C5364"
+    ]
+  },
+  {
+    "id": 402,
+    "title": "MegaTron",
+    "author": "uiGradients",
+    "colors": [
+      "#C6FFDD",
+      "#FBD786",
+      "#f7797d"
+    ]
+  },
+  {
+    "id": 403,
+    "title": "Cool Blues",
+    "author": "uiGradients",
+    "colors": [
+      "#2193b0",
+      "#6dd5ed"
+    ]
+  },
+  {
+    "id": 404,
+    "title": "Piggy Pink",
+    "author": "uiGradients",
+    "colors": [
+      "#ee9ca7",
+      "#ffdde1"
+    ]
+  },
+  {
+    "id": 405,
+    "title": "Grade Grey",
+    "author": "uiGradients",
+    "colors": [
+      "#bdc3c7",
+      "#2c3e50"
+    ]
+  },
+  {
+    "id": 406,
+    "title": "Telko",
+    "author": "uiGradients",
+    "colors": [
+      "#F36222",
+      "#5CB644",
+      "#007FC3"
+    ]
+  },
+  {
+    "id": 407,
+    "title": "Zenta",
+    "author": "uiGradients",
+    "colors": [
+      "#2A2D3E",
+      "#FECB6E"
+    ]
+  },
+  {
+    "id": 408,
+    "title": "Electric Peacock",
+    "author": "uiGradients",
+    "colors": [
+      "#8a2be2",
+      "#0000cd",
+      "#228b22",
+      "#ccff00"
+    ]
+  },
+  {
+    "id": 409,
+    "title": "Under Blue Green",
+    "author": "uiGradients",
+    "colors": [
+      "#051937",
+      "#004d7a",
+      "#008793",
+      "#00bf72",
+      "#a8eb12"
+    ]
+  },
+  {
+    "id": 410,
+    "title": "Lensod",
+    "author": "uiGradients",
+    "colors": [
+      "#6025F5",
+      "#FF5555"
+    ]
+  },
+  {
+    "id": 411,
+    "title": "Newspaper",
+    "author": "uiGradients",
+    "colors": [
+      "#8a2be2",
+      "#ffa500",
+      "#f8f8ff"
+    ]
+  },
+  {
+    "id": 412,
+    "title": "Dark Blue Gradient",
+    "author": "uiGradients",
+    "colors": [
+      "#2774ae",
+      "#002E5D",
+      "#002E5D"
+    ]
+  },
+  {
+    "id": 413,
+    "title": "Dark Blu Two",
+    "author": "uiGradients",
+    "colors": [
+      "#004680",
+      "#4484BA"
+    ]
+  },
+  {
+    "id": 414,
+    "title": "Lemon Lime",
+    "author": "uiGradients",
+    "colors": [
+      "#7ec6bc",
+      "#ebe717"
+    ]
+  },
+  {
+    "id": 415,
+    "title": "Beleko",
+    "author": "uiGradients",
+    "colors": [
+      "#ff1e56",
+      "#f9c942",
+      "#1e90ff"
+    ]
+  },
+  {
+    "id": 416,
+    "title": "Mango Papaya",
+    "author": "uiGradients",
+    "colors": [
+      "#de8a41",
+      "#2ada53"
+    ]
+  },
+  {
+    "id": 417,
+    "title": "Unicorn Rainbow",
+    "author": "uiGradients",
+    "colors": [
+      "#f7f0ac",
+      "#acf7f0",
+      "#f0acf7"
+    ]
+  },
+  {
+    "id": 418,
+    "title": "Flame",
+    "author": "uiGradients",
+    "colors": [
+      "#ff0000",
+      "#fdcf58"
+    ]
+  },
+  {
+    "id": 419,
+    "title": "Blue Red",
+    "author": "uiGradients",
+    "colors": [
+      "#36B1C7",
+      "#960B33"
+    ]
+  },
+  {
+    "id": 420,
+    "title": "Twitter",
+    "author": "uiGradients",
+    "colors": [
+      "#1DA1F2",
+      "#009ffc"
+    ]
+  },
+  {
+    "id": 421,
+    "title": "Blooze",
+    "author": "uiGradients",
+    "colors": [
+      "#6da6be",
+      "#4b859e",
+      "#6da6be"
+    ]
+  },
+  {
+    "id": 422,
+    "title": "Blue Slate",
+    "author": "uiGradients",
+    "colors": [
+      "#B5B9FF",
+      "#2B2C49"
+    ]
+  },
+  {
+    "id": 423,
+    "title": "Space Light Green",
+    "author": "uiGradients",
+    "colors": [
+      "#9FA0A8",
+      "#5C7852"
+    ]
+  },
+  {
+    "id": 424,
+    "title": "Flower",
+    "author": "uiGradients",
+    "colors": [
+      "#DCFFBD",
+      "#CC86D1"
+    ]
+  },
+  {
+    "id": 425,
+    "title": "Elate The Euge",
+    "author": "uiGradients",
+    "colors": [
+      "#8BDEDA",
+      "#43ADD0",
+      "#998EE0",
+      "#E17DC2",
+      "#EF9393"
+    ]
+  },
+  {
+    "id": 426,
+    "title": "Peach Sea",
+    "author": "uiGradients",
+    "colors": [
+      "#E6AE8C",
+      "#A8CECF"
+    ]
+  },
+  {
+    "id": 427,
+    "title": "Abbas",
+    "author": "uiGradients",
+    "colors": [
+      "#00fff0",
+      "#0083fe"
+    ]
+  },
+  {
+    "id": 428,
+    "title": "Winter Woods",
+    "author": "uiGradients",
+    "colors": [
+      "#333333",
+      "#a2ab58",
+      "#A43931"
+    ]
+  },
+  {
+    "id": 429,
+    "title": "Ameena",
+    "author": "uiGradients",
+    "colors": [
+      "#0c0c6d",
+      "#de512b",
+      "#98d0c1",
+      "#5bb226",
+      "#023c0d"
+    ]
+  },
+  {
+    "id": 430,
+    "title": "Emerald Sea",
+    "author": "uiGradients",
+    "colors": [
+      "#05386b",
+      "#5cdb95"
+    ]
+  },
+  {
+    "id": 431,
+    "title": "Bleem",
+    "author": "uiGradients",
+    "colors": [
+      "#4284DB",
+      "#29EAC4"
+    ]
+  },
+  {
+    "id": 432,
+    "title": "Coffee Gold",
+    "author": "uiGradients",
+    "colors": [
+      "#554023",
+      "#c99846"
+    ]
+  },
+  {
+    "id": 433,
+    "title": "Compass",
+    "author": "uiGradients",
+    "colors": [
+      "#516b8b",
+      "#056b3b"
+    ]
+  },
+  {
+    "id": 434,
+    "title": "Andreuzza's",
+    "author": "uiGradients",
+    "colors": [
+      "#D70652",
+      "#FF025E"
+    ]
+  },
+  {
+    "id": 435,
+    "title": "Moonwalker",
+    "author": "uiGradients",
+    "colors": [
+      "#152331",
+      "#000000"
+    ]
+  },
+  {
+    "id": 436,
+    "title": "Whinehouse",
+    "author": "uiGradients",
+    "colors": [
+      "#f7f7f7",
+      "#b9a0a0",
+      "#794747",
+      "#4e2020",
+      "#111111"
+    ]
+  },
+  {
+    "id": 437,
+    "title": "Hyper Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#59CDE9",
+      "#0A2A88"
+    ]
+  },
+  {
+    "id": 438,
+    "title": "Racker",
+    "author": "uiGradients",
+    "colors": [
+      "#EB0000",
+      "#95008A",
+      "#3300FC"
+    ]
+  },
+  {
+    "id": 439,
+    "title": "After the Rain",
+    "author": "uiGradients",
+    "colors": [
+      "#ff75c3",
+      "#ffa647",
+      "#ffe83f",
+      "#9fff5b",
+      "#70e2ff"
+    ]
+  },
+  {
+    "id": 440,
+    "title": "Neon Green",
+    "author": "uiGradients",
+    "colors": [
+      "#81ff8a",
+      "#64965e"
+    ]
+  },
+  {
+    "id": 441,
+    "title": "Dusty Grass",
+    "author": "uiGradients",
+    "colors": [
+      "#d4fc79",
+      "#96e6a1"
+    ]
+  },
+  {
+    "id": 442,
+    "title": "Visual Blue",
+    "author": "uiGradients",
+    "colors": [
+      "#003d4d",
+      "#00c996"
+    ]
+  },
+  {
+    "id": 443,
+    "title": "TW Slate",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#f8fafc",
+      "#e2e8f0",
+      "#94a3b8",
+      "#475569",
+      "#0f172a"
+    ]
+  },
+  {
+    "id": 444,
+    "title": "TW Zinc",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fafafa",
+      "#e4e4e7",
+      "#a1a1aa",
+      "#52525b",
+      "#18181b"
+    ]
+  },
+  {
+    "id": 445,
+    "title": "TW Red",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fef2f2",
+      "#fecaca",
+      "#f87171",
+      "#dc2626",
+      "#7f1d1d"
+    ]
+  },
+  {
+    "id": 446,
+    "title": "TW Orange",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fff7ed",
+      "#fed7aa",
+      "#fb923c",
+      "#ea580c",
+      "#7c2d12"
+    ]
+  },
+  {
+    "id": 447,
+    "title": "TW Amber",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fffbeb",
+      "#fde68a",
+      "#fbbf24",
+      "#d97706",
+      "#78350f"
+    ]
+  },
+  {
+    "id": 448,
+    "title": "TW Yellow",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fefce8",
+      "#fef08a",
+      "#facc15",
+      "#ca8a04",
+      "#713f12"
+    ]
+  },
+  {
+    "id": 449,
+    "title": "TW Lime",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#f7fee7",
+      "#d9f99d",
+      "#a3e635",
+      "#65a30d",
+      "#365314"
+    ]
+  },
+  {
+    "id": 450,
+    "title": "TW Green",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#f0fdf4",
+      "#bbf7d0",
+      "#4ade80",
+      "#16a34a",
+      "#14532d"
+    ]
+  },
+  {
+    "id": 451,
+    "title": "TW Emerald",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#ecfdf5",
+      "#a7f3d0",
+      "#34d399",
+      "#059669",
+      "#064e3b"
+    ]
+  },
+  {
+    "id": 452,
+    "title": "TW Teal",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#f0fdfa",
+      "#99f6e4",
+      "#2dd4bf",
+      "#0d9488",
+      "#134e4a"
+    ]
+  },
+  {
+    "id": 453,
+    "title": "TW Cyan",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#ecfeff",
+      "#a5f3fc",
+      "#22d3ee",
+      "#0891b2",
+      "#164e63"
+    ]
+  },
+  {
+    "id": 454,
+    "title": "TW Sky",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#f0f9ff",
+      "#bae6fd",
+      "#38bdf8",
+      "#0284c7",
+      "#0c4a6e"
+    ]
+  },
+  {
+    "id": 455,
+    "title": "TW Blue",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#eff6ff",
+      "#bfdbfe",
+      "#60a5fa",
+      "#2563eb",
+      "#1e3a8a"
+    ]
+  },
+  {
+    "id": 456,
+    "title": "TW Indigo",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#eef2ff",
+      "#c7d2fe",
+      "#818cf8",
+      "#4f46e5",
+      "#312e81"
+    ]
+  },
+  {
+    "id": 457,
+    "title": "TW Violet",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#f5f3ff",
+      "#ddd6fe",
+      "#a78bfa",
+      "#7c3aed",
+      "#4c1d95"
+    ]
+  },
+  {
+    "id": 458,
+    "title": "TW Purple",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#faf5ff",
+      "#e9d5ff",
+      "#c084fc",
+      "#9333ea",
+      "#581c87"
+    ]
+  },
+  {
+    "id": 459,
+    "title": "TW Fuchsia",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fdf4ff",
+      "#f5d0fe",
+      "#e879f9",
+      "#c026d3",
+      "#701a75"
+    ]
+  },
+  {
+    "id": 460,
+    "title": "TW Pink",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fdf2f8",
+      "#fbcfe8",
+      "#f472b6",
+      "#db2777",
+      "#831843"
+    ]
+  },
+  {
+    "id": 461,
+    "title": "TW Rose",
+    "author": "Tailwind CSS",
+    "colors": [
+      "#fff1f2",
+      "#fecdd3",
+      "#fb7185",
+      "#e11d48",
+      "#881337"
+    ]
+  }
+]

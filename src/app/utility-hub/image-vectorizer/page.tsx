@@ -345,9 +345,8 @@ export default function ImageVectorizerPage() {
           </section>
 
           <section
-            className={`border border-brand-orange/25 bg-cyber-black/45 p-6 cyber-cut ${
-              isFullscreen ? 'fixed inset-4 z-50 overflow-auto bg-background/95 backdrop-blur-xl' : ''
-            }`}
+            className={`border border-brand-orange/25 bg-cyber-black/45 p-6 cyber-cut ${isFullscreen ? 'fixed inset-4 z-50 overflow-auto bg-background/95 backdrop-blur-xl' : ''
+              }`}
           >
             <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -470,9 +469,8 @@ export default function ImageVectorizerPage() {
                     key={mode}
                     type="button"
                     onClick={() => setOptions((current) => ({ ...current, mode }))}
-                    className={`px-4 py-3 font-orbitron text-xs font-bold uppercase transition-colors ${
-                      options.mode === mode ? 'bg-brand-orange text-white' : 'text-muted hover:bg-brand-orange/10'
-                    }`}
+                    className={`px-4 py-3 font-orbitron text-xs font-bold uppercase transition-colors ${options.mode === mode ? 'bg-brand-orange text-white' : 'text-muted hover:bg-brand-orange/10'
+                      }`}
                   >
                     {mode}
                   </button>
@@ -489,11 +487,10 @@ export default function ImageVectorizerPage() {
                     key={hierarchical}
                     type="button"
                     onClick={() => setOptions((current) => ({ ...current, hierarchical }))}
-                    className={`px-4 py-3 font-orbitron text-xs font-bold uppercase transition-colors ${
-                      options.hierarchical === hierarchical
+                    className={`px-4 py-3 font-orbitron text-xs font-bold uppercase transition-colors ${options.hierarchical === hierarchical
                         ? 'bg-brand-orange text-white'
                         : 'text-muted hover:bg-brand-orange/10'
-                    }`}
+                      }`}
                   >
                     {hierarchical}
                   </button>

@@ -6,11 +6,13 @@ import {
   FlaskConical,
   Gauge,
   ImageUp,
+  Box,
   Palette,
   RefreshCw,
   Scissors,
   Sparkles,
   Wand2,
+  Type,
 } from 'lucide-react';
 
 const featuredTools = [
@@ -36,8 +38,9 @@ const featuredTools = [
     title: 'Chuyển định dạng ảnh',
     description: 'Đổi nhanh giữa PNG, JPG, WebP và AVIF, ưu tiên chất lượng ổn định và file nhẹ cho website.',
     icon: RefreshCw,
-    status: 'ĐÃ LÊN KẾ HOẠCH',
+    status: 'SẴN SÀNG',
     formats: 'ĐA ĐỊNH DẠNG ẢNH',
+    href: '/utility-hub/image-converter',
     color: 'from-blue-500/20 to-blue-500/5'
   },
   {
@@ -53,17 +56,28 @@ const featuredTools = [
     title: 'Nén và tối ưu ảnh',
     description: 'Giảm dung lượng ảnh trước khi đăng bài mà vẫn giữ độ sắc nét cần thiết cho hình minh họa kỹ thuật.',
     icon: Gauge,
-    status: 'TRONG HÀNG ĐỢI',
+    status: 'SẴN SÀNG',
     formats: 'NÉN GIỮ NGUYÊN CHẤT LƯỢNG',
+    href: '/utility-hub/image-optimizer',
     color: 'from-purple-500/20 to-purple-500/5'
   },
   {
     title: 'Tạo bảng màu từ ảnh',
     description: 'Trích xuất palette từ mascot, poster, robot field hoặc ảnh sản phẩm để giữ visual system nhất quán.',
     icon: Palette,
-    status: 'TRONG HÀNG ĐỢI',
+    status: 'SẴN SÀNG',
     formats: 'ẢNH -> BẢNG MÀU',
+    href: '/utility-hub/color-toolkit',
     color: 'from-pink-500/20 to-pink-500/5'
+  },
+  {
+    title: 'Phân tích Typography',
+    description: 'Đánh giá tính khoa học của Font chữ, tạo khung Tỷ lệ Toán học (Modular Scale), và gợi ý ghép cặp Font theo ngữ cảnh.',
+    icon: Type,
+    status: 'SẴN SÀNG',
+    formats: 'FONT -> TYPOGRAPHY',
+    href: '/utility-hub/typography-toolkit',
+    color: 'from-indigo-500/20 to-indigo-500/5'
   },
   {
     title: 'Đóng gói asset',
@@ -72,6 +86,15 @@ const featuredTools = [
     status: 'LỘ TRÌNH',
     formats: 'ĐÓNG GÓI TÀI NGUYÊN BATCH',
     color: 'from-cyan-500/20 to-cyan-500/5'
+  },
+  {
+    title: 'Tối ưu model 3D',
+    description: 'Xem, giảm mesh, tối ưu material/texture và xuất GLB nhẹ hơn cho web, Unity preview hoặc thư viện học liệu.',
+    icon: Box,
+    status: 'SẴN SÀNG',
+    formats: 'GLB / GLTF / STL / OBJ -> GLB',
+    href: '/utility-hub/model-optimizer',
+    color: 'from-indigo-500/20 to-indigo-500/5'
   },
 ];
 
