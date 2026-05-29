@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { WebIO, Document, Node, Texture } from '@gltf-transform/core';
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions';
-import { prune } from '@gltf-transform/functions';
+import { prune, cloneDocument } from '@gltf-transform/functions';
 import JSZip from 'jszip';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
@@ -390,7 +390,7 @@ export default function GLBSplitterPage() {
       setTextures(extractedTextures);
 
       // Create a cloned document just for preview to ensure unique identifiable names
-      const previewDoc = (document as any).clone() as Document;
+      const previewDoc = cloneDocument(document);
       previewDoc.getRoot().listNodes().forEach((n: any, i: number) => {
          n.setName(`__UNIQUE_${i}__`);
       });
@@ -431,7 +431,7 @@ export default function GLBSplitterPage() {
       const io = new WebIO().registerExtensions(KHRONOS_EXTENSIONS);
       
       // Clone document để không ảnh hưởng document gốc
-      const cloneDoc = (doc as any).clone() as Document;
+      const cloneDoc = cloneDocument(doc as Document);
       const root = cloneDoc.getRoot();
       const scene = root.getDefaultScene() || root.listScenes()[0];
       
@@ -490,7 +490,7 @@ export default function GLBSplitterPage() {
       // Export all nodes recursively
       const exportNodeRecursive = async (nodeList: TreeNodeData[]) => {
         for (const nodeData of nodeList) {
-          const cloneDoc = (doc as any).clone() as Document;
+          const cloneDoc = cloneDocument(doc as Document);
           const root = cloneDoc.getRoot();
           const scene = root.getDefaultScene() || root.listScenes()[0];
           const targetNode = root.listNodes()[nodeData.index];
