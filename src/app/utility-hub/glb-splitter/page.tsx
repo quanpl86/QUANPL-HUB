@@ -11,7 +11,7 @@ import { prune } from '@gltf-transform/functions';
 import JSZip from 'jszip';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage } from '@react-three/drei';
+import { OrbitControls, Stage, Bounds } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 type ExtractedNode = {
@@ -28,7 +28,60 @@ type ExtractedTexture = {
   width: number;
   height: number;
   sizeBytes: number;
+  objectUrl: string | null;
 };
+
+
+function PreviewModel({ scene, hoveredNodeName, isolatedNodeName }: { scene: THREE.Group, hoveredNodeName: string | null, isolatedNodeName: string | null }) {
+  const helperRef = useRef<THREE.BoxHelper | null>(null);
+
+  useEffect(() => {
+    if (!scene) return;
+    
+    // 1. Reset all visibility
+    scene.traverse((child) => {
+      child.visible = true;
+    });
+
+    // 2. Apply Isolation
+    if (isolatedNodeName) {
+        scene.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+                child.visible = false;
+            }
+        });
+        const target = scene.getObjectByName(isolatedNodeName);
+        if (target) {
+            target.visible = true;
+            target.traverseAncestors((ancestor) => { ancestor.visible = true; });
+            target.traverse((child) => { child.visible = true; });
+        }
+    }
+
+    // 3. Apply Hover Box
+    if (helperRef.current) {
+        scene.remove(helperRef.current);
+        helperRef.current = null;
+    }
+
+    if (hoveredNodeName) {
+        const target = scene.getObjectByName(hoveredNodeName);
+        if (target) {
+            const helper = new THREE.BoxHelper(target, 0x3b82f6); // Blue-500
+            scene.add(helper);
+            helperRef.current = helper;
+        }
+    }
+
+    return () => {
+        if (helperRef.current && scene) {
+            scene.remove(helperRef.current);
+        }
+    };
+  }, [scene, hoveredNodeName, isolatedNodeName]);
+
+  return <primitive object={scene} />;
+}
 
 export default function GLBSplitterPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -38,6 +91,9 @@ export default function GLBSplitterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [hoveredNodeName, setHoveredNodeName] = useState<string | null>(null);
+  const [isolatedNodeName, setIsolatedNodeName] = useState<string | null>(null);
   
   // THREE.js preview
   const [previewScene, setPreviewScene] = useState<THREE.Group | null>(null);
@@ -62,9 +118,17 @@ export default function GLBSplitterPage() {
     setIsLoading(true);
     setError(null);
     setFile(selectedFile);
+    
+    // Revoke old objectUrls
+    textures.forEach(tex => {
+        if (tex.objectUrl) URL.revokeObjectURL(tex.objectUrl);
+    });
+    
     setNodes([]);
     setTextures([]);
     setPreviewScene(null);
+    setHoveredNodeName(null);
+    setIsolatedNodeName(null);
 
     try {
       const buffer = await selectedFile.arrayBuffer();
@@ -108,13 +172,17 @@ export default function GLBSplitterPage() {
         const image = tex.getImage();
         if (image) {
           const size = tex.getSize();
+          const mimeType = tex.getMimeType();
+          const blob = new Blob([image], { type: mimeType });
+          const objectUrl = URL.createObjectURL(blob);
           extractedTextures.push({
             index,
             name: tex.getName() || `Texture_${index}`,
-            mimeType: tex.getMimeType(),
+            mimeType: mimeType,
             width: size ? size[0] : 0,
             height: size ? size[1] : 0,
-            sizeBytes: image.byteLength
+            sizeBytes: image.byteLength,
+            objectUrl
           });
         }
       });
@@ -341,7 +409,7 @@ export default function GLBSplitterPage() {
                     <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
                       <Suspense fallback={null}>
                         <Stage preset="rembrandt" intensity={1} environment="city">
-                          <primitive object={previewScene} />
+                          <PreviewModel scene={previewScene} hoveredNodeName={hoveredNodeName} isolatedNodeName={isolatedNodeName} />
                         </Stage>
                         <OrbitControls makeDefault autoRotate autoRotateSpeed={2} />
                       </Suspense>
@@ -399,7 +467,12 @@ export default function GLBSplitterPage() {
                     <p className="p-6 text-center text-gray-500">Không tìm thấy đối tượng hình học nào.</p>
                   ) : (
                     nodes.map((node, idx) => (
-                      <div key={idx} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                      <div 
+                        key={idx} 
+                        className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
+                        onMouseEnter={() => setHoveredNodeName(node.name)}
+                        onMouseLeave={() => setHoveredNodeName(null)}
+                      >
                         <div className="flex items-center space-x-4">
                           <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <Box className="w-5 h-5 text-blue-600" />
@@ -411,14 +484,25 @@ export default function GLBSplitterPage() {
                             </p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleExtractNode(node)}
-                          disabled={isExtracting}
-                          className="flex items-center px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-sm font-medium rounded-lg transition-colors"
-                        >
-                          <Download className="w-4 h-4 mr-1.5" />
-                          Tách .glb
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => setIsolatedNodeName(isolatedNodeName === node.name ? null : node.name)}
+                            disabled={isExtracting}
+                            className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isolatedNodeName === node.name ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                            title="Xem riêng"
+                          >
+                            <Eye className="w-4 h-4 mr-1.5" />
+                            {isolatedNodeName === node.name ? 'Đang xem' : 'Xem'}
+                          </button>
+                          <button
+                            onClick={() => handleExtractNode(node)}
+                            disabled={isExtracting}
+                            className="flex items-center px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+                          >
+                            <Download className="w-4 h-4 mr-1.5" />
+                            Tách .glb
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -440,8 +524,15 @@ export default function GLBSplitterPage() {
                     textures.map((tex, idx) => (
                       <div key={idx} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                         <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <ImageIcon className="w-5 h-5 text-emerald-600" />
+                          <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative group">
+                            {tex.objectUrl ? (
+                              <>
+                                <img src={tex.objectUrl} alt={tex.name} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all cursor-pointer" onClick={() => window.open(tex.objectUrl!, '_blank')} title="Xem ảnh lớn" />
+                              </>
+                            ) : (
+                              <ImageIcon className="w-5 h-5 text-emerald-600" />
+                            )}
                           </div>
                           <div>
                             <h4 className="font-medium text-gray-900">{tex.name}</h4>
