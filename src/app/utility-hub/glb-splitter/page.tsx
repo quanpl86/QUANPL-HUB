@@ -39,29 +39,50 @@ type ExtractedTexture = {
 const TreeViewItem = ({ 
   node, 
   level = 0, 
-  isolatedNodeName, 
-  hoveredNodeName, 
+  isolatedNodeIndex, 
+  hoveredNodeIndex, 
   onHover, 
   onIsolate, 
   onExtract 
 }: { 
   node: TreeNodeData, 
   level?: number,
-  isolatedNodeName: string | null,
-  hoveredNodeName: string | null,
-  onHover: (name: string | null) => void,
-  onIsolate: (name: string | null) => void,
+  isolatedNodeIndex: number | null,
+  hoveredNodeIndex: number | null,
+  onHover: (idx: number | null) => void,
+  onIsolate: (idx: number | null) => void,
   onExtract: (node: TreeNodeData) => void
 }) => {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = node.children && node.children.length > 0;
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Auto-expand if a child is selected
+  useEffect(() => {
+    if (isolatedNodeIndex === null) return;
+    const check = (n: TreeNodeData): boolean => {
+      if (n.index === isolatedNodeIndex) return true;
+      return n.children.some(check);
+    };
+    if (node.children.some(check)) {
+      setExpanded(true);
+    }
+  }, [node, isolatedNodeIndex]);
+
+  // Scroll into view if this node is isolated
+  useEffect(() => {
+    if (isolatedNodeIndex === node.index && rowRef.current) {
+      rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isolatedNodeIndex, node.index]);
   
   return (
     <div className="w-full">
       <div 
-        className={`flex items-center justify-between p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${hoveredNodeName === node.name ? 'bg-indigo-50/50' : ''}`}
+        ref={rowRef}
+        className={`flex items-center justify-between p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${hoveredNodeIndex === node.index ? 'bg-indigo-50/50' : ''}`}
         style={{ paddingLeft: `${level * 20 + 12}px` }}
-        onMouseEnter={() => onHover(node.name)}
+        onMouseEnter={() => onHover(node.index)}
         onMouseLeave={() => onHover(null)}
       >
         <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -89,8 +110,8 @@ const TreeViewItem = ({
         
         <div className="flex items-center space-x-2 ml-4">
           <button
-            onClick={(e) => { e.stopPropagation(); onIsolate(isolatedNodeName === node.name ? null : node.name); }}
-            className={`flex items-center p-1.5 text-xs font-medium rounded-lg transition-colors ${isolatedNodeName === node.name ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+            onClick={(e) => { e.stopPropagation(); onIsolate(isolatedNodeIndex === node.index ? null : node.index); }}
+            className={`flex items-center p-1.5 text-xs font-medium rounded-lg transition-colors ${isolatedNodeIndex === node.index ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
             title="Xem riêng"
           >
             <Eye className="w-4 h-4" />
@@ -112,8 +133,8 @@ const TreeViewItem = ({
               key={idx} 
               node={child} 
               level={level + 1}
-              isolatedNodeName={isolatedNodeName}
-              hoveredNodeName={hoveredNodeName}
+              isolatedNodeIndex={isolatedNodeIndex}
+              hoveredNodeIndex={hoveredNodeIndex}
               onHover={onHover}
               onIsolate={onIsolate}
               onExtract={onExtract}
@@ -125,7 +146,7 @@ const TreeViewItem = ({
   );
 };
 
-function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onClick }: { scene: THREE.Group, hoveredNodeName: string | null, isolatedNodeName: string | null, onHover?: (n: string|null) => void, onClick?: (n: string|null) => void }) {
+function PreviewModel({ scene, hoveredNodeIndex, isolatedNodeIndex, onHover, onClick }: { scene: THREE.Group, hoveredNodeIndex: number | null, isolatedNodeIndex: number | null, onHover?: (idx: number|null) => void, onClick?: (idx: number|null) => void }) {
   useEffect(() => {
     if (!scene) return;
     
@@ -149,25 +170,36 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
       child.visible = true;
     });
 
+    const findTargetsByIndex = (idx: number) => {
+        const results: THREE.Object3D[] = [];
+        const prefix = `__UNIQUE_${idx}__`;
+        scene.traverse((child) => {
+            if (child.name === prefix || child.name.startsWith(prefix + "_")) {
+                results.push(child);
+            }
+        });
+        return results;
+    };
+
     // 2. Apply Isolation
-    if (isolatedNodeName) {
+    if (isolatedNodeIndex !== null) {
         scene.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
                 child.visible = false;
             }
         });
-        const target = scene.getObjectByName(isolatedNodeName);
-        if (target) {
+        const targets = findTargetsByIndex(isolatedNodeIndex);
+        targets.forEach(target => {
             target.traverse((child) => { 
                 if ((child as THREE.Mesh).isMesh) child.visible = true; 
             });
-        }
+        });
     }
 
     // 3. Apply Hover Highlight
-    if (hoveredNodeName) {
-        const target = scene.getObjectByName(hoveredNodeName);
-        if (target) {
+    if (hoveredNodeIndex !== null) {
+        const targets = findTargetsByIndex(hoveredNodeIndex);
+        targets.forEach(target => {
             target.traverse((child) => {
                 if ((child as THREE.Mesh).isMesh) {
                     const mesh = child as THREE.Mesh;
@@ -182,10 +214,10 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
                     });
                 }
             });
-        }
+        });
     }
 
-  }, [scene, hoveredNodeName, isolatedNodeName]);
+  }, [scene, hoveredNodeIndex, isolatedNodeIndex]);
 
   return (
     <primitive 
@@ -193,16 +225,19 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
       onPointerOver={(e: any) => {
         e.stopPropagation();
         
-        // Find the top-most named group/mesh to highlight logically
+        // Find the gltfIndex
         let target = e.object;
-        while(target.parent && target.parent !== scene && target.parent.name) {
-            // We can highlight the exact mesh or its parent. 
-            // In Three.js, e.object is the mesh. It's usually what the user wants to see.
-            // Let's stick to the mesh name.
-            break; 
+        let foundIdx = null;
+        while(target && target !== scene) {
+            const match = target.name.match(/__UNIQUE_(\d+)__/);
+            if (match) {
+                foundIdx = parseInt(match[1]);
+                break;
+            }
+            target = target.parent;
         }
         
-        if (onHover && e.object.name) onHover(e.object.name);
+        if (onHover && foundIdx !== null) onHover(foundIdx);
       }}
       onPointerOut={(e: any) => {
         e.stopPropagation();
@@ -210,7 +245,19 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
       }}
       onClick={(e: any) => {
         e.stopPropagation();
-        if (onClick && e.object.name) onClick(isolatedNodeName === e.object.name ? null : e.object.name);
+        
+        let target = e.object;
+        let foundIdx = null;
+        while(target && target !== scene) {
+            const match = target.name.match(/__UNIQUE_(\d+)__/);
+            if (match) {
+                foundIdx = parseInt(match[1]);
+                break;
+            }
+            target = target.parent;
+        }
+        
+        if (onClick && foundIdx !== null) onClick(isolatedNodeIndex === foundIdx ? null : foundIdx);
       }}
       onPointerMissed={(e: any) => {
         if (e.type === 'click' && onClick) onClick(null);
@@ -222,15 +269,16 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
 export default function GLBSplitterPage() {
   const [file, setFile] = useState<File | null>(null);
   const [doc, setDoc] = useState<Document | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [nodes, setNodes] = useState<TreeNodeData[]>([]);
   const [flatNodeCount, setFlatNodeCount] = useState(0);
   const [textures, setTextures] = useState<ExtractedTexture[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
   
-  const [hoveredNodeName, setHoveredNodeName] = useState<string | null>(null);
-  const [isolatedNodeName, setIsolatedNodeName] = useState<string | null>(null);
+  const [hoveredNodeIndex, setHoveredNodeIndex] = useState<number | null>(null);
+  const [isolatedNodeIndex, setIsolatedNodeIndex] = useState<number | null>(null);
   
   // THREE.js preview
   const [previewScene, setPreviewScene] = useState<THREE.Group | null>(null);
@@ -264,8 +312,8 @@ export default function GLBSplitterPage() {
     setNodes([]);
     setTextures([]);
     setPreviewScene(null);
-    setHoveredNodeName(null);
-    setIsolatedNodeName(null);
+    setHoveredNodeIndex(null);
+    setIsolatedNodeIndex(null);
 
     try {
       const buffer = await selectedFile.arrayBuffer();
@@ -341,8 +389,14 @@ export default function GLBSplitterPage() {
       });
       setTextures(extractedTextures);
 
-      // Load 3D preview bằng Three.js
-      const url = URL.createObjectURL(selectedFile);
+      // Create a cloned document just for preview to ensure unique identifiable names
+      const previewDoc = (document as any).clone() as Document;
+      previewDoc.getRoot().listNodes().forEach((n: any, i: number) => {
+         n.setName(`__UNIQUE_${i}__`);
+      });
+      const previewBuffer = await io.writeBinary(previewDoc);
+      const url = URL.createObjectURL(new Blob([previewBuffer]));
+
       const loader = new GLTFLoader();
       loader.load(url, (gltf) => {
         setPreviewScene(gltf.scene);
@@ -568,7 +622,7 @@ export default function GLBSplitterPage() {
                   <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
                     <Suspense fallback={null}>
                       <Stage preset="rembrandt" intensity={1} environment="city">
-                        <PreviewModel scene={previewScene} hoveredNodeName={hoveredNodeName} isolatedNodeName={isolatedNodeName} onHover={setHoveredNodeName} onClick={setIsolatedNodeName} />
+                        <PreviewModel scene={previewScene} hoveredNodeIndex={hoveredNodeIndex} isolatedNodeIndex={isolatedNodeIndex} onHover={setHoveredNodeIndex} onClick={setIsolatedNodeIndex} />
                       </Stage>
                       <OrbitControls makeDefault autoRotate autoRotateSpeed={2} />
                     </Suspense>
@@ -621,10 +675,10 @@ export default function GLBSplitterPage() {
                       <TreeViewItem 
                         key={idx}
                         node={node}
-                        isolatedNodeName={isolatedNodeName}
-                        hoveredNodeName={hoveredNodeName}
-                        onHover={setHoveredNodeName}
-                        onIsolate={setIsolatedNodeName}
+                        isolatedNodeIndex={isolatedNodeIndex}
+                        hoveredNodeIndex={hoveredNodeIndex}
+                        onHover={setHoveredNodeIndex}
+                        onIsolate={setIsolatedNodeIndex}
                         onExtract={handleExtractNode}
                       />
                     ))
