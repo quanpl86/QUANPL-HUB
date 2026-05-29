@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { 
-  ArrowLeft, Upload, Box, Image as ImageIcon, Download, Loader2, FileArchive, CheckCircle2, AlertCircle, Sparkles, Eye
+  ArrowLeft, Upload, Box, Image as ImageIcon, Download, Loader2, FileArchive, CheckCircle2, AlertCircle, Sparkles, Eye, ChevronRight, ChevronDown, Folder, FolderOpen
 } from 'lucide-react';
 import { WebIO, Document, Node, Texture } from '@gltf-transform/core';
 import { KHRONOS_EXTENSIONS } from '@gltf-transform/extensions';
@@ -14,11 +14,14 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, Bounds } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-type ExtractedNode = {
+type TreeNodeData = {
   index: number;
   name: string;
-  meshName: string;
+  meshName?: string;
   triangleCount: number;
+  children: TreeNodeData[];
+  isGroup: boolean;
+  expanded?: boolean;
 };
 
 type ExtractedTexture = {
@@ -32,7 +35,97 @@ type ExtractedTexture = {
 };
 
 
-function PreviewModel({ scene, hoveredNodeName, isolatedNodeName }: { scene: THREE.Group, hoveredNodeName: string | null, isolatedNodeName: string | null }) {
+
+const TreeViewItem = ({ 
+  node, 
+  level = 0, 
+  isolatedNodeName, 
+  hoveredNodeName, 
+  onHover, 
+  onIsolate, 
+  onExtract 
+}: { 
+  node: TreeNodeData, 
+  level?: number,
+  isolatedNodeName: string | null,
+  hoveredNodeName: string | null,
+  onHover: (name: string | null) => void,
+  onIsolate: (name: string | null) => void,
+  onExtract: (node: TreeNodeData) => void
+}) => {
+  const [expanded, setExpanded] = useState(true);
+  const hasChildren = node.children && node.children.length > 0;
+  
+  return (
+    <div className="w-full">
+      <div 
+        className={`flex items-center justify-between p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer ${hoveredNodeName === node.name ? 'bg-indigo-50/50' : ''}`}
+        style={{ paddingLeft: `${level * 20 + 12}px` }}
+        onMouseEnter={() => onHover(node.name)}
+        onMouseLeave={() => onHover(null)}
+      >
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          {hasChildren ? (
+            <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} className="p-1 hover:bg-gray-200 rounded text-gray-500">
+              {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </button>
+          ) : (
+            <div className="w-6" /> // spacer
+          )}
+          
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${node.isGroup ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-500'}`}>
+            {node.isGroup ? (expanded ? <FolderOpen className="w-4 h-4" /> : <Folder className="w-4 h-4" />) : <Box className="w-4 h-4" />}
+          </div>
+          
+          <div className="truncate">
+            <h4 className="font-medium text-gray-900 text-sm truncate">{node.name}</h4>
+            {!node.isGroup && node.triangleCount !== undefined && (
+              <p className="text-xs text-gray-500 truncate">
+                {node.triangleCount.toLocaleString()} tris
+              </p>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2 ml-4">
+          <button
+            onClick={(e) => { e.stopPropagation(); onIsolate(isolatedNodeName === node.name ? null : node.name); }}
+            className={`flex items-center p-1.5 text-xs font-medium rounded-lg transition-colors ${isolatedNodeName === node.name ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+            title="Xem riêng"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onExtract(node); }}
+            className="flex items-center px-2 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-xs font-medium rounded-lg transition-colors"
+          >
+            <Download className="w-3 h-3 mr-1" />
+            Tách
+          </button>
+        </div>
+      </div>
+      
+      {expanded && hasChildren && (
+        <div className="w-full">
+          {node.children.map((child, idx) => (
+            <TreeViewItem 
+              key={idx} 
+              node={child} 
+              level={level + 1}
+              isolatedNodeName={isolatedNodeName}
+              hoveredNodeName={hoveredNodeName}
+              onHover={onHover}
+              onIsolate={onIsolate}
+              onExtract={onExtract}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onClick }: { scene: THREE.Group, hoveredNodeName: string | null, isolatedNodeName: string | null, onHover?: (n: string|null) => void, onClick?: (n: string|null) => void }) {
   const helperRef = useRef<THREE.BoxHelper | null>(null);
 
   useEffect(() => {
@@ -80,13 +173,30 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName }: { scene: THR
     };
   }, [scene, hoveredNodeName, isolatedNodeName]);
 
-  return <primitive object={scene} />;
+  return (
+    <primitive 
+      object={scene} 
+      onPointerOver={(e: any) => {
+        e.stopPropagation();
+        if (onHover && e.object.name) onHover(e.object.name);
+      }}
+      onPointerOut={(e: any) => {
+        e.stopPropagation();
+        if (onHover) onHover(null);
+      }}
+      onClick={(e: any) => {
+        e.stopPropagation();
+        if (onClick && e.object.name) onClick(isolatedNodeName === e.object.name ? null : e.object.name);
+      }}
+    />
+  );
 }
 
 export default function GLBSplitterPage() {
   const [file, setFile] = useState<File | null>(null);
   const [doc, setDoc] = useState<Document | null>(null);
-  const [nodes, setNodes] = useState<ExtractedNode[]>([]);
+  const [nodes, setNodes] = useState<TreeNodeData[]>([]);
+  const [flatNodeCount, setFlatNodeCount] = useState(0);
   const [textures, setTextures] = useState<ExtractedTexture[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -140,12 +250,19 @@ export default function GLBSplitterPage() {
 
       const root = document.getRoot();
       
-      // Trích xuất danh sách Nodes có chứa Mesh
-      const extractedNodes: ExtractedNode[] = [];
-      root.listNodes().forEach((node, index) => {
+      // Trích xuất danh sách Nodes dạng Tree
+      const nodesList = root.listNodes();
+      let totalNodes = 0;
+      
+      const buildTree = (node: Node): TreeNodeData => {
+        totalNodes++;
+        const index = nodesList.indexOf(node);
         const mesh = node.getMesh();
+        let triangles = 0;
+        let meshName = undefined;
+        
         if (mesh) {
-          let triangles = 0;
+          meshName = mesh.getName() || `Mesh ${index}`;
           mesh.listPrimitives().forEach(prim => {
             const indices = prim.getIndices();
             if (indices) {
@@ -155,16 +272,25 @@ export default function GLBSplitterPage() {
               if (position) triangles += position.getCount() / 3;
             }
           });
-          
-          extractedNodes.push({
-            index,
-            name: node.getName() || `Object ${index}`,
-            meshName: mesh.getName() || `Mesh ${index}`,
-            triangleCount: Math.round(triangles)
-          });
         }
-      });
-      setNodes(extractedNodes);
+        
+        const childrenData = node.listChildren().map(c => buildTree(c));
+        
+        return {
+          index,
+          name: node.getName() || (mesh ? `MeshObject_${index}` : `Group_${index}`),
+          meshName,
+          triangleCount: Math.round(triangles),
+          children: childrenData,
+          isGroup: childrenData.length > 0 || !mesh
+        };
+      };
+
+      const sceneNodes = (root.getDefaultScene() || root.listScenes()[0]).listChildren();
+      const treeData = sceneNodes.map(n => buildTree(n));
+      
+      setNodes(treeData);
+      setFlatNodeCount(totalNodes);
 
       // Trích xuất danh sách Textures
       const extractedTextures: ExtractedTexture[] = [];
@@ -217,7 +343,7 @@ export default function GLBSplitterPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleExtractNode = async (nodeData: ExtractedNode) => {
+  const handleExtractNode = async (nodeData: TreeNodeData) => {
     if (!doc) return;
     setIsExtracting(true);
     try {
@@ -280,21 +406,28 @@ export default function GLBSplitterPage() {
       const objectsFolder = zip.folder("objects");
       const texturesFolder = zip.folder("textures");
       
-      // Export all nodes
-      for (const nodeData of nodes) {
-        const cloneDoc = (doc as any).clone() as Document;
-        const root = cloneDoc.getRoot();
-        const scene = root.getDefaultScene() || root.listScenes()[0];
-        const targetNode = root.listNodes()[nodeData.index];
-        
-        scene.listChildren().forEach((child: any) => scene.removeChild(child));
-        scene.addChild(targetNode);
-        await cloneDoc.transform(prune());
-        
-        const glbBuffer = await io.writeBinary(cloneDoc);
-        const safeName = (nodeData.name || `object_${nodeData.index}`).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        objectsFolder?.file(`${safeName}.glb`, glbBuffer);
-      }
+      // Export all nodes recursively
+      const exportNodeRecursive = async (nodeList: TreeNodeData[]) => {
+        for (const nodeData of nodeList) {
+          const cloneDoc = (doc as any).clone() as Document;
+          const root = cloneDoc.getRoot();
+          const scene = root.getDefaultScene() || root.listScenes()[0];
+          const targetNode = root.listNodes()[nodeData.index];
+          
+          scene.listChildren().forEach((child: any) => scene.removeChild(child));
+          scene.addChild(targetNode);
+          await cloneDoc.transform(prune());
+          
+          const glbBuffer = await io.writeBinary(cloneDoc);
+          const safeName = (nodeData.name || `object_${nodeData.index}`).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+          objectsFolder?.file(`${safeName}.glb`, glbBuffer);
+          
+          if (nodeData.children && nodeData.children.length > 0) {
+            await exportNodeRecursive(nodeData.children);
+          }
+        }
+      };
+      await exportNodeRecursive(nodes);
       
       // Export all textures
       for (const texData of textures) {
@@ -408,7 +541,7 @@ export default function GLBSplitterPage() {
                   <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
                     <Suspense fallback={null}>
                       <Stage preset="rembrandt" intensity={1} environment="city">
-                        <PreviewModel scene={previewScene} hoveredNodeName={hoveredNodeName} isolatedNodeName={isolatedNodeName} />
+                        <PreviewModel scene={previewScene} hoveredNodeName={hoveredNodeName} isolatedNodeName={isolatedNodeName} onHover={setHoveredNodeName} onClick={setIsolatedNodeName} />
                       </Stage>
                       <OrbitControls makeDefault autoRotate autoRotateSpeed={2} />
                     </Suspense>
@@ -429,7 +562,7 @@ export default function GLBSplitterPage() {
                   Sẵn sàng trích xuất
                 </h3>
                 <p className="text-sm text-indigo-700">
-                  Tìm thấy <strong>{nodes.length}</strong> đối tượng 3D và <strong>{textures.length}</strong> textures.
+                  Tìm thấy <strong>{flatNodeCount}</strong> đối tượng 3D và <strong>{textures.length}</strong> textures.
                 </p>
               </div>
               <div className="flex w-full md:w-auto space-x-3">
@@ -450,51 +583,23 @@ export default function GLBSplitterPage() {
                 <div className="p-4 border-b border-gray-100 bg-gray-50">
                   <h3 className="font-bold text-gray-800 flex items-center">
                     <Box className="w-5 h-5 mr-2 text-blue-500" />
-                    Đối tượng 3D ({nodes.length})
+                    Đối tượng 3D ({flatNodeCount})
                   </h3>
                 </div>
                 <div className="divide-y divide-gray-100 flex-1 overflow-y-auto max-h-[500px]">
-                  {nodes.length === 0 ? (
+                  {flatNodeCount === 0 ? (
                     <p className="p-6 text-center text-gray-500">Không tìm thấy đối tượng hình học nào.</p>
                   ) : (
                     nodes.map((node, idx) => (
-                      <div 
-                        key={idx} 
-                        className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
-                        onMouseEnter={() => setHoveredNodeName(node.name)}
-                        onMouseLeave={() => setHoveredNodeName(null)}
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Box className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-900">{node.name}</h4>
-                            <p className="text-xs text-gray-500">
-                              Mesh: {node.meshName} &bull; {node.triangleCount.toLocaleString()} triangles
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => setIsolatedNodeName(isolatedNodeName === node.name ? null : node.name)}
-                            disabled={isExtracting}
-                            className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isolatedNodeName === node.name ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-                            title="Xem riêng"
-                          >
-                            <Eye className="w-4 h-4 mr-1.5" />
-                            {isolatedNodeName === node.name ? 'Đang xem' : 'Xem'}
-                          </button>
-                          <button
-                            onClick={() => handleExtractNode(node)}
-                            disabled={isExtracting}
-                            className="flex items-center px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-sm font-medium rounded-lg transition-colors"
-                          >
-                            <Download className="w-4 h-4 mr-1.5" />
-                            Tách .glb
-                          </button>
-                        </div>
-                      </div>
+                      <TreeViewItem 
+                        key={idx}
+                        node={node}
+                        isolatedNodeName={isolatedNodeName}
+                        hoveredNodeName={hoveredNodeName}
+                        onHover={setHoveredNodeName}
+                        onIsolate={setIsolatedNodeName}
+                        onExtract={handleExtractNode}
+                      />
                     ))
                   )}
                 </div>
