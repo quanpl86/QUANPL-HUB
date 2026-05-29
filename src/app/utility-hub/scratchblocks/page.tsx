@@ -263,22 +263,51 @@ export default function ScratchblocksStudioPage() {
     callGeminiApi(newHistory);
   };
 
-  const handleDownloadSVG = () => {
-    if (!previewRef.current) return;
+  const getSvgWithStyles = () => {
+    if (!previewRef.current) return null;
     const svgEl = previewRef.current.querySelector('svg');
-    if (!svgEl) return;
-    
-    // Convert SVG to string
+    if (!svgEl) return null;
+
     const serializer = new XMLSerializer();
-    let source = serializer.serializeToString(svgEl);
-    
-    // Đảm bảo có namespace để tránh lỗi khi render canvas hoặc tải file
-    if (!source.includes('xmlns="http://www.w3.org/2000/svg"')) {
-      source = source.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+    let svgString = serializer.serializeToString(svgEl);
+
+    // Lấy CSS của scratchblocks từ thẻ style trong head (tìm thẻ chứa .sb3-)
+    let styleContent = '';
+    const styleTags = document.querySelectorAll('style');
+    styleTags.forEach(tag => {
+      if (tag.textContent && tag.textContent.includes('.sb3-')) {
+        styleContent += tag.textContent + '\n';
+      }
+    });
+
+    if (styleContent) {
+      // Nếu đang dùng CodeKitten, phải replace màu cả trong CSS
+      if (colorTheme === 'codekitten') {
+        Object.entries(CODEKITTEN_COLORS).forEach(([mitColor, kittenColor]) => {
+          const regex = new RegExp(mitColor, 'gi');
+          styleContent = styleContent.replace(regex, kittenColor);
+        });
+      }
+      // Chèn CSS vào bên trong thẻ <svg> để ảnh tải về giữ được màu và font chữ (fill: #fff)
+      if (!svgString.includes('<style>')) {
+        svgString = svgString.replace(/<svg[^>]*>/, `$&<style>${styleContent}</style>`);
+      }
     }
+
+    // Đảm bảo có namespace để tránh lỗi khi render canvas hoặc tải file
+    if (!svgString.includes('xmlns="http://www.w3.org/2000/svg"')) {
+      svgString = svgString.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+    }
+
+    return { svgString, svgEl };
+  };
+
+  const handleDownloadSVG = () => {
+    const data = getSvgWithStyles();
+    if (!data) return;
     
     // Add XML declaration
-    const svgBlob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n' + source], {type: 'image/svg+xml;charset=utf-8'});
+    const svgBlob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n' + data.svgString], {type: 'image/svg+xml;charset=utf-8'});
     const svgUrl = URL.createObjectURL(svgBlob);
     const downloadLink = document.createElement('a');
     downloadLink.href = svgUrl;
@@ -289,16 +318,9 @@ export default function ScratchblocksStudioPage() {
   };
 
   const handleDownloadPNG = (quality: number) => {
-    if (!previewRef.current) return;
-    const svgEl = previewRef.current.querySelector('svg');
-    if (!svgEl) return;
-
-    const serializer = new XMLSerializer();
-    let svgString = serializer.serializeToString(svgEl);
-    
-    if (!svgString.includes('xmlns="http://www.w3.org/2000/svg"')) {
-      svgString = svgString.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
-    }
+    const data = getSvgWithStyles();
+    if (!data) return;
+    const { svgString, svgEl } = data;
 
     const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(svgBlob);
