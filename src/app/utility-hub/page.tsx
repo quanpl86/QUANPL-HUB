@@ -23,6 +23,16 @@ import {
 
 const featuredTools = [
   {
+    title: 'Trích xuất Model GLB',
+    description: 'Tải lên file GLB/GLTF, tự động phân tách và trích xuất từng đối tượng 3D (nhà, cây, xe...) hoặc texture thành các file riêng lẻ.',
+    icon: Box,
+    status: 'SẴN SÀNG',
+    formats: 'TỪ GLB SANG GLB / ZIP',
+    href: '/utility-hub/glb-splitter',
+    color: 'from-emerald-500/20 to-emerald-500/5',
+    category: 'Tiện ích sa bàn Robotics'
+  },
+  {
     title: 'Tạo tranh 3D mặt nổi',
     description: 'Biến logo, ảnh màu solid thành mặt nổi 3D (Relief) để xuất file STL in 3D.',
     icon: Wand2,

@@ -1,0 +1,11 @@
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
+global.window = dom.window;
+global.document = dom.window.document;
+global.XMLSerializer = dom.window.XMLSerializer;
+global.Element = dom.window.Element;
+const scratchblocks = require('./node_modules/scratchblocks/build/scratchblocks.min.js');
+const doc = scratchblocks.parse('di chuyển (10) bước', { languages: ['en', 'vi'] });
+const svg = scratchblocks.render(doc, { style: 'scratch3' });
+console.log(svg.outerHTML.substring(0, 500));
