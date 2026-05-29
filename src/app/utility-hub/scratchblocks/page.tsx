@@ -6,6 +6,7 @@ import {
   ChevronRight, Box, Code2, 
   Settings, Key, Send, Bot, Sparkles, MessageSquare, Download, Camera, Check, Loader2, Maximize, Minimize, GripVertical
 } from 'lucide-react';
+import { SCRATCH_AGENT_SYSTEM_PROMPT } from '@/config/scratch-prompt';
 // Dynamically load scratchblocks to avoid SSR "window is not defined" error
 
 interface ChatMessage {
@@ -145,12 +146,9 @@ export default function ScratchblocksStudioPage() {
         parts: [{ text: m.text }]
       }));
 
-      // System prompt is highly specialized for scratchblocks
-      const systemInstruction = `Bạn là Chuyên gia Lập trình Scratch. Khi người dùng hỏi cách làm một chức năng hoặc thuật toán, bạn hãy trả lời bằng Tiếng Việt ngắn gọn giải thích logic. SAU ĐÓ, bạn PHẢI cung cấp mã Scratch (pseudo-code) chuẩn xác theo cú pháp của thư viện scratchblocks. Bao bọc đoạn code scratchblocks trong cặp \`\`\`scratch ... \`\`\`. \n\nVí dụ cú pháp chuẩn (tiếng Việt):\nkhi bấm vào lá cờ xanh\nđi tới điểm x: (0) y: (0)\nlặp lại (10)\n  di chuyển (10) bước\n  xoay phải (15) độ\nend\n\nTuyệt đối không dùng tiếng Anh cho các khối lệnh nếu người dùng hỏi bằng tiếng Việt. Bắt buộc dùng cú pháp scratchblocks.`;
-      
       const payload = {
         system_instruction: {
-          parts: [{ text: systemInstruction }]
+          parts: [{ text: SCRATCH_AGENT_SYSTEM_PROMPT }]
         },
         contents: contents
       };
