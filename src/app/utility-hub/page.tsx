@@ -18,6 +18,7 @@ import {
   Type,
   LayoutGrid,
   Brain,
+  FileCode2
 } from 'lucide-react';
 
 const featuredTools = [
@@ -120,6 +121,16 @@ const featuredTools = [
     href: '/utility-hub/second-brain',
     color: 'from-blue-600/20 to-blue-600/5',
     category: 'Tiện ích Hệ thống Second Brain'
+  },
+  {
+    title: 'PDF Studio',
+    description: 'Trạm xử lý PDF nội bộ. Đóng gói ảnh, gộp và cắt file hoàn toàn bằng mã nhị phân chạy offline trên trình duyệt, không cần tải lên máy chủ.',
+    icon: FileCode2,
+    status: 'SẴN SÀNG',
+    formats: 'JPG / PNG / PDF -> PDF',
+    href: '/utility-hub/pdf-studio',
+    color: 'from-rose-500/20 to-rose-500/5',
+    category: 'Tiện ích tài liệu'
   },
 ];
 
