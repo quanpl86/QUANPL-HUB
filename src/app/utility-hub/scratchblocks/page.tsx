@@ -108,9 +108,57 @@ export default function ScratchblocksStudioPage() {
     }
   };
 
+  // Quản lý CSS Override cho Theme
+  useEffect(() => {
+    const styleId = 'scratchblocks-codekitten-theme';
+    let styleEl = document.getElementById(styleId);
+
+    if (colorTheme === 'codekitten') {
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+      }
+      
+      const cssText = `
+        .sb3-motion { fill: ${CODEKITTEN_COLORS['#4c97ff']} !important; stroke: ${CODEKITTEN_COLORS['#3373cc']} !important; }
+        .sb3-motion-alt { fill: ${CODEKITTEN_COLORS['#4280d7']} !important; }
+        .sb3-looks { fill: ${CODEKITTEN_COLORS['#9966ff']} !important; stroke: ${CODEKITTEN_COLORS['#774dcb']} !important; }
+        .sb3-looks-alt { fill: ${CODEKITTEN_COLORS['#855cd6']} !important; }
+        .sb3-sound { fill: ${CODEKITTEN_COLORS['#cf63cf']} !important; stroke: ${CODEKITTEN_COLORS['#bd42bd']} !important; }
+        .sb3-sound-alt { fill: ${CODEKITTEN_COLORS['#c94fc9']} !important; }
+        .sb3-events { fill: ${CODEKITTEN_COLORS['#ffbf00']} !important; stroke: ${CODEKITTEN_COLORS['#cc9900']} !important; }
+        .sb3-events-alt { fill: ${CODEKITTEN_COLORS['#e6ac00']} !important; }
+        .sb3-control { fill: ${CODEKITTEN_COLORS['#ffab19']} !important; stroke: ${CODEKITTEN_COLORS['#cf8b17']} !important; }
+        .sb3-control-alt { fill: ${CODEKITTEN_COLORS['#ec9c13']} !important; }
+        .sb3-sensing { fill: ${CODEKITTEN_COLORS['#5cb1d6']} !important; stroke: ${CODEKITTEN_COLORS['#2e8eb8']} !important; }
+        .sb3-sensing-alt { fill: ${CODEKITTEN_COLORS['#47a8d1']} !important; }
+        .sb3-operators { fill: ${CODEKITTEN_COLORS['#59c059']} !important; stroke: ${CODEKITTEN_COLORS['#389438']} !important; }
+        .sb3-operators-alt { fill: ${CODEKITTEN_COLORS['#46b946']} !important; }
+        .sb3-variables { fill: ${CODEKITTEN_COLORS['#ff8c1a']} !important; stroke: ${CODEKITTEN_COLORS['#db6e00']} !important; }
+        .sb3-variables-alt { fill: ${CODEKITTEN_COLORS['#ff8000']} !important; }
+        .sb3-list { fill: ${CODEKITTEN_COLORS['#ff661a']} !important; stroke: ${CODEKITTEN_COLORS['#e64d00']} !important; }
+        .sb3-list-alt { fill: ${CODEKITTEN_COLORS['#ff5500']} !important; }
+        .sb3-custom { fill: ${CODEKITTEN_COLORS['#ff6680']} !important; stroke: ${CODEKITTEN_COLORS['#ff3355']} !important; }
+        .sb3-custom-alt { fill: ${CODEKITTEN_COLORS['#ff4d6a']} !important; }
+      `;
+      styleEl.textContent = cssText;
+    } else {
+      if (styleEl) {
+        styleEl.remove();
+      }
+    }
+    
+    return () => {
+      const el = document.getElementById(styleId);
+      if (el) el.remove();
+    };
+  }, [colorTheme]);
+
   // Render blocks when code changes
   useEffect(() => {
     if (previewRef.current && scratchblocks) {
+      previewRef.current.innerHTML = ''; // Clear previous
       try {
         const codeToRender = renderTarget !== null ? renderTarget : blockCode;
         const processedCode = preprocessScratchCode(codeToRender);
@@ -122,17 +170,7 @@ export default function ScratchblocksStudioPage() {
           languages: ['en', 'vi']
         });
         
-        const serializer = new XMLSerializer();
-        let svgString = serializer.serializeToString(svg);
-        
-        if (colorTheme === 'codekitten') {
-          Object.entries(CODEKITTEN_COLORS).forEach(([mitColor, kittenColor]) => {
-            const regex = new RegExp(mitColor, 'gi');
-            svgString = svgString.replace(regex, kittenColor);
-          });
-        }
-        
-        previewRef.current.innerHTML = svgString;
+        previewRef.current.appendChild(svg);
       } catch (e) {
         console.error(e);
         previewRef.current.innerText = 'Lỗi render khối lệnh';
@@ -402,16 +440,8 @@ export default function ScratchblocksStudioPage() {
                          const processedCode = preprocessScratchCode(code);
                          const doc = scratchblocks.parse(processedCode, { languages: ['en', 'vi'] });
                          const svg = scratchblocks.render(doc, { style: 'scratch3', languages: ['en', 'vi'] });
-                         
-                         const serializer = new XMLSerializer();
-                         let svgString = serializer.serializeToString(svg);
-                         if (colorTheme === 'codekitten') {
-                           Object.entries(CODEKITTEN_COLORS).forEach(([mitColor, kittenColor]) => {
-                             const regex = new RegExp(mitColor, 'gi');
-                             svgString = svgString.replace(regex, kittenColor);
-                           });
-                         }
-                         el.innerHTML = svgString;
+                         el.innerHTML = '';
+                         el.appendChild(svg);
                        } catch (e) {
                          el.innerText = 'Lỗi render khối lệnh';
                        }
