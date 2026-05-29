@@ -43,6 +43,7 @@ export default function ScratchblocksStudioPage() {
   const [leftWidth, setLeftWidth] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
   const [colorTheme, setColorTheme] = useState<'scratch' | 'codekitten'>('scratch');
+  const [pngQuality, setPngQuality] = useState<number>(2);
   
   // Canvas Pan & Zoom State
   const [scale, setScale] = useState(1);
@@ -255,7 +256,12 @@ export default function ScratchblocksStudioPage() {
     
     // Convert SVG to string
     const serializer = new XMLSerializer();
-    const source = serializer.serializeToString(svgEl);
+    let source = serializer.serializeToString(svgEl);
+    
+    // Đảm bảo có namespace để tránh lỗi khi render canvas hoặc tải file
+    if (!source.includes('xmlns="http://www.w3.org/2000/svg"')) {
+      source = source.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+    }
     
     // Add XML declaration
     const svgBlob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n' + source], {type: 'image/svg+xml;charset=utf-8'});
@@ -266,6 +272,56 @@ export default function ScratchblocksStudioPage() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+  };
+
+  const handleDownloadPNG = (quality: number) => {
+    if (!previewRef.current) return;
+    const svgEl = previewRef.current.querySelector('svg');
+    if (!svgEl) return;
+
+    const serializer = new XMLSerializer();
+    let svgString = serializer.serializeToString(svgEl);
+    
+    if (!svgString.includes('xmlns="http://www.w3.org/2000/svg"')) {
+      svgString = svgString.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+    }
+
+    const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      
+      // Lấy kích thước gốc của SVG (bounding box cắt sát khối lệnh)
+      const width = svgEl.width?.baseVal?.value || svgEl.getBoundingClientRect().width;
+      const height = svgEl.height?.baseVal?.value || svgEl.getBoundingClientRect().height;
+      
+      canvas.width = width * quality;
+      canvas.height = height * quality;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      // Đảm bảo nền trong suốt (transparent)
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const pngUrl = URL.createObjectURL(blob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = pngUrl;
+        downloadLink.download = `scratch-blocks-${quality}x.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(pngUrl);
+      }, 'image/png');
+      
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
   };
 
   // Khối Component ChatMessageRenderer để render Markdown và Code block
@@ -572,8 +628,25 @@ export default function ScratchblocksStudioPage() {
                         <Maximize size={14} /> <span className="hidden sm:inline">Phóng to</span>
                       </button>
                     )}
-                    <button onClick={handleDownloadSVG} className="flex items-center space-x-1 text-sm bg-indigo-50 border border-indigo-100 text-indigo-700 font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors">
-                      <Download size={14} /> <span className="hidden sm:inline">Tải SVG</span>
+                    <div className="flex items-center bg-indigo-50 border border-indigo-200 rounded-lg overflow-hidden shadow-sm">
+                      <button onClick={() => handleDownloadPNG(pngQuality)} className="flex items-center space-x-1 text-sm text-indigo-700 font-bold px-3 py-1.5 hover:bg-indigo-100 transition-colors">
+                        <Download size={14} /> <span className="hidden sm:inline">Tải PNG</span>
+                      </button>
+                      <div className="h-5 w-[1px] bg-indigo-200"></div>
+                      <select 
+                        value={pngQuality}
+                        onChange={(e) => setPngQuality(Number(e.target.value))}
+                        className="bg-transparent text-sm font-bold outline-none text-indigo-700 cursor-pointer pl-2 pr-1 py-1.5 hover:bg-indigo-100"
+                        title="Chất lượng ảnh PNG"
+                      >
+                        <option value={1}>1x</option>
+                        <option value={2}>2x</option>
+                        <option value={4}>4x</option>
+                        <option value={8}>8x</option>
+                      </select>
+                    </div>
+                    <button onClick={handleDownloadSVG} className="flex items-center space-x-1 text-sm bg-white border border-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors shadow-sm" title="Tải ảnh Vector (Không mờ)">
+                      <Download size={14} /> <span className="hidden sm:inline">SVG</span>
                     </button>
                   </div>
                 </div>
