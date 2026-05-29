@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   ChevronRight, Box, Code2, Palette,
-  Settings, Key, Send, Bot, Sparkles, MessageSquare, Download, Camera, Check, Loader2, Maximize, Minimize, GripVertical, ZoomIn, ZoomOut, Equal
+  Settings, Key, Send, Bot, Sparkles, MessageSquare, Download, Camera, Check, Loader2, Maximize, Minimize, GripVertical, ZoomIn, ZoomOut, Equal, MousePointer2
 } from 'lucide-react';
 import { SCRATCH_AGENT_SYSTEM_PROMPT } from '@/config/scratch-prompt';
 import { CODEKITTEN_COLORS } from '@/config/codekitten-colors';
@@ -52,6 +52,8 @@ export default function ScratchblocksStudioPage() {
   const dragStartRef = useRef({ x: 0, y: 0 });
   
   const [blockCode, setBlockCode] = useState(`khi bấm vào lá cờ xanh\nđi tới điểm x: (0) y: (0)\nliên tục\n  di chuyển (10) bước\n  xoay phải (15) độ\n  nếu tiếp xúc cạnh, bật lại\nend`);
+  const [renderTarget, setRenderTarget] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [apiKey, setApiKey] = useState('');
   const [aiModel, setAiModel] = useState('gemini-1.5-flash');
@@ -94,11 +96,23 @@ export default function ScratchblocksStudioPage() {
     setShowAiSettings(false);
   };
 
+  const handleRenderSelection = () => {
+    if (!textareaRef.current) return;
+    const { selectionStart, selectionEnd, value } = textareaRef.current;
+    if (selectionStart !== selectionEnd) {
+      const selectedText = value.substring(selectionStart, selectionEnd);
+      setRenderTarget(selectedText);
+    } else {
+      setRenderTarget(null); // Trở về mặc định nếu không bôi đen
+    }
+  };
+
   // Render blocks when code changes
   useEffect(() => {
     if (previewRef.current && scratchblocks) {
       try {
-        const processedCode = preprocessScratchCode(blockCode);
+        const codeToRender = renderTarget !== null ? renderTarget : blockCode;
+        const processedCode = preprocessScratchCode(codeToRender);
         const doc = scratchblocks.parse(processedCode, {
           languages: ['en', 'vi'] // Support English and Vietnamese
         });
@@ -123,7 +137,7 @@ export default function ScratchblocksStudioPage() {
         previewRef.current.innerText = 'Lỗi render khối lệnh';
       }
     }
-  }, [blockCode, activeTab, scratchblocks, isFullscreen, leftWidth, colorTheme]); // Re-render when dependencies change
+  }, [blockCode, renderTarget, activeTab, scratchblocks, isFullscreen, leftWidth, colorTheme]); // Re-render when dependencies change
 
   // Dragging Logic
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -587,10 +601,22 @@ export default function ScratchblocksStudioPage() {
               <div style={{ width: `${leftWidth}%` }} className="flex flex-col h-full bg-[#1E1E1E]">
                 <div className="bg-[#2D2D2D] border-b border-[#404040] p-4 font-bold text-gray-200 flex items-center justify-between flex-shrink-0">
                   <span className="flex items-center"><Code2 size={18} className="mr-2 text-purple-400" /> Trình soạn thảo (Text)</span>
+                  <button 
+                    onClick={handleRenderSelection}
+                    className="flex items-center space-x-1 text-xs bg-[#404040] hover:bg-[#505050] text-gray-200 px-2.5 py-1.5 rounded-md transition-colors border border-[#555]"
+                    title="Bôi đen code bên dưới và bấm vào đây để chỉ render đoạn đó"
+                  >
+                    <MousePointer2 size={14} /> 
+                    <span>Render phần bôi đen</span>
+                  </button>
                 </div>
                 <textarea 
+                  ref={textareaRef}
                   value={blockCode}
-                  onChange={(e) => setBlockCode(e.target.value)}
+                  onChange={(e) => {
+                    setBlockCode(e.target.value);
+                    setRenderTarget(null); // Clear selection focus when editing
+                  }}
                   className="flex-1 p-6 font-mono text-sm leading-relaxed bg-transparent text-[#D4D4D4] outline-none resize-none custom-scrollbar"
                   placeholder="Nhập cú pháp scratchblocks vào đây..."
                   spellCheck={false}
