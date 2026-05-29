@@ -3,10 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
-  ChevronRight, Box, Code2, 
-  Settings, Key, Send, Bot, Sparkles, MessageSquare, Download, Camera, Check, Loader2, Maximize, Minimize, GripVertical
+  ChevronRight, Box, Code2, Palette,
+  Settings, Key, Send, Bot, Sparkles, MessageSquare, Download, Camera, Check, Loader2, Maximize, Minimize, GripVertical, ZoomIn, ZoomOut, Equal
 } from 'lucide-react';
 import { SCRATCH_AGENT_SYSTEM_PROMPT } from '@/config/scratch-prompt';
+import { CODEKITTEN_COLORS } from '@/config/codekitten-colors';
 // Dynamically load scratchblocks to avoid SSR "window is not defined" error
 
 interface ChatMessage {
@@ -41,6 +42,13 @@ export default function ScratchblocksStudioPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [leftWidth, setLeftWidth] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [colorTheme, setColorTheme] = useState<'scratch' | 'codekitten'>('scratch');
+  
+  // Canvas Pan & Zoom State
+  const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
   
   const [blockCode, setBlockCode] = useState(`khi bấm vào lá cờ xanh\nđi tới điểm x: (0) y: (0)\nliên tục\n  di chuyển (10) bước\n  xoay phải (15) độ\n  nếu tiếp xúc cạnh, bật lại\nend`);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -88,7 +96,6 @@ export default function ScratchblocksStudioPage() {
   // Render blocks when code changes
   useEffect(() => {
     if (previewRef.current && scratchblocks) {
-      previewRef.current.innerHTML = ''; // Clear previous
       try {
         const processedCode = preprocessScratchCode(blockCode);
         const doc = scratchblocks.parse(processedCode, {
@@ -98,13 +105,24 @@ export default function ScratchblocksStudioPage() {
           style: 'scratch3',
           languages: ['en', 'vi']
         });
-        previewRef.current.appendChild(svg);
+        
+        const serializer = new XMLSerializer();
+        let svgString = serializer.serializeToString(svg);
+        
+        if (colorTheme === 'codekitten') {
+          Object.entries(CODEKITTEN_COLORS).forEach(([mitColor, kittenColor]) => {
+            const regex = new RegExp(mitColor, 'gi');
+            svgString = svgString.replace(regex, kittenColor);
+          });
+        }
+        
+        previewRef.current.innerHTML = svgString;
       } catch (e) {
         console.error(e);
         previewRef.current.innerText = 'Lỗi render khối lệnh';
       }
     }
-  }, [blockCode, activeTab, scratchblocks, isFullscreen, leftWidth]); // Re-render when switching tabs, scratchblocks loads, or resizing
+  }, [blockCode, activeTab, scratchblocks, isFullscreen, leftWidth, colorTheme]); // Re-render when dependencies change
 
   // Dragging Logic
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -128,6 +146,39 @@ export default function ScratchblocksStudioPage() {
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
     document.body.style.userSelect = '';
+  };
+
+  // Canvas Drag & Zoom Logic
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingCanvas(true);
+    dragStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingCanvas) return;
+    setPan({
+      x: e.clientX - dragStartRef.current.x,
+      y: e.clientY - dragStartRef.current.y
+    });
+  };
+
+  const handleCanvasMouseUp = () => {
+    setIsDraggingCanvas(false);
+  };
+
+  const handleCanvasWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const zoomSensitivity = 0.001;
+    const delta = -e.deltaY * zoomSensitivity;
+    setScale(prev => Math.min(Math.max(0.2, prev + delta), 3));
+  };
+
+  const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3));
+  const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.2));
+  const resetZoom = () => {
+    setScale(1);
+    setPan({ x: 0, y: 0 });
   };
 
   const callGeminiApi = async (messages: ChatMessage[]) => {
@@ -249,7 +300,16 @@ export default function ScratchblocksStudioPage() {
                          const processedCode = preprocessScratchCode(code);
                          const doc = scratchblocks.parse(processedCode, { languages: ['en', 'vi'] });
                          const svg = scratchblocks.render(doc, { style: 'scratch3', languages: ['en', 'vi'] });
-                         el.appendChild(svg);
+                         
+                         const serializer = new XMLSerializer();
+                         let svgString = serializer.serializeToString(svg);
+                         if (colorTheme === 'codekitten') {
+                           Object.entries(CODEKITTEN_COLORS).forEach(([mitColor, kittenColor]) => {
+                             const regex = new RegExp(mitColor, 'gi');
+                             svgString = svgString.replace(regex, kittenColor);
+                           });
+                         }
+                         el.innerHTML = svgString;
                        } catch (e) {
                          el.innerText = 'Lỗi render khối lệnh';
                        }
@@ -493,9 +553,20 @@ export default function ScratchblocksStudioPage() {
 
               {/* Preview Right */}
               <div style={{ width: `${100 - leftWidth}%` }} className="flex flex-col h-full bg-[#F9F9F9]">
-                <div className="bg-white border-b border-gray-200 p-4 font-bold text-gray-800 flex items-center justify-between flex-shrink-0">
+                <div className="bg-white border-b border-gray-200 p-4 font-bold text-gray-800 flex flex-wrap gap-3 items-center justify-between flex-shrink-0">
                   <span className="flex items-center"><Box size={18} className="mr-2 text-blue-500" /> Kết quả Render (SVG)</span>
-                  <div className="flex space-x-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 mr-2">
+                      <Palette size={14} className="text-gray-500" />
+                      <select 
+                        value={colorTheme}
+                        onChange={(e) => setColorTheme(e.target.value as any)}
+                        className="bg-transparent text-sm font-medium outline-none text-gray-700 cursor-pointer"
+                      >
+                        <option value="scratch">Màu MIT Scratch</option>
+                        <option value="codekitten">Màu CodeKitten</option>
+                      </select>
+                    </div>
                     {!isFullscreen && (
                       <button onClick={() => setIsFullscreen(true)} className="flex items-center space-x-1 text-sm bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                         <Maximize size={14} /> <span className="hidden sm:inline">Phóng to</span>
@@ -506,9 +577,57 @@ export default function ScratchblocksStudioPage() {
                     </button>
                   </div>
                 </div>
-                <div className="flex-1 overflow-auto p-8 flex items-start justify-center custom-scrollbar">
-                  {/* Container cho SVG để đảm bảo không bị cắt xén nếu quá to */}
-                  <div className="min-w-fit min-h-fit origin-top" ref={previewRef} />
+                
+                {/* Canvas Area */}
+                <div 
+                  className="flex-1 relative overflow-hidden bg-[#FAFAFA]"
+                  style={{
+                    backgroundImage: 'radial-gradient(#d1d5db 1.5px, transparent 1.5px)',
+                    backgroundSize: '32px 32px',
+                    backgroundPosition: `${pan.x}px ${pan.y}px`,
+                    cursor: isDraggingCanvas ? 'grabbing' : 'grab'
+                  }}
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
+                  onWheel={handleCanvasWheel}
+                >
+                  <div 
+                    className="absolute top-0 left-0 w-full h-full flex items-center justify-center transition-transform duration-75 ease-out"
+                    style={{
+                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+                      transformOrigin: 'center'
+                    }}
+                  >
+                    {/* Container cho SVG */}
+                    <div className="min-w-fit min-h-fit shadow-sm bg-transparent rounded-lg" ref={previewRef} />
+                  </div>
+
+                  {/* Zoom Controls */}
+                  <div className="absolute bottom-6 right-6 flex flex-col space-y-2">
+                    <button 
+                      onClick={zoomIn}
+                      className="w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                      title="Phóng to"
+                    >
+                      <ZoomIn size={18} />
+                    </button>
+                    <button 
+                      onClick={zoomOut}
+                      className="w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                      title="Thu nhỏ"
+                    >
+                      <ZoomOut size={18} />
+                    </button>
+                    <button 
+                      onClick={resetZoom}
+                      className="w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center text-gray-600 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                      title="Khôi phục mặc định"
+                    >
+                      <Equal size={18} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
