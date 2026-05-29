@@ -42,6 +42,7 @@ export default function ScratchblocksStudioPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [leftWidth, setLeftWidth] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
   const [colorTheme, setColorTheme] = useState<'scratch' | 'codekitten'>('scratch');
   const [pngQuality, setPngQuality] = useState<number>(2);
   
@@ -182,12 +183,21 @@ export default function ScratchblocksStudioPage() {
     setIsDraggingCanvas(false);
   };
 
-  const handleCanvasWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const zoomSensitivity = 0.001;
-    const delta = -e.deltaY * zoomSensitivity;
-    setScale(prev => Math.min(Math.max(0.2, prev + delta), 3));
-  };
+  // Attach non-passive wheel event listener to prevent "Unable to preventDefault inside passive event listener" warning
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const zoomSensitivity = 0.001;
+      const delta = -e.deltaY * zoomSensitivity;
+      setScale(prev => Math.min(Math.max(0.2, prev + delta), 3));
+    };
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, []);
 
   const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3));
   const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.2));
@@ -701,6 +711,7 @@ export default function ScratchblocksStudioPage() {
                 
                 {/* Canvas Area */}
                 <div 
+                  ref={canvasRef}
                   className="flex-1 relative overflow-hidden bg-[#FAFAFA]"
                   style={{
                     backgroundImage: 'radial-gradient(#d1d5db 1.5px, transparent 1.5px)',
@@ -712,7 +723,6 @@ export default function ScratchblocksStudioPage() {
                   onMouseMove={handleCanvasMouseMove}
                   onMouseUp={handleCanvasMouseUp}
                   onMouseLeave={handleCanvasMouseUp}
-                  onWheel={handleCanvasWheel}
                 >
                   <div 
                     className="absolute top-0 left-0 w-full h-full flex items-center justify-center transition-transform duration-75 ease-out"
@@ -722,7 +732,7 @@ export default function ScratchblocksStudioPage() {
                     }}
                   >
                     {/* Container cho SVG */}
-                    <div className="min-w-fit min-h-fit shadow-sm bg-transparent rounded-lg" ref={previewRef} />
+                    <div className="min-w-fit min-h-fit" ref={previewRef} />
                   </div>
 
                   {/* Zoom Controls */}
