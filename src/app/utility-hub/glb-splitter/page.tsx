@@ -390,79 +390,70 @@ export default function GLBSplitterPage() {
         )}
 
         {doc && !isLoading && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="space-y-8">
             
-            {/* Cột trái: Preview & Thông tin */}
-            <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                  <h3 className="font-semibold text-gray-800 flex items-center">
-                    <Eye className="w-4 h-4 mr-2 text-indigo-500" />
-                    Bản xem trước
-                  </h3>
-                  <span className="text-xs font-medium bg-white px-2 py-1 rounded text-gray-600 border border-gray-200">
-                    {file?.name}
-                  </span>
-                </div>
-                <div className="h-64 bg-gray-100 w-full relative">
-                  {previewScene ? (
-                    <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
-                      <Suspense fallback={null}>
-                        <Stage preset="rembrandt" intensity={1} environment="city">
-                          <PreviewModel scene={previewScene} hoveredNodeName={hoveredNodeName} isolatedNodeName={isolatedNodeName} />
-                        </Stage>
-                        <OrbitControls makeDefault autoRotate autoRotateSpeed={2} />
-                      </Suspense>
-                    </Canvas>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                      Không có bản xem trước
-                    </div>
-                  )}
-                </div>
+            {/* Viewer Full Width */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h3 className="font-semibold text-gray-800 flex items-center">
+                  <Eye className="w-4 h-4 mr-2 text-indigo-500" />
+                  Bản xem trước
+                </h3>
+                <span className="text-xs font-medium bg-white px-2 py-1 rounded text-gray-600 border border-gray-200">
+                  {file?.name}
+                </span>
               </div>
+              <div className="h-[60vh] min-h-[500px] bg-gray-100 w-full relative">
+                {previewScene ? (
+                  <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
+                    <Suspense fallback={null}>
+                      <Stage preset="rembrandt" intensity={1} environment="city">
+                        <PreviewModel scene={previewScene} hoveredNodeName={hoveredNodeName} isolatedNodeName={isolatedNodeName} />
+                      </Stage>
+                      <OrbitControls makeDefault autoRotate autoRotateSpeed={2} />
+                    </Suspense>
+                  </Canvas>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                    Không có bản xem trước
+                  </div>
+                )}
+              </div>
+            </div>
 
-              <div className="bg-indigo-50 rounded-2xl p-6 border border-indigo-100">
-                <h3 className="font-bold text-indigo-900 mb-2 flex items-center">
+            {/* Controls Banner */}
+            <div className="bg-indigo-50 rounded-2xl p-6 border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-indigo-900 mb-1 flex items-center">
                   <Sparkles className="w-5 h-5 mr-2 text-indigo-600" />
                   Sẵn sàng trích xuất
                 </h3>
-                <p className="text-sm text-indigo-700 mb-6">
-                  Tìm thấy <strong>{nodes.length}</strong> đối tượng 3D và <strong>{textures.length}</strong> textures bên trong file này.
+                <p className="text-sm text-indigo-700">
+                  Tìm thấy <strong>{nodes.length}</strong> đối tượng 3D và <strong>{textures.length}</strong> textures.
                 </p>
-                <button
-                  onClick={handleExtractAll}
-                  disabled={isExtracting}
-                  className="w-full flex items-center justify-center py-3 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-medium transition-colors shadow-sm"
-                >
-                  {isExtracting ? (
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  ) : (
-                    <FileArchive className="w-5 h-5 mr-2" />
-                  )}
-                  Tải toàn bộ (.zip)
-                </button>
-                <button
-                  onClick={() => setDoc(null)}
-                  className="w-full mt-3 py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium border border-gray-200 transition-colors"
-                >
+              </div>
+              <div className="flex w-full md:w-auto space-x-3">
+                <button onClick={() => setDoc(null)} className="flex-1 md:flex-none py-2 px-4 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium border border-gray-200 transition-colors">
                   Chọn file khác
+                </button>
+                <button onClick={handleExtractAll} disabled={isExtracting} className="flex-1 md:flex-none flex items-center justify-center py-2 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-medium transition-colors shadow-sm">
+                  {isExtracting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <FileArchive className="w-5 h-5 mr-2" />}
+                  Tải toàn bộ (.zip)
                 </button>
               </div>
             </div>
 
-            {/* Cột phải: Danh sách Objects & Textures */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
               {/* Objects List */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                 <div className="p-4 border-b border-gray-100 bg-gray-50">
                   <h3 className="font-bold text-gray-800 flex items-center">
                     <Box className="w-5 h-5 mr-2 text-blue-500" />
                     Đối tượng 3D ({nodes.length})
                   </h3>
                 </div>
-                <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                <div className="divide-y divide-gray-100 flex-1 overflow-y-auto max-h-[500px]">
                   {nodes.length === 0 ? (
                     <p className="p-6 text-center text-gray-500">Không tìm thấy đối tượng hình học nào.</p>
                   ) : (
@@ -510,14 +501,14 @@ export default function GLBSplitterPage() {
               </div>
 
               {/* Textures List */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                 <div className="p-4 border-b border-gray-100 bg-gray-50">
                   <h3 className="font-bold text-gray-800 flex items-center">
                     <ImageIcon className="w-5 h-5 mr-2 text-emerald-500" />
                     Textures ({textures.length})
                   </h3>
                 </div>
-                <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                <div className="divide-y divide-gray-100 flex-1 overflow-y-auto max-h-[500px]">
                   {textures.length === 0 ? (
                     <p className="p-6 text-center text-gray-500">Không tìm thấy texture nào.</p>
                   ) : (
