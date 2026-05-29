@@ -126,11 +126,24 @@ const TreeViewItem = ({
 };
 
 function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onClick }: { scene: THREE.Group, hoveredNodeName: string | null, isolatedNodeName: string | null, onHover?: (n: string|null) => void, onClick?: (n: string|null) => void }) {
-  const helperRef = useRef<THREE.BoxHelper | null>(null);
-
   useEffect(() => {
     if (!scene) return;
     
+    // 0. Restore all emissive materials
+    scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            materials.forEach((mat: any) => {
+                if (mat && mat.userData && mat.userData.originalEmissive !== undefined) {
+                    if (mat.emissive) {
+                        mat.emissive.copy(mat.userData.originalEmissive);
+                    }
+                }
+            });
+        }
+    });
+
     // 1. Reset all visibility
     scene.traverse((child) => {
       child.visible = true;
@@ -145,32 +158,33 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
         });
         const target = scene.getObjectByName(isolatedNodeName);
         if (target) {
-            target.visible = true;
-            target.traverseAncestors((ancestor) => { ancestor.visible = true; });
-            target.traverse((child) => { child.visible = true; });
+            target.traverse((child) => { 
+                if ((child as THREE.Mesh).isMesh) child.visible = true; 
+            });
         }
     }
 
-    // 3. Apply Hover Box
-    if (helperRef.current) {
-        scene.remove(helperRef.current);
-        helperRef.current = null;
-    }
-
+    // 3. Apply Hover Highlight
     if (hoveredNodeName) {
         const target = scene.getObjectByName(hoveredNodeName);
         if (target) {
-            const helper = new THREE.BoxHelper(target, 0x3b82f6); // Blue-500
-            scene.add(helper);
-            helperRef.current = helper;
+            target.traverse((child) => {
+                if ((child as THREE.Mesh).isMesh) {
+                    const mesh = child as THREE.Mesh;
+                    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+                    materials.forEach((mat: any) => {
+                        if (mat && mat.emissive) {
+                            if (mat.userData.originalEmissive === undefined) {
+                                mat.userData.originalEmissive = mat.emissive.clone();
+                            }
+                            mat.emissive.setHex(0x3b82f6); // Highlight with blue
+                        }
+                    });
+                }
+            });
         }
     }
 
-    return () => {
-        if (helperRef.current && scene) {
-            scene.remove(helperRef.current);
-        }
-    };
   }, [scene, hoveredNodeName, isolatedNodeName]);
 
   return (
@@ -178,6 +192,16 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
       object={scene} 
       onPointerOver={(e: any) => {
         e.stopPropagation();
+        
+        // Find the top-most named group/mesh to highlight logically
+        let target = e.object;
+        while(target.parent && target.parent !== scene && target.parent.name) {
+            // We can highlight the exact mesh or its parent. 
+            // In Three.js, e.object is the mesh. It's usually what the user wants to see.
+            // Let's stick to the mesh name.
+            break; 
+        }
+        
         if (onHover && e.object.name) onHover(e.object.name);
       }}
       onPointerOut={(e: any) => {
@@ -187,6 +211,9 @@ function PreviewModel({ scene, hoveredNodeName, isolatedNodeName, onHover, onCli
       onClick={(e: any) => {
         e.stopPropagation();
         if (onClick && e.object.name) onClick(isolatedNodeName === e.object.name ? null : e.object.name);
+      }}
+      onPointerMissed={(e: any) => {
+        if (e.type === 'click' && onClick) onClick(null);
       }}
     />
   );
