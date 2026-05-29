@@ -57,7 +57,7 @@ export default function ScratchblocksStudioPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [apiKey, setApiKey] = useState('');
-  const [aiModel, setAiModel] = useState('gemini-1.5-flash');
+  const [aiModel, setAiModel] = useState('gemini-3.1-flash-lite');
   const [showAiSettings, setShowAiSettings] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
@@ -572,10 +572,29 @@ export default function ScratchblocksStudioPage() {
                     onChange={(e) => setAiModel(e.target.value)}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                   >
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Nhanh, nhẹ)</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Suy luận sâu)</option>
-                    <option value="gemini-2.0-flash">Gemini 2.0 Flash (Bản mới nhất)</option>
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (Thử nghiệm)</option>
+                    <optgroup label="Thế hệ 3.x (Mới nhất 2026)">
+                      <option value="gemini-3.5-flash">Gemini 3.5 Flash (SOTA)</option>
+                      <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Suy luận chuyên sâu)</option>
+                      <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite (Tiết kiệm, Tốc độ cao)</option>
+                      <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
+                    </optgroup>
+                    <optgroup label="Aliases (Luôn cập nhật)">
+                      <option value="gemini-pro-latest">Gemini Pro Latest</option>
+                      <option value="gemini-flash-latest">Gemini Flash Latest</option>
+                      <option value="gemini-flash-lite-latest">Gemini Flash-Lite Latest</option>
+                    </optgroup>
+                    <optgroup label="Thế hệ 2.x">
+                      <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                      <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                      <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                      <option value="gemini-2.0-flash-lite-preview-02-05">Gemini 2.0 Flash-Lite</option>
+                      <option value="gemini-2.0-pro-exp-02-05">Gemini 2.0 Pro Experimental</option>
+                    </optgroup>
+                    <optgroup label="Thế hệ 1.5 (Cổ điển)">
+                      <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                      <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                      <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B</option>
+                    </optgroup>
                   </select>
                 </div>
               </div>
