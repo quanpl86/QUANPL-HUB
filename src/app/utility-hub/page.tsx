@@ -132,6 +132,16 @@ const featuredTools = [
     color: 'from-rose-500/20 to-rose-500/5',
     category: 'Tiện ích tài liệu'
   },
+  {
+    title: 'Trạm AI Scratchblocks',
+    description: 'Hỏi AI để tạo thuật toán Scratch, hệ thống sẽ tự động vẽ ngay ra các khối lệnh 3.0 sắc nét để bạn chèn vào giáo án.',
+    icon: Box,
+    status: 'SẴN SÀNG',
+    formats: 'PROMPT / TEXT -> KHỐI LỆNH SVG',
+    href: '/utility-hub/scratchblocks',
+    color: 'from-purple-500/20 to-purple-500/5',
+    category: 'Tiện ích Prompt AI'
+  },
 ];
 
 const toolPrinciples = [
