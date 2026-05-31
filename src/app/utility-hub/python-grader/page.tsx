@@ -14,7 +14,9 @@ import {
   Minimize2,
   TerminalSquare,
 } from 'lucide-react';
-import Editor from '@monaco-editor/react';
+import dynamic from 'next/dynamic';
+
+const Editor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 type TestStatus = 'idle' | 'running' | 'passed' | 'failed' | 'error';
 
@@ -27,27 +29,150 @@ type TestCase = {
   note?: string;
 };
 
-const defaultCases: TestCase[] = [
-  { id: 'case-1', input: '5', expected: '120', status: 'idle' },
-  { id: 'case-2', input: '6', expected: '720', status: 'idle' },
-  { id: 'case-3', input: '10', expected: '3628800', status: 'idle' },
-];
+type ProblemDef = {
+  id: string;
+  title: string;
+  description: string;
+  defaultCode: string;
+  testCases: TestCase[];
+};
 
-const DEFAULT_CODE = `# Viết chương trình tính giai thừa của n
+const SAMPLE_PROBLEMS: ProblemDef[] = [
+  {
+    id: 'factorial',
+    title: 'Bài 1: Tính giai thừa (n!)',
+    description: 'Viết chương trình tính giai thừa của số nguyên dương n.',
+    defaultCode: `# Bài 1: Tính giai thừa
+# Yêu cầu: Viết chương trình tính giai thừa của số nguyên dương n.
 import sys
 
 def factorial(n):
+    # Viết code ở đây
     if n == 0 or n == 1:
         return 1
     return n * factorial(n - 1)
 
 if __name__ == "__main__":
-    # Đọc input từ stdin
     lines = sys.stdin.read().split()
     if lines:
         n = int(lines[0])
         print(factorial(n))
-`;
+`,
+    testCases: [
+      { id: 'c1', input: '5', expected: '120', status: 'idle' },
+      { id: 'c2', input: '6', expected: '720', status: 'idle' },
+      { id: 'c3', input: '10', expected: '3628800', status: 'idle' }
+    ]
+  },
+  {
+    id: 'sum_digits',
+    title: 'Bài 2: Tổng các chữ số',
+    description: 'Cho một số nguyên dương N. Hãy tính tổng các chữ số của N.',
+    defaultCode: `# Bài 2: Tổng các chữ số
+# Yêu cầu: Cho một số nguyên dương N. Hãy tính tổng các chữ số của N.
+import sys
+
+def sum_digits(n):
+    # Giải thuật tính tổng các chữ số
+    return sum(int(digit) for digit in str(n))
+
+if __name__ == "__main__":
+    lines = sys.stdin.read().split()
+    if lines:
+        n = int(lines[0])
+        print(sum_digits(n))
+`,
+    testCases: [
+      { id: 'c1', input: '1234', expected: '10', status: 'idle' },
+      { id: 'c2', input: '987', expected: '24', status: 'idle' },
+      { id: 'c3', input: '999999', expected: '54', status: 'idle' }
+    ]
+  },
+  {
+    id: 'prime',
+    title: 'Bài 3: Kiểm tra số nguyên tố',
+    description: 'Kiểm tra xem số nguyên N có phải là số nguyên tố hay không. In ra "YES" hoặc "NO".',
+    defaultCode: `# Bài 3: Kiểm tra số nguyên tố
+# Yêu cầu: Kiểm tra xem số nguyên N có phải là số nguyên tố hay không. In ra "YES" hoặc "NO".
+import sys
+
+def is_prime(n):
+    # Thuật toán kiểm tra số nguyên tố
+    if n < 2:
+        return "NO"
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return "NO"
+    return "YES"
+
+if __name__ == "__main__":
+    lines = sys.stdin.read().split()
+    if lines:
+        n = int(lines[0])
+        print(is_prime(n))
+`,
+    testCases: [
+      { id: 'c1', input: '7', expected: 'YES', status: 'idle' },
+      { id: 'c2', input: '10', expected: 'NO', status: 'idle' },
+      { id: 'c3', input: '97', expected: 'YES', status: 'idle' },
+      { id: 'c4', input: '1', expected: 'NO', status: 'idle' }
+    ]
+  },
+  {
+    id: 'fibonacci',
+    title: 'Bài 4: Số Fibonacci thứ N',
+    description: 'In ra số Fibonacci thứ N (F(1)=1, F(2)=1, F(N)=F(N-1)+F(N-2)).',
+    defaultCode: `# Bài 4: Số Fibonacci thứ N
+# Yêu cầu: In ra số Fibonacci thứ N. Biết F(1)=1, F(2)=1, F(N)=F(N-1)+F(N-2)
+import sys
+
+def fibonacci(n):
+    # Giải thuật tìm số Fibonacci thứ N
+    if n == 1 or n == 2:
+        return 1
+    a, b = 1, 1
+    for _ in range(3, n + 1):
+        a, b = b, a + b
+    return b
+
+if __name__ == "__main__":
+    lines = sys.stdin.read().split()
+    if lines:
+        n = int(lines[0])
+        print(fibonacci(n))
+`,
+    testCases: [
+      { id: 'c1', input: '5', expected: '5', status: 'idle' },
+      { id: 'c2', input: '10', expected: '55', status: 'idle' },
+      { id: 'c3', input: '20', expected: '6765', status: 'idle' }
+    ]
+  },
+  {
+    id: 'max_array',
+    title: 'Bài 5: Số lớn nhất trong mảng',
+    description: 'Dòng đầu tiên là số N. Dòng thứ hai chứa N số nguyên. In ra số lớn nhất.',
+    defaultCode: `# Bài 5: Số lớn nhất trong mảng
+# Yêu cầu: Dòng đầu tiên là số N. Dòng thứ hai chứa N số nguyên. In ra số lớn nhất.
+import sys
+
+def find_max(arr):
+    # Giải thuật tìm số lớn nhất
+    return max(arr)
+
+if __name__ == "__main__":
+    lines = sys.stdin.read().split()
+    if len(lines) > 1:
+        n = int(lines[0])
+        arr = [int(x) for x in lines[1:n+1]]
+        print(find_max(arr))
+`,
+    testCases: [
+      { id: 'c1', input: '5\n1 4 2 8 5', expected: '8', status: 'idle' },
+      { id: 'c2', input: '4\n-1 -5 -2 -9', expected: '-1', status: 'idle' },
+      { id: 'c3', input: '1\n100', expected: '100', status: 'idle' }
+    ]
+  }
+];
 
 declare global {
   interface Window {
@@ -57,9 +182,11 @@ declare global {
 }
 
 export default function PythonGraderPage() {
-  const [problemTitle, setProblemTitle] = useState('Tính giai thừa');
-  const [code, setCode] = useState(DEFAULT_CODE);
-  const [testCases, setTestCases] = useState<TestCase[]>(defaultCases);
+  const [selectedProblemId, setSelectedProblemId] = useState<string>(SAMPLE_PROBLEMS[0].id);
+  const currentProblem = useMemo(() => SAMPLE_PROBLEMS.find(p => p.id === selectedProblemId) || SAMPLE_PROBLEMS[0], [selectedProblemId]);
+
+  const [testCases, setTestCases] = useState<TestCase[]>(currentProblem.testCases);
+  const [code, setCode] = useState(currentProblem.defaultCode);
   const [isRunning, setIsRunning] = useState(false);
   const [isPyodideReady, setIsPyodideReady] = useState(false);
   const [pyodideInstance, setPyodideInstance] = useState<any>(null);
@@ -70,6 +197,17 @@ export default function PythonGraderPage() {
   
   const [isFullscreenEditor, setIsFullscreenEditor] = useState(false);
   const [isConsoleVisible, setIsConsoleVisible] = useState(true);
+
+  const handleProblemChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newId = e.target.value;
+    setSelectedProblemId(newId);
+    const problem = SAMPLE_PROBLEMS.find(p => p.id === newId);
+    if (problem) {
+      setTestCases(problem.testCases);
+      setCode(problem.defaultCode);
+      setConsoleOutput('');
+    }
+  };
 
   const summary = useMemo(() => {
     const passed = testCases.filter((test) => test.status === 'passed').length;
@@ -259,9 +397,17 @@ ${code}
           <div className={isFullscreenEditor ? "fixed inset-4 z-50 flex flex-col gap-4 bg-background p-4 rounded-2xl shadow-2xl border border-foreground/10" : "flex flex-col h-[800px] gap-4"}>
             <section className="flex flex-col rounded-2xl border border-foreground/10 bg-background overflow-hidden flex-1 min-h-0">
                <div className="flex items-center justify-between border-b border-foreground/10 bg-foreground/[0.02] px-6 py-4">
-                 <div>
-                    <p className="text-[10px] font-black uppercase tracking-wider text-sky-500">Trình soạn thảo</p>
-                    <h2 className="text-lg font-black">{problemTitle}</h2>
+                 <div className="flex flex-col gap-1">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-sky-500">Đề bài (Tin học trẻ)</p>
+                    <select
+                      className="bg-transparent text-lg font-black outline-none cursor-pointer hover:text-sky-500 transition-colors"
+                      value={selectedProblemId}
+                      onChange={handleProblemChange}
+                    >
+                      {SAMPLE_PROBLEMS.map(p => (
+                        <option key={p.id} value={p.id} className="text-sm font-normal text-black bg-white">{p.title}</option>
+                      ))}
+                    </select>
                  </div>
                  
                  <div className="flex items-center gap-3">

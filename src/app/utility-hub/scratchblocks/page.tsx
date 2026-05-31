@@ -32,18 +32,64 @@ type ScratchblocksApi = {
 
 // Hàm tiền xử lý để tương thích với thói quen viết ngoặc nhọn { } của user, Markdown và lỗi chính tả
 const preprocessScratchCode = (code: string) => {
-  return code
+  let processed = code
     .normalize('NFC') // Chuẩn hóa Unicode tiếng Việt (tránh lỗi font decomposed)
     .replace(/```scratch/gi, '') // Xóa markdown block start
-    .replace(/```/g, '') // Xóa markdown block end
+    .replace(/```/g, ''); // Xóa markdown block end
+
+  // Thu thập các tên Custom Block được định nghĩa
+  const customBlocks: string[] = [];
+  const defineRegex = /^(?:định nghĩa|define)\s+([^(]+)/gim;
+  let match;
+  while ((match = defineRegex.exec(processed)) !== null) {
+    customBlocks.push(match[1].trim());
+  }
+
+  // Ép kiểu :: custom cho các lời gọi hàm
+  if (customBlocks.length > 0) {
+    // Sắp xếp theo độ dài giảm dần để match tên dài trước
+    customBlocks.sort((a, b) => b.length - a.length);
+    customBlocks.forEach(name => {
+      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Tìm dòng bắt đầu bằng tên hàm (có thể có khoảng trắng thụt lề), không chứa :: custom ở cuối
+      const callRegex = new RegExp(`^(\\s*)(${escapedName})\\b(?!.*:: custom)(.*)$`, 'gim');
+      processed = processed.replace(callRegex, '$1$2$3 :: custom');
+    });
+  }
+
+  return processed
     // Xử lý các icon và cụm từ thông dụng của Scratch Tiếng Việt
     .replace(/(khi|lúc)\s+(nhấn|bấm)\s+(vào\s+)?(lá\s+)?cờ xanh/gi, 'Khi bấm vào @greenFlag')
-    .replace(/xoay phải/gi, 'xoay @turnRight')
-    .replace(/xoay trái/gi, 'xoay @turnLeft')
-    .replace(/nếu tiếp xúc cạnh, bật lại/gi, 'bật lại nếu chạm cạnh')
     .replace(/\bnối\s+(?=\[|\()/gi, 'kết hợp ')
     // Ghép nhánh if-else: '}' + 'nếu không' + '{' -> 'else' để scratchblocks nhận diện đúng C-Block 2 nhánh
     .replace(/\}\s*(nếu không|nếu không thì|else)\s*\{/gi, '\nelse\n')
+    
+    // Sửa cú pháp Khai báo hàm (Custom Block Hat)
+    .replace(/^(định nghĩa|define)\s+(.*)/gim, (match, p1, p2) => {
+        // Tìm các tham số dạng (r), [text], <cond> và ép thành reporter :: custom để có màu hồng (Parameter Pill)
+        let args = p2.replace(/\(([^)]+)\)/g, '($1 :: custom)');
+        args = args.replace(/\[([^\]]+)\]/g, '[$1 :: custom]');
+        args = args.replace(/<([^>]+)>/g, '<$1 :: custom>');
+        // Bỏ :: custom ở cuối dòng (nếu bị dính từ bước ép lời gọi hàm ở trên)
+        args = args.replace(/\s*::\s*custom\s*$/, '');
+        return `định nghĩa ${args} :: custom hat`;
+    })
+
+    // Sửa cú pháp vòng lặp (Loại bỏ chữ 'lần' thừa)
+    .replace(/lặp lại\s+(\([^)]+\)|\[[^\]]+\]|\d+)\s+lần/gi, 'lặp lại $1')
+    
+    // Sửa cú pháp Chuyển động (Motion)
+    .replace(/(xoay|quay)\s+(sang\s+)?phải\s+(\([^)]+\)|\[[^\]]+\]|\d+)\s+độ/gi, 'xoay @turnRight $3 độ')
+    .replace(/(xoay|quay)\s+(sang\s+)?trái\s+(\([^)]+\)|\[[^\]]+\]|\d+)\s+độ/gi, 'xoay @turnLeft $3 độ')
+    
+    // Sửa cú pháp Bút vẽ (Pen) - Ép kiểu :: pen
+    .replace(/(đặt|chọn)\s+màu\s+bút\s+(bằng|thành|là)\s+(\([^)]+\)|\[[^\]]+\]|\d+)/gi, 'đặt màu bút thành $3 :: pen')
+    .replace(/đặt\s+màu\s+bút\s+cho\s+.*?\s+(bằng|thành|là)\s+(\([^)]+\)|\[[^\]]+\]|\d+)/gi, 'đặt màu bút thành $2 :: pen')
+    .replace(/đặt\s+kích\s+thước\s+bút\s+(vẽ\s+)?(bằng|thành|là)\s+(\([^)]+\)|\[[^\]]+\]|\d+)/gi, 'đặt kích thước bút vẽ thành $3 :: pen')
+    .replace(/nhấc\s+bút/gi, 'nhấc bút :: pen')
+    .replace(/(đặt|hạ)\s+bút/gi, 'đặt bút :: pen')
+    .replace(/xóa\s+tất\s+cả/gi, 'xóa tất cả :: pen')
+    
     .replace(/\{/g, '') // Xóa các dấu { mở block còn lại
     .replace(/\}/g, '\nend\n') // Chuyển dấu } đóng block thành từ khóa end
     .trim();
