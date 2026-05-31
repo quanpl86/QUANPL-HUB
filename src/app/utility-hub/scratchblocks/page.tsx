@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   ChevronRight, Box, Code2, Palette,
-  Settings, Key, Send, Bot, Sparkles, MessageSquare, Download, Camera, Check, Loader2, Maximize, Minimize, GripVertical, ZoomIn, ZoomOut, Equal, MousePointer2
+  Settings, Key, Send, Bot, Sparkles, MessageSquare, Download, Check, Loader2, Maximize, Minimize, GripVertical, ZoomIn, ZoomOut, Equal, MousePointer2, Image as ImageIcon, X
 } from 'lucide-react';
 import { SCRATCH_AGENT_SYSTEM_PROMPT } from '@/config/scratch-prompt';
 import { CODEKITTEN_COLORS } from '@/config/codekitten-colors';
@@ -13,7 +13,22 @@ import { CODEKITTEN_COLORS } from '@/config/codekitten-colors';
 interface ChatMessage {
   role: 'user' | 'model';
   text: string;
+  images?: PromptImage[];
 }
+
+interface PromptImage {
+  id: string;
+  name: string;
+  mimeType: string;
+  dataUrl: string;
+  base64: string;
+}
+
+type ScratchblocksApi = {
+  parse: (code: string, options?: Record<string, unknown>) => unknown;
+  render: (doc: unknown, options?: Record<string, unknown>) => SVGElement;
+  loadLanguages?: (languages: unknown) => void;
+};
 
 // Hàm tiền xử lý để tương thích với thói quen viết ngoặc nhọn { } của user, Markdown và lỗi chính tả
 const preprocessScratchCode = (code: string) => {
@@ -34,9 +49,39 @@ const preprocessScratchCode = (code: string) => {
     .trim();
 };
 
+const readImageFile = (file: File): Promise<PromptImage> => new Promise((resolve, reject) => {
+  if (file.size > 8 * 1024 * 1024) {
+    reject(new Error(`Ảnh ${file.name} vượt quá 8MB.`));
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+    const base64 = dataUrl.split(',')[1] || '';
+    if (!base64) {
+      reject(new Error(`Không đọc được dữ liệu ảnh: ${file.name}`));
+      return;
+    }
+    resolve({
+      id: `${file.name}-${file.lastModified}-${file.size}`,
+      name: file.name,
+      mimeType: file.type || 'image/png',
+      dataUrl,
+      base64,
+    });
+  };
+  reader.onerror = () => reject(new Error(`Không đọc được ảnh: ${file.name}`));
+  reader.readAsDataURL(file);
+});
+
+const getErrorMessage = (error: unknown, fallback: string) => (
+  error instanceof Error ? error.message : fallback
+);
+
 export default function ScratchblocksStudioPage() {
   const [activeTab, setActiveTab] = useState<'editor' | 'ai'>('ai');
-  const [scratchblocks, setScratchblocks] = useState<any>(null);
+  const [scratchblocks, setScratchblocks] = useState<ScratchblocksApi | null>(null);
   
   // Editor Layout State
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -61,25 +106,27 @@ export default function ScratchblocksStudioPage() {
   const [showAiSettings, setShowAiSettings] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
+  const [attachedImages, setAttachedImages] = useState<PromptImage[]>([]);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Load AI config and initialize scratchblocks
   useEffect(() => {
     // Initialize scratchblocks dynamically on client side
     import('scratchblocks').then((sb) => {
-      const sbModule = sb.default || sb;
-      // @ts-ignore
+      const sbModule = ((sb as { default?: ScratchblocksApi }).default || sb) as ScratchblocksApi;
       import('scratchblocks/build/translations-all-es.js').then((trans) => {
         try {
-          const initTrans = trans.default || trans;
+          const transModule = trans as { default?: unknown; languages?: unknown };
+          const initTrans = transModule.default || transModule;
           if (typeof initTrans === 'function') {
             initTrans(sbModule); // The translation module exports an init function that takes scratchblocks
-          } else {
-            sbModule.loadLanguages(initTrans.languages || initTrans);
+          } else if (sbModule.loadLanguages) {
+            sbModule.loadLanguages((initTrans as { languages?: unknown }).languages || initTrans);
           }
-        } catch (e) {
-          console.error("Failed to load scratchblocks languages:", e);
+        } catch (error) {
+          console.error("Failed to load scratchblocks languages:", error);
         }
         setScratchblocks(sbModule);
       });
@@ -299,14 +346,35 @@ export default function ScratchblocksStudioPage() {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${aiModel}:generateContent?key=${apiKey}`;
       
-      const contents = messages.map(m => ({
-        role: m.role,
-        parts: [{ text: m.text }]
-      }));
+      const contents = messages.map((m) => {
+        const parts: Array<{ text: string } | { inline_data: { mime_type: string; data: string } }> = [
+          { text: m.text },
+        ];
+
+        if (m.role === 'user') {
+          (m.images || []).forEach((image) => {
+            parts.push({
+              inline_data: {
+                mime_type: image.mimeType,
+                data: image.base64,
+              },
+            });
+          });
+        }
+
+        return {
+          role: m.role,
+          parts,
+        };
+      });
 
       const payload = {
         system_instruction: {
-          parts: [{ text: SCRATCH_AGENT_SYSTEM_PROMPT }]
+          parts: [{
+            text: `${SCRATCH_AGENT_SYSTEM_PROMPT}
+
+Nếu người dùng đính kèm hình ảnh, hãy phân tích nội dung ảnh như một phần của đề bài. Ưu tiên trích xuất: nhân vật/sprite, yêu cầu chuyển động, hình học, điều kiện, sự kiện bắt đầu, vòng lặp, biến số và mục tiêu bài học. Sau đó chuyển thành thuật toán Scratch 3.0 rõ ràng trong block \`\`\`scratch ... \`\`\`.`,
+          }]
         },
         contents: contents
       };
@@ -326,9 +394,9 @@ export default function ScratchblocksStudioPage() {
       if (replyText) {
         setChatHistory(prev => [...prev, { role: 'model', text: replyText }]);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      setChatHistory(prev => [...prev, { role: 'model', text: `❌ Lỗi kết nối: ${error.message}` }]);
+      setChatHistory(prev => [...prev, { role: 'model', text: `❌ Lỗi kết nối: ${getErrorMessage(error, 'Không thể gọi Gemini API.')}` }]);
     } finally {
       setIsAiTyping(false);
       setTimeout(() => {
@@ -339,14 +407,35 @@ export default function ScratchblocksStudioPage() {
     }
   };
 
+  const handleSelectImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    if (!imageFiles.length) return;
+
+    try {
+      const nextImages = await Promise.all(imageFiles.slice(0, 4).map(readImageFile));
+      setAttachedImages((current) => [...current, ...nextImages].slice(0, 4));
+    } catch (error) {
+      alert(getErrorMessage(error, 'Không thể đọc ảnh đã chọn.'));
+    } finally {
+      event.target.value = '';
+    }
+  };
+
+  const removeAttachedImage = (id: string) => {
+    setAttachedImages((current) => current.filter((image) => image.id !== id));
+  };
+
   const handleSendChat = () => {
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() && attachedImages.length === 0) return;
     
-    const userMsg = chatInput.trim();
-    const newHistory: ChatMessage[] = [...chatHistory, { role: 'user', text: userMsg }];
+    const userMsg = chatInput.trim() || 'Hãy phân tích hình ảnh này và tạo mã scratchblocks phù hợp.';
+    const userImages = attachedImages;
+    const newHistory: ChatMessage[] = [...chatHistory, { role: 'user', text: userMsg, images: userImages }];
     
     setChatHistory(newHistory);
     setChatInput('');
+    setAttachedImages([]);
     
     setTimeout(() => {
       if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
@@ -486,7 +575,7 @@ export default function ScratchblocksStudioPage() {
                          const svg = scratchblocks.render(doc, { style: 'scratch3', languages: ['en', 'vi'] });
                          el.innerHTML = '';
                          el.appendChild(svg);
-                       } catch (e) {
+                       } catch {
                          el.innerText = 'Lỗi render khối lệnh';
                        }
                      } else if (el && !scratchblocks) {
@@ -666,7 +755,24 @@ export default function ScratchblocksStudioPage() {
                       {msg.role === 'model' ? (
                         renderChatMessage(msg.text)
                       ) : (
-                        <div className="whitespace-pre-wrap">{msg.text}</div>
+                        <div className="space-y-3">
+                          {msg.images && msg.images.length > 0 && (
+                            <div className="grid grid-cols-2 gap-2">
+                              {msg.images.map((image) => (
+                                <div key={image.id} className="overflow-hidden rounded-xl border border-white/20 bg-white/10">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={image.dataUrl}
+                                    alt={image.name}
+                                    className="h-28 w-full object-cover"
+                                  />
+                                  <div className="truncate px-2 py-1 text-[10px] font-bold opacity-80">{image.name}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div className="whitespace-pre-wrap">{msg.text}</div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -684,19 +790,61 @@ export default function ScratchblocksStudioPage() {
             
             {/* Input Area */}
             <div className="p-4 bg-white border-t border-gray-200">
+              {attachedImages.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-3">
+                  {attachedImages.map((image) => (
+                    <div key={image.id} className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={image.dataUrl}
+                        alt={image.name}
+                        className="h-20 w-24 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeAttachedImage(image.id)}
+                        className="absolute right-1 top-1 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gray-900/80 text-white transition-colors hover:bg-red-600"
+                        aria-label={`Xóa ảnh ${image.name}`}
+                      >
+                        <X size={14} />
+                      </button>
+                      <div className="max-w-24 truncate px-2 py-1 text-[10px] font-bold text-gray-600">{image.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="flex items-center space-x-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  multiple
+                  className="hidden"
+                  onChange={(event) => void handleSelectImages(event)}
+                />
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isAiTyping}
+                  className="p-3 text-gray-500 rounded-xl hover:bg-white hover:text-indigo-600 transition-colors disabled:opacity-50"
+                  title="Đính kèm ảnh cho prompt"
+                  aria-label="Đính kèm ảnh cho prompt"
+                >
+                  <ImageIcon size={18} />
+                </button>
                 <input 
                   type="text" 
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                  placeholder="Hỏi AI tạo khối lệnh Scratch..."
+                  placeholder="Hỏi AI tạo khối lệnh Scratch hoặc đính kèm ảnh bài toán..."
                   className="flex-1 bg-transparent py-3 outline-none text-gray-800"
                   disabled={isAiTyping}
                 />
                 <button 
                   onClick={handleSendChat}
-                  disabled={!chatInput.trim() || isAiTyping}
+                  disabled={(!chatInput.trim() && attachedImages.length === 0) || isAiTyping}
                   className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:active:scale-100 active:scale-95 flex-shrink-0 shadow-md shadow-indigo-500/20"
                 >
                   <Send size={18} />
@@ -767,7 +915,7 @@ export default function ScratchblocksStudioPage() {
                       <Palette size={14} className="text-gray-500" />
                       <select 
                         value={colorTheme}
-                        onChange={(e) => setColorTheme(e.target.value as any)}
+                        onChange={(e) => setColorTheme(e.target.value as 'scratch' | 'codekitten')}
                         className="bg-transparent text-sm font-medium outline-none text-gray-700 cursor-pointer"
                       >
                         <option value="scratch">Màu MIT Scratch</option>

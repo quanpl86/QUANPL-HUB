@@ -18,7 +18,10 @@ import {
   Type,
   LayoutGrid,
   Brain,
-  FileCode2
+  FileCode2,
+  ClipboardCheck,
+  Code2,
+  Blocks
 } from 'lucide-react';
 
 const featuredTools = [
@@ -151,6 +154,46 @@ const featuredTools = [
     href: '/utility-hub/scratchblocks',
     color: 'from-purple-500/20 to-purple-500/5',
     category: 'Tiện ích Prompt AI'
+  },
+  {
+    title: 'Scratch Test Case Grader',
+    description: 'Tải file .sb3 của học sinh, chạy input/expected output và chấm pass/fail tự động cho bài thi Tin học trẻ hoặc CLB Scratch.',
+    icon: ClipboardCheck,
+    status: 'SẴN SÀNG',
+    formats: '.SB3 + TEST CASE -> PASS / FAIL',
+    href: '/utility-hub/scratch-grader',
+    color: 'from-emerald-500/20 to-emerald-500/5',
+    category: 'Công cụ worksheet STEM'
+  },
+  {
+    title: 'Python Test Case Grader',
+    description: 'Hệ thống biên dịch Python trực tiếp trên trình duyệt, có sẵn Editor chuyên nghiệp và module chạy test case tự động cho môn Khoa học Máy tính.',
+    icon: Code2,
+    status: 'SẴN SÀNG',
+    formats: 'PYTHON + TEST CASE -> PASS / FAIL',
+    href: '/utility-hub/python-grader',
+    color: 'from-sky-500/20 to-sky-500/5',
+    category: 'Công cụ worksheet STEM'
+  },
+  {
+    title: 'Blockly Test Case Grader',
+    description: 'Chấm điểm tự động cho nền tảng kéo thả khối Blockly. Học sinh kéo thả khối lệnh, hệ thống sẽ dịch sang code và chạy test case kiểm tra.',
+    icon: Blocks,
+    status: 'SẴN SÀNG',
+    formats: 'BLOCKLY + TEST CASE -> PASS / FAIL',
+    href: '/utility-hub/blockly-grader',
+    color: 'from-blue-500/20 to-blue-500/5',
+    category: 'Công cụ worksheet STEM'
+  },
+  {
+    title: 'Rubric & Worksheet STEM',
+    description: 'Tạo rubric STEM/PBL có mapping Bloom, NGSS, ISTE, CSTA; xuất Markdown, JSON và CSV để dùng cho bài viết, LMS hoặc GitHub Classroom.',
+    icon: ClipboardCheck,
+    status: 'SẴN SÀNG',
+    formats: 'RUBRIC -> MD / JSON / CSV',
+    href: '/utility-hub/worksheet-stem',
+    color: 'from-orange-500/20 to-orange-500/5',
+    category: 'Công cụ worksheet STEM'
   },
 ];
 
