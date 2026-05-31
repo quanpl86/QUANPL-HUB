@@ -21,10 +21,21 @@ import {
   FileCode2,
   ClipboardCheck,
   Code2,
-  Blocks
+  Blocks,
+  Video
 } from 'lucide-react';
 
 const featuredTools = [
+  {
+    title: 'AI Video Lesson Builder',
+    description: 'Teacher OS: Biến giáo án STEM thành video bài giảng tự động. Tích hợp AI Storyboarding, Timeline kéo thả đa track và Câu hỏi tương tác (H5P/xAPI).',
+    icon: Video,
+    status: 'SẴN SÀNG',
+    formats: 'MARKDOWN -> INTERACTIVE VIDEO',
+    href: '/utility-hub/ai-video-builder',
+    color: 'from-fuchsia-500/20 to-fuchsia-500/5',
+    category: 'Tiện ích Prompt AI'
+  },
   {
     title: 'Trích xuất Model GLB',
     description: 'Tải lên file GLB/GLTF, tự động phân tách và trích xuất từng đối tượng 3D (nhà, cây, xe...) hoặc texture thành các file riêng lẻ.',

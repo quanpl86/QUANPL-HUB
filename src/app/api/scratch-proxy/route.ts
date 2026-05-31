@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const metaRes = await fetch(\`https://api.scratch.mit.edu/projects/\${projectId}\`);
+    const metaRes = await fetch(`https://api.scratch.mit.edu/projects/${projectId}`);
     if (!metaRes.ok) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const meta = await metaRes.json();
     const token = meta.project_token;
 
-    const projectRes = await fetch(\`https://projects.scratch.mit.edu/\${projectId}?token=\${token}\`);
+    const projectRes = await fetch(`https://projects.scratch.mit.edu/${projectId}?token=${token}`);
     if (!projectRes.ok) {
       return NextResponse.json({ error: 'Failed to fetch project JSON' }, { status: 500 });
     }
