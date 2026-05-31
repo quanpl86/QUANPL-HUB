@@ -81,14 +81,17 @@ const preprocessScratchCode = (code: string) => {
     // Sửa cú pháp Chuyển động (Motion)
     .replace(/(xoay|quay)\s+(sang\s+)?phải\s+(\([^)]+\)|\[[^\]]+\]|\d+)\s+độ/gi, 'xoay @turnRight $3 độ')
     .replace(/(xoay|quay)\s+(sang\s+)?trái\s+(\([^)]+\)|\[[^\]]+\]|\d+)\s+độ/gi, 'xoay @turnLeft $3 độ')
+    .replace(/nếu\s+(tiếp\s+xúc|chạm)\s+(với\s+)?cạnh,?\s*bật\s+lại/gi, 'bật lại nếu chạm cạnh')
     
     // Sửa cú pháp Bút vẽ (Pen) - Ép kiểu :: pen
     .replace(/(đặt|chọn)\s+màu\s+bút\s+(bằng|thành|là)\s+(\([^)]+\)|\[[^\]]+\]|\d+)/gi, 'đặt màu bút thành $3 :: pen')
     .replace(/đặt\s+màu\s+bút\s+cho\s+.*?\s+(bằng|thành|là)\s+(\([^)]+\)|\[[^\]]+\]|\d+)/gi, 'đặt màu bút thành $2 :: pen')
     .replace(/đặt\s+kích\s+thước\s+bút\s+(vẽ\s+)?(bằng|thành|là)\s+(\([^)]+\)|\[[^\]]+\]|\d+)/gi, 'đặt kích thước bút vẽ thành $3 :: pen')
-    .replace(/nhấc\s+bút/gi, 'nhấc bút :: pen')
-    .replace(/(đặt|hạ)\s+bút/gi, 'đặt bút :: pen')
+    .replace(/thay\s+đổi\s+kích\s+thước\s+bút\s+(vẽ\s+)?(thêm|lượng)\s+(\([^)]+\)|\[[^\]]+\]|\d+)/gi, 'thay đổi kích thước bút lượng $3 :: pen')
+    .replace(/(nhấc\s+bút|bút\s+lên)/gi, 'nhấc bút :: pen')
+    .replace(/(đặt\s+bút|hạ\s+bút|bút\s+xuống)/gi, 'đặt bút :: pen')
     .replace(/xóa\s+tất\s+cả/gi, 'xóa tất cả :: pen')
+    .replace(/in\s+hình/gi, 'in hình :: pen')
     
     .replace(/\{/g, '') // Xóa các dấu { mở block còn lại
     .replace(/\}/g, '\nend\n') // Chuyển dấu } đóng block thành từ khóa end
