@@ -24,83 +24,146 @@ function Model({ url }: { url: string }) {
   return <primitive object={scene} />;
 }
 
+type CustomCameraState = {
+  direction: THREE.Vector3;
+  distanceRatio: number;
+  targetOffsetRatio: THREE.Vector3;
+};
+
 function CameraController({ angle, fileUrl }: { angle: CameraAngle, fileUrl: string }) {
   const { camera, controls } = useThree();
   const bounds = useBounds();
   
+  const customStateRef = useRef<CustomCameraState | null>(null);
+  const prevAngleRef = useRef<CameraAngle>(angle);
+
+  // 1. Reset custom state nếu user chọn góc quay mới từ dropdown
+  useEffect(() => {
+    if (prevAngleRef.current !== angle) {
+      customStateRef.current = null;
+      prevAngleRef.current = angle;
+    }
+  }, [angle]);
+
+  // 2. Lắng nghe hành vi xoay thủ công của user để lưu lại Custom State
   useEffect(() => {
     if (!controls) return;
     const ctrl = controls as any;
     
-
-    // Yêu cầu tính toán lại bounding box
-    bounds.refresh();
-    const { center, distance: camDist } = bounds.getSize();
-    
-    // Tự code logic fit() để không bị phụ thuộc vào tự động hoá của thư viện
-    // Vector chỉ hướng cho các góc (đã chuẩn hoá)
-    const positions: Record<CameraAngle, [number, number, number]> = {
-      front: [0, 0, -1],
-      back: [0, 0, 1],
-      left: [1, 0, 0],
-      right: [-1, 0, 0],
-      top: [0, 1, 0],
-      bottom: [0, -1, 0],
-      iso1: [-1, 0.8, -1],
-      iso2: [1, 0.8, -1],
-      iso3: [-1, 0.8, 1],
-      iso4: [1, 0.8, 1],
+    const handleEnd = () => {
+      bounds.refresh();
+      const { center, box } = bounds.getSize();
+      
+      // Tính toán khoảng cách chuẩn (baseDist) bằng Bounding Sphere
+      const sphere = box.getBoundingSphere(new THREE.Sphere());
+      if (sphere.radius === 0) return;
+      
+      const fov = (camera as THREE.PerspectiveCamera).fov * (Math.PI / 180);
+      const baseDist = sphere.radius / Math.sin(fov / 2);
+      
+      // Tính toán toạ độ tương đối dựa trên baseDist
+      const direction = new THREE.Vector3().subVectors(camera.position, ctrl.target).normalize();
+      const distanceRatio = camera.position.distanceTo(ctrl.target) / baseDist;
+      const targetOffsetRatio = new THREE.Vector3().subVectors(ctrl.target, center).divideScalar(baseDist);
+      
+      customStateRef.current = { direction, distanceRatio, targetOffsetRatio };
     };
 
-    const dir = new THREE.Vector3(...positions[angle]).normalize();
+    ctrl.addEventListener('end', handleEnd);
+    return () => {
+      ctrl.removeEventListener('end', handleEnd);
+    };
+  }, [camera, controls, bounds]);
+  
+  // 3. Thực thi việc xếp đặt vị trí camera khi đổi file hoặc đổi góc
+  useEffect(() => {
+    if (!controls) return;
+    const ctrl = controls as any;
     
-    // Đặt camera ở khoảng cách an toàn (margin = 1.1)
-    camera.position.copy(center).add(dir.multiplyScalar(camDist * 1.1));
-    ctrl.target.copy(center);
-    camera.lookAt(center);
+    // Yêu cầu tính toán lại bounding box
+    bounds.refresh();
+    const { center, box } = bounds.getSize();
     
-    // Áp dụng bù trừ quang học (Visual Weight Offset)
-    let shiftX = 0;
-    let shiftY = 0;
-    const offsetMagX = 0.05; // Giảm nhẹ xuống 5% theo yêu cầu
-    const offsetMagY = 0.04; // Giảm nhẹ xuống 4%
+    // Tính khoảng cách baseDist chuẩn xác bao trọn 100% bằng hình cầu
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const fov = (camera as THREE.PerspectiveCamera).fov * (Math.PI / 180);
+    const baseDist = sphere.radius / Math.sin(fov / 2);
+    
+    if (customStateRef.current) {
+      // TRƯỜNG HỢP A: Tồn tại góc nhìn xoay thủ công -> Giải mã và áp dụng
+      const { direction, distanceRatio, targetOffsetRatio } = customStateRef.current;
+      
+      const absoluteTargetOffset = targetOffsetRatio.clone().multiplyScalar(baseDist);
+      const newTarget = center.clone().add(absoluteTargetOffset);
+      const newCameraPos = newTarget.clone().add(direction.clone().multiplyScalar(baseDist * distanceRatio));
+      
+      camera.position.copy(newCameraPos);
+      ctrl.target.copy(newTarget);
+      camera.lookAt(newTarget);
+      ctrl.update();
+      
+    } else {
+      // TRƯỜNG HỢP B: Góc toán học tự động mặc định
+      const positions: Record<CameraAngle, [number, number, number]> = {
+        front: [0, 0, -1],
+        back: [0, 0, 1],
+        left: [1, 0, 0],
+        right: [-1, 0, 0],
+        top: [0, 1, 0],
+        bottom: [0, -1, 0],
+        iso1: [-1, 0.8, -1],
+        iso2: [1, 0.8, -1],
+        iso3: [-1, 0.8, 1],
+        iso4: [1, 0.8, 1],
+      };
 
-    // QUY TẮC TỊNH TIẾN CAMERA (NGƯỢC VỚI HƯỚNG HIỂN THỊ CỦA MODEL):
-    // Muốn model sang PHẢI -> Di chuyển camera sang TRÁI (-X)
-    // Muốn model lên TRÊN -> Di chuyển camera xuống DƯỚI (-Y)
-    switch (angle) {
-      case 'iso1': // Ép model LÊN TRÊN và SANG PHẢI => Cam DƯỚI (-Y) và TRÁI (-X)
-        shiftX = -offsetMagX * camDist;
-        shiftY = -offsetMagY * camDist;
-        break;
-      case 'iso2': // Ép model LÊN TRÊN và SANG TRÁI => Cam DƯỚI (-Y) và PHẢI (+X)
-        shiftX = offsetMagX * camDist;
-        shiftY = -offsetMagY * camDist;
-        break;
-      case 'iso3': // Ép model XUỐNG DƯỚI và SANG PHẢI => Cam TRÊN (+Y) và TRÁI (-X)
-        shiftX = -offsetMagX * camDist;
-        shiftY = offsetMagY * camDist;
-        break;
-      case 'iso4': // Ép model XUỐNG DƯỚI và SANG TRÁI => Cam TRÊN (+Y) và PHẢI (+X)
-        shiftX = offsetMagX * camDist;
-        shiftY = offsetMagY * camDist;
-        break;
-      default:
-        break;
+      const dir = new THREE.Vector3(...positions[angle]).normalize();
+      
+      // Khoảng cách an toàn (margin = 1.3 đối với bounding sphere là rất dư dả)
+      const safeDist = baseDist * 1.3;
+      camera.position.copy(center).add(dir.multiplyScalar(safeDist));
+      ctrl.target.copy(center);
+      camera.lookAt(center);
+      
+      // Áp dụng bù trừ quang học (Visual Weight Offset)
+      let shiftX = 0;
+      let shiftY = 0;
+      const offsetMagX = 0.05; // 5%
+      const offsetMagY = 0.04; // 4%
+
+      switch (angle) {
+        case 'iso1':
+          shiftX = -offsetMagX * safeDist;
+          shiftY = -offsetMagY * safeDist;
+          break;
+        case 'iso2':
+          shiftX = offsetMagX * safeDist;
+          shiftY = -offsetMagY * safeDist;
+          break;
+        case 'iso3':
+          shiftX = -offsetMagX * safeDist;
+          shiftY = offsetMagY * safeDist;
+          break;
+        case 'iso4':
+          shiftX = offsetMagX * safeDist;
+          shiftY = offsetMagY * safeDist;
+          break;
+        default:
+          break;
+      }
+      
+      // Lưu vị trí cũ
+      const oldPos = camera.position.clone();
+      
+      // Dịch camera
+      camera.translateX(shiftX);
+      camera.translateY(shiftY);
+      
+      // Áp dụng dịch chuyển cho target
+      const diff = camera.position.clone().sub(oldPos);
+      ctrl.target.add(diff);
+      ctrl.update();
     }
-    
-    // Lưu vị trí cũ
-    const oldPos = camera.position.clone();
-    
-    // Dịch camera
-    camera.translateX(shiftX);
-    camera.translateY(shiftY);
-    
-    // Áp dụng dịch chuyển cho target
-    const diff = camera.position.clone().sub(oldPos);
-    ctrl.target.add(diff);
-    ctrl.update();
-    
   }, [angle, camera, controls, bounds, fileUrl]);
 
   return null;
