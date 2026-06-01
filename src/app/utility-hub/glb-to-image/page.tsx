@@ -80,7 +80,7 @@ export default function GLBToImagePage() {
     const currentFile = files[activeIndex];
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `${currentFile.file.name.replace('.glb', '')}_${cameraAngle}.png`;
+    link.download = `${currentFile.file.name.replace(/\.(glb|gltf)$/i, '')}.png`;
     link.click();
   };
 
@@ -102,7 +102,7 @@ export default function GLBToImagePage() {
       const dataUrl = await viewerRef.current.captureImage(exportSize);
       if (dataUrl) {
         const base64Data = dataUrl.split(',')[1];
-        zip.file(`${files[i].file.name.replace('.glb', '')}_${cameraAngle}.png`, base64Data, { base64: true });
+        zip.file(`${files[i].file.name.replace(/\.(glb|gltf)$/i, '')}.png`, base64Data, { base64: true });
       }
       setExportProgress(Math.round(((i + 1) / files.length) * 100));
     }
