@@ -47,6 +47,16 @@ const featuredTools = [
     category: 'Tiện ích sa bàn Robotics'
   },
   {
+    title: 'GLB Thumbnail Generator',
+    description: 'Tải lên hàng loạt file GLB, chọn góc nhìn và tự động render xuất hàng loạt ảnh PNG hình vuông nền trong suốt để làm thumbnail.',
+    icon: ImageUp,
+    status: 'SẴN SÀNG',
+    formats: 'GLB -> BATCH PNG',
+    href: '/utility-hub/glb-to-image',
+    color: 'from-sky-500/20 to-sky-500/5',
+    category: 'Tiện ích sa bàn Robotics'
+  },
+  {
     title: 'Tạo tranh 3D mặt nổi',
     description: 'Biến logo, ảnh màu solid thành mặt nổi 3D (Relief) để xuất file STL in 3D.',
     icon: Wand2,
