@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, UploadCloud, Download, Image as ImageIcon, Trash2, Camera, Settings2, Box } from 'lucide-react';
+import { ArrowLeft, UploadCloud, Download, Image as ImageIcon, Trash2, Camera, Settings2, Box, FolderUp, Files } from 'lucide-react';
 import JSZip from 'jszip';
 import GLBViewer, { CameraAngle, GLBViewerRef } from './components/GLBViewer';
 
@@ -10,6 +10,38 @@ interface FileItem {
   id: string;
   file: File;
   url: string;
+  relativePath: string;
+  assetUrls: Record<string, string>;
+  assetCount: number;
+  objectUrls: string[];
+}
+
+const MODEL_EXTENSIONS = ['.glb', '.gltf'];
+const ASSET_EXTENSIONS = ['.bin', '.png', '.jpg', '.jpeg', '.webp', '.ktx2', '.ktx', '.basis'];
+const MAX_MODEL_FILES = 200;
+
+function getRelativePath(file: File) {
+  const maybeRelative = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
+  return (maybeRelative || file.name).replace(/\\/g, '/');
+}
+
+function getExtension(fileName: string) {
+  const dotIndex = fileName.lastIndexOf('.');
+  return dotIndex >= 0 ? fileName.slice(dotIndex).toLowerCase() : '';
+}
+
+function isModelFile(file: File) {
+  return MODEL_EXTENSIONS.includes(getExtension(file.name));
+}
+
+function isSupportedAsset(file: File) {
+  return isModelFile(file) || ASSET_EXTENSIONS.includes(getExtension(file.name));
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
 export default function GLBToImagePage() {
@@ -23,23 +55,67 @@ export default function GLBToImagePage() {
   const [isDragging, setIsDragging] = useState(false);
   
   const viewerRef = useRef<GLBViewerRef>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const folderInput = folderInputRef.current;
+    if (!folderInput) return;
+    folderInput.setAttribute('webkitdirectory', '');
+    folderInput.setAttribute('directory', '');
+  }, []);
 
   const processFiles = (fileList: FileList | null) => {
-    if (fileList && fileList.length > 0) {
-      const glbFiles = Array.from(fileList).filter(file => file.name.toLowerCase().endsWith('.glb') || file.name.toLowerCase().endsWith('.gltf'));
-      if (glbFiles.length === 0) return;
-      
-      const newFiles = glbFiles.map(file => ({
-        id: Math.random().toString(36).substring(7),
-        file,
-        url: URL.createObjectURL(file)
-      }));
-      setFiles(prev => [...prev, ...newFiles]);
-    }
+    if (!fileList || fileList.length === 0) return;
+
+    const importedFiles = Array.from(fileList).filter(isSupportedAsset);
+    const modelFiles = importedFiles.filter(isModelFile);
+    if (modelFiles.length === 0) return;
+
+    const remainingSlots = Math.max(0, MAX_MODEL_FILES - files.length);
+    if (remainingSlots === 0) return;
+
+    const modelsToImport = modelFiles.slice(0, remainingSlots);
+    const allRelativePaths = importedFiles.map((file) => getRelativePath(file));
+
+    const newFiles = modelsToImport.map((modelFile) => {
+      const modelRelativePath = getRelativePath(modelFile);
+      const modelDir = modelRelativePath.includes('/') ? modelRelativePath.slice(0, modelRelativePath.lastIndexOf('/')) : '';
+      const assetUrls: Record<string, string> = {};
+      const objectUrls: string[] = [];
+
+      importedFiles.forEach((assetFile, index) => {
+        const assetRelativePath = allRelativePaths[index];
+        const isSameFolderAsset = !modelDir || assetRelativePath.startsWith(`${modelDir}/`) || assetRelativePath === modelRelativePath;
+        if (!isSameFolderAsset) return;
+
+        const objectUrl = URL.createObjectURL(assetFile);
+        objectUrls.push(objectUrl);
+
+        const folderRelativePath = modelDir ? assetRelativePath.slice(modelDir.length + 1) : assetRelativePath;
+        const fileName = assetRelativePath.split('/').pop() || assetFile.name;
+
+        assetUrls[assetRelativePath] = objectUrl;
+        assetUrls[folderRelativePath] = objectUrl;
+        assetUrls[fileName] = objectUrl;
+      });
+
+      return {
+        id: crypto.randomUUID(),
+        file: modelFile,
+        url: assetUrls[modelRelativePath] || URL.createObjectURL(modelFile),
+        relativePath: modelRelativePath,
+        assetUrls,
+        assetCount: Object.keys(assetUrls).length,
+        objectUrls,
+      };
+    });
+
+    setFiles(prev => [...prev, ...newFiles]);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     processFiles(e.target.files);
+    e.target.value = '';
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
@@ -64,6 +140,8 @@ export default function GLBToImagePage() {
   const removeFile = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setFiles(prev => {
+      const removedFile = prev.find((file) => file.id === id);
+      removedFile?.objectUrls.forEach(URL.revokeObjectURL);
       const newFiles = prev.filter(f => f.id !== id);
       if (activeIndex >= newFiles.length) {
         setActiveIndex(Math.max(0, newFiles.length - 1));
@@ -153,10 +231,31 @@ export default function GLBToImagePage() {
                 <div className="flex flex-col items-center justify-center pt-5 pb-6 pointer-events-none">
                   <UploadCloud className={`w-8 h-8 mb-2 ${isDragging ? 'text-brand-orange' : 'text-muted-foreground'}`} />
                   <p className="text-sm text-muted-foreground"><span className="font-semibold">Click để chọn</span> hoặc kéo thả</p>
-                  <p className="text-xs text-muted-foreground mt-1">Nhiều file .glb cùng lúc</p>
+                  <p className="text-xs text-muted-foreground mt-1">Tối đa {MAX_MODEL_FILES} model .glb/.gltf</p>
                 </div>
                 <input type="file" className="hidden" accept=".glb,.gltf" multiple onChange={handleFileUpload} />
               </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold cursor-pointer hover:bg-muted transition-colors">
+                  <Files className="w-4 h-4" />
+                  Chọn nhiều file
+                  <input type="file" className="hidden" accept=".glb,.gltf" multiple onChange={handleFileUpload} />
+                </label>
+                <label className="flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold cursor-pointer hover:bg-muted transition-colors">
+                  <FolderUp className="w-4 h-4" />
+                  Upload folder
+                  <input
+                    ref={folderInputRef}
+                    type="file"
+                    className="hidden"
+                    multiple
+                    onChange={handleFileUpload}
+                  />
+                </label>
+              </div>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                Folder import hỗ trợ `.gltf` kèm `.bin`, texture PNG/JPG/WebP/KTX2 cùng thư mục. File không liên quan sẽ được bỏ qua.
+              </p>
             </div>
 
             {/* Config */}
@@ -230,6 +329,17 @@ export default function GLBToImagePage() {
                   <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <Box className="w-4 h-4" /> Danh sách ({files.length})
                   </h2>
+                  <button
+                    onClick={() => {
+                      files.forEach((item) => item.objectUrls.forEach(URL.revokeObjectURL));
+                      setFiles([]);
+                      setActiveIndex(0);
+                    }}
+                    disabled={isExporting}
+                    className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-red-500 disabled:opacity-50"
+                  >
+                    Xóa tất cả
+                  </button>
                 </div>
                 <div className="space-y-1">
                   {files.map((file, index) => (
@@ -240,7 +350,12 @@ export default function GLBToImagePage() {
                         activeIndex === index ? 'border-brand-orange bg-brand-orange/5 text-brand-orange' : 'border-transparent hover:bg-muted text-foreground/80'
                       } ${isExporting ? 'opacity-50 pointer-events-none' : ''}`}
                     >
-                      <span className="truncate flex-1" title={file.file.name}>{file.file.name}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium" title={file.relativePath}>{file.file.name}</span>
+                        <span className="block truncate text-[10px] text-muted-foreground">
+                          {formatBytes(file.file.size)} · {Math.max(0, file.assetCount - 1)} asset
+                        </span>
+                      </span>
                       <button
                         onClick={(e) => removeFile(file.id, e)}
                         className="p-1 hover:text-red-500 rounded-md transition-colors ml-2"
@@ -291,6 +406,7 @@ export default function GLBToImagePage() {
                   <GLBViewer 
                     ref={viewerRef}
                     fileUrl={files[activeIndex].url}
+                    assetUrls={files[activeIndex].assetUrls}
                     cameraAngle={cameraAngle}
                     backgroundColor={backgroundColor}
                   />
@@ -303,6 +419,14 @@ export default function GLBToImagePage() {
                     <p className="text-muted-foreground mt-1">{exportProgress}% ({activeIndex + 1}/{files.length})</p>
                   </div>
                 )}
+              </div>
+
+              <div className="rounded-xl border border-border bg-background/90 px-4 py-3 text-sm shadow-sm">
+                <span className="font-semibold">{files[activeIndex]?.file.name}</span>
+                <span className="mx-2 text-muted-foreground">/</span>
+                <span className="text-muted-foreground">
+                  {formatBytes(files[activeIndex]?.file.size || 0)} · {Math.max(0, (files[activeIndex]?.assetCount || 1) - 1)} asset đi kèm
+                </span>
               </div>
 
               {/* Action buttons */}
@@ -331,7 +455,7 @@ export default function GLBToImagePage() {
                 <ImageIcon className="w-12 h-12 opacity-50" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Chưa có mô hình nào</h2>
-              <p className="max-w-md">Vui lòng tải lên một hoặc nhiều file .glb ở sidebar để bắt đầu tạo thumbnail.</p>
+              <p className="max-w-md">Vui lòng tải lên file .glb/.gltf hoặc import cả folder model ở sidebar để bắt đầu tạo thumbnail.</p>
             </div>
           )}
         </div>

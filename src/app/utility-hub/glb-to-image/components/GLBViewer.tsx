@@ -2,13 +2,16 @@
 
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, Environment, Bounds, Center, useGLTF, useBounds } from '@react-three/drei';
+import { OrbitControls, Environment, Bounds, useBounds } from '@react-three/drei';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 export type CameraAngle = 'front' | 'back' | 'left' | 'right' | 'top' | 'bottom' | 'iso1' | 'iso2' | 'iso3' | 'iso4';
 
 interface GLBViewerProps {
   fileUrl: string;
+  assetUrls?: Record<string, string>;
   cameraAngle: CameraAngle;
   backgroundColor: string;
 }
@@ -17,10 +20,53 @@ export interface GLBViewerRef {
   captureImage: (size: number) => Promise<string | null>;
 }
 
-function Model({ url }: { url: string }) {
-  const { scene } = useGLTF(url);
-  // Clone is not strictly necessary unless rendering same URL multiple times simultaneously, 
-  // but just passing scene is fine for a single viewer.
+function normalizeAssetPath(path: string) {
+  return decodeURIComponent(path)
+    .split(/[?#]/)[0]
+    .replace(/^\.?\//, '')
+    .replace(/\\/g, '/');
+}
+
+function Model({ url, assetUrls = {} }: { url: string; assetUrls?: Record<string, string> }) {
+  const [scene, setScene] = useState<THREE.Group | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const manager = new THREE.LoadingManager();
+
+    manager.setURLModifier((requestedUrl) => {
+      const cleanUrl = normalizeAssetPath(requestedUrl);
+      const fileName = cleanUrl.split('/').pop() || cleanUrl;
+      return assetUrls[cleanUrl] || assetUrls[fileName] || requestedUrl;
+    });
+
+    const loader = new GLTFLoader(manager);
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('/vendor/draco/gltf/');
+    dracoLoader.setDecoderConfig({ type: 'wasm' });
+    loader.setDRACOLoader(dracoLoader);
+
+    loader.load(
+      url,
+      (gltf) => {
+        if (!cancelled) setScene(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error('GLB thumbnail loader error:', error);
+        if (!cancelled) setScene(null);
+      }
+    );
+
+    return () => {
+      cancelled = true;
+      dracoLoader.dispose();
+      setScene(null);
+    };
+  }, [url, assetUrls]);
+
+  if (!scene) return null;
+
   return <primitive object={scene} />;
 }
 
@@ -28,6 +74,13 @@ type CustomCameraState = {
   direction: THREE.Vector3;
   distanceRatio: number;
   targetOffsetRatio: THREE.Vector3;
+};
+
+type MinimalOrbitControls = {
+  target: THREE.Vector3;
+  update: () => void;
+  addEventListener: (type: 'end', listener: () => void) => void;
+  removeEventListener: (type: 'end', listener: () => void) => void;
 };
 
 function CameraController({ angle, fileUrl }: { angle: CameraAngle, fileUrl: string }) {
@@ -48,7 +101,7 @@ function CameraController({ angle, fileUrl }: { angle: CameraAngle, fileUrl: str
   // 2. Lắng nghe hành vi xoay thủ công của user để lưu lại Custom State
   useEffect(() => {
     if (!controls) return;
-    const ctrl = controls as any;
+    const ctrl = controls as unknown as MinimalOrbitControls;
     
     const handleEnd = () => {
       bounds.refresh();
@@ -78,7 +131,7 @@ function CameraController({ angle, fileUrl }: { angle: CameraAngle, fileUrl: str
   // 3. Thực thi việc xếp đặt vị trí camera khi đổi file hoặc đổi góc
   useEffect(() => {
     if (!controls) return;
-    const ctrl = controls as any;
+    const ctrl = controls as unknown as MinimalOrbitControls;
     
     // Yêu cầu tính toán lại bounding box
     bounds.refresh();
@@ -169,7 +222,7 @@ function CameraController({ angle, fileUrl }: { angle: CameraAngle, fileUrl: str
   return null;
 }
 
-const GLBViewer = forwardRef<GLBViewerRef, GLBViewerProps>(({ fileUrl, cameraAngle, backgroundColor }, ref) => {
+const GLBViewer = forwardRef<GLBViewerRef, GLBViewerProps>(({ fileUrl, assetUrls, cameraAngle, backgroundColor }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useImperativeHandle(ref, () => ({
@@ -210,7 +263,7 @@ const GLBViewer = forwardRef<GLBViewerRef, GLBViewerProps>(({ fileUrl, cameraAng
         
         <React.Suspense fallback={null}>
           <Bounds margin={1.0}>
-            <Model url={fileUrl} />
+            <Model url={fileUrl} assetUrls={assetUrls} />
             <CameraController angle={cameraAngle} fileUrl={fileUrl} />
           </Bounds>
         </React.Suspense>
