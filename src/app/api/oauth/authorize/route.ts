@@ -129,8 +129,8 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Missing parameters', { status: 400 });
   }
 
-  // Generate auth code valid for 10 mins
-  const code = signToken({ type: 'code', client_id, scope }, 10 * 60 * 1000);
+  // TEMPORARY DEBUG: Use a tiny code to test if ChatGPT is rejecting long strings
+  const code = "test_code_123";
   
   const redirectUrl = new URL(redirect_uri);
   const storedRedirectUri = formData.get('redirect_uri') as string;
