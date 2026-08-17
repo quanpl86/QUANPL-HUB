@@ -1,2 +1,0 @@
-import { verifyToken } from "./src/lib/oauth-utils";
-console.log(verifyToken("eyJ0eXBlIjoiY29kZSIsImNsaWVudF9pZCI6ImtpbmdkcmFnb25odWJfbWNwIiwic2NvcGUiOiJibG9nOnJlYWQgcG9saWN5OnJlYWQgZHJhZnQ6Y3JlYXRlIG9mZmxpbmVfYWNjZXNzIiwiZXhwIjoxNzg2OTgyNDM5OTE2fS40M2I1YTFhOTc0NzZkMDFkMzI1MzA3NWQ5M2RiYzMxMDc2MTUzOGI4YzQyY2RhYjViYzFiNWM3YjkxZGU5YTky"));
