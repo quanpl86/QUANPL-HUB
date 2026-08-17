@@ -147,5 +147,5 @@ export async function POST(req: NextRequest) {
     codeCreated: true,
   });
 
-  return NextResponse.redirect(redirectUrl.toString());
+  return NextResponse.redirect(redirectUrl, 303);
 }
