@@ -133,12 +133,17 @@ export async function POST(req: NextRequest) {
   const code = signToken({ type: 'code', client_id, scope }, 10 * 60 * 1000);
   
   const redirectUrl = new URL(redirect_uri);
+  const storedRedirectUri = formData.get('redirect_uri') as string;
+  const storedState = formData.get('state') as string;
+
   redirectUrl.searchParams.set('code', code);
-  redirectUrl.searchParams.set('state', state);
+  redirectUrl.searchParams.set('state', storedState);
 
   console.log("[OAUTH AUTHORIZE] redirect", {
     redirectUriPresent: !!redirect_uri,
-    stateReturned: !!state,
+    redirectUriExact: redirect_uri === storedRedirectUri,
+    stateReturned: !!storedState,
+    stateRoundTripExact: state === storedState,
     codeCreated: true,
   });
 
