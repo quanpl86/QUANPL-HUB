@@ -8,6 +8,13 @@ export async function POST(req: NextRequest) {
   let refresh_token_req: string | null = null;
   let code_verifier: string | null = null;
   let redirect_uri: string | null = null;
+  let resource: string | null = null;
+  let client_secret: string | null = null;
+
+  function oauthError(code_err: string, description: string, status = 400) {
+    console.warn("[OAUTH TOKEN] REJECT", { code_err, description });
+    return NextResponse.json({ error: code_err, error_description: description }, { status });
+  }
 
   try {
     const contentType = req.headers.get('content-type') || '';
@@ -17,6 +24,10 @@ export async function POST(req: NextRequest) {
       client_id = json.client_id;
       code = json.code;
       refresh_token_req = json.refresh_token;
+      code_verifier = json.code_verifier;
+      redirect_uri = json.redirect_uri;
+      resource = json.resource;
+      client_secret = json.client_secret;
     } else {
       const text = await req.text();
       const body = new URLSearchParams(text);
@@ -26,6 +37,8 @@ export async function POST(req: NextRequest) {
       refresh_token_req = body.get('refresh_token');
       code_verifier = body.get('code_verifier');
       redirect_uri = body.get('redirect_uri');
+      resource = body.get('resource');
+      client_secret = body.get('client_secret');
     }
 
     console.log("[OAUTH TOKEN] Payload received:", {
@@ -35,11 +48,14 @@ export async function POST(req: NextRequest) {
       codePresent: !!code,
       refreshTokenPresent: !!refresh_token_req,
       codeVerifierPresent: !!code_verifier,
-      redirectUriPresent: !!redirect_uri
+      redirectUriPresent: !!redirect_uri,
+      resourcePresent: !!resource,
+      clientSecretPresent: !!client_secret,
+      bodyMode: contentType.includes("application/json") ? "json" : (contentType.includes("application/x-www-form-urlencoded") ? "form" : "other")
     });
 
   } catch (e) {
-    return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
+    return oauthError('invalid_request', 'Failed to parse payload');
   }
 
   // Allow client_id to be missing if auth method is "none", just fallback to a generic string
@@ -47,17 +63,25 @@ export async function POST(req: NextRequest) {
 
   if (grant_type === 'authorization_code') {
     if (!code) {
-      return NextResponse.json({ error: 'invalid_request', error_description: 'Missing code' }, { status: 400 });
+      return oauthError('invalid_request', 'Missing code');
     }
 
     const decoded = verifyToken(code);
     if (!decoded || decoded.type !== 'code') {
-      return NextResponse.json({ error: 'invalid_grant', error_description: 'Invalid code' }, { status: 400 });
+      return oauthError('invalid_grant', 'Invalid code');
     }
 
     // Generate tokens
     const access_token = signToken({ type: 'access', scope: decoded.scope }, 60 * 60 * 1000); // 1 hour
     const refresh_token = signToken({ type: 'refresh', client_id: clientIdFinal, scope: decoded.scope }, 365 * 24 * 60 * 60 * 1000); // 1 year
+
+    console.log("[OAUTH TOKEN] SUCCESS", {
+      grantType: grant_type,
+      accessTokenIssued: true,
+      refreshTokenIssued: true,
+      expiresIn: 3600,
+      scopePresent: !!decoded.scope,
+    });
 
     return NextResponse.json({
       access_token,
@@ -69,17 +93,25 @@ export async function POST(req: NextRequest) {
 
   } else if (grant_type === 'refresh_token') {
     if (!refresh_token_req) {
-      return NextResponse.json({ error: 'invalid_request', error_description: 'Missing refresh_token' }, { status: 400 });
+      return oauthError('invalid_request', 'Missing refresh_token');
     }
 
     const decoded = verifyToken(refresh_token_req);
     if (!decoded || decoded.type !== 'refresh') {
-      return NextResponse.json({ error: 'invalid_grant', error_description: 'Invalid refresh_token' }, { status: 400 });
+      return oauthError('invalid_grant', 'Invalid refresh_token');
     }
 
     // Issue a new access token
     const access_token = signToken({ type: 'access', scope: decoded.scope }, 60 * 60 * 1000); // 1 hour
     const new_refresh_token = signToken({ type: 'refresh', client_id: clientIdFinal, scope: decoded.scope }, 365 * 24 * 60 * 60 * 1000);
+
+    console.log("[OAUTH TOKEN] SUCCESS", {
+      grantType: grant_type,
+      accessTokenIssued: true,
+      refreshTokenIssued: true,
+      expiresIn: 3600,
+      scopePresent: !!decoded.scope,
+    });
 
     return NextResponse.json({
       access_token,
@@ -90,6 +122,6 @@ export async function POST(req: NextRequest) {
     });
 
   } else {
-    return NextResponse.json({ error: 'unsupported_grant_type' }, { status: 400 });
+    return oauthError('unsupported_grant_type', 'Unsupported grant type');
   }
 }
