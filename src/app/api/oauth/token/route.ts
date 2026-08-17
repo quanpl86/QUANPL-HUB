@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       access_token,
-      token_type: 'bearer',
+      token_type: 'Bearer',
       expires_in: 3600,
       refresh_token,
       scope: decoded.scope
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       access_token,
-      token_type: 'bearer',
+      token_type: 'Bearer',
       expires_in: 3600,
       refresh_token: new_refresh_token,
       scope: decoded.scope
