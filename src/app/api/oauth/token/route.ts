@@ -6,6 +6,8 @@ export async function POST(req: NextRequest) {
   let client_id: string | null = null;
   let code: string | null = null;
   let refresh_token_req: string | null = null;
+  let code_verifier: string | null = null;
+  let redirect_uri: string | null = null;
 
   try {
     const contentType = req.headers.get('content-type') || '';
@@ -22,7 +24,20 @@ export async function POST(req: NextRequest) {
       client_id = body.get('client_id');
       code = body.get('code');
       refresh_token_req = body.get('refresh_token');
+      code_verifier = body.get('code_verifier');
+      redirect_uri = body.get('redirect_uri');
     }
+
+    console.log("[OAUTH TOKEN] Payload received:", {
+      contentType,
+      grant_type,
+      client_id,
+      codePresent: !!code,
+      refreshTokenPresent: !!refresh_token_req,
+      codeVerifierPresent: !!code_verifier,
+      redirectUriPresent: !!redirect_uri
+    });
+
   } catch (e) {
     return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
   }
