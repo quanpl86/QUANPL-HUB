@@ -65,7 +65,9 @@ function createKingDragonHubMcpServer() {
     "get_editorial_guidelines",
     {
       description: "Lấy bộ quy tắc biên tập (Editorial Guidelines) của KingDragonHub.",
-      inputSchema: z.object({})
+      inputSchema: z.object({
+        include_details: z.boolean().optional().describe("Mặc định là true"),
+      })
     },
     async () => {
       try {
@@ -132,7 +134,7 @@ function createKingDragonHubMcpServer() {
             post_id: z.string(),
             anchor: z.string(),
           })),
-          schema_org: z.any().optional(),
+          schema_org: z.record(z.string(), z.any()).optional(),
           quality: z.object({
             overall: z.number(),
             factual_accuracy: z.number(),
