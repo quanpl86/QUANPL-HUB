@@ -8,6 +8,21 @@ export async function GET(req: NextRequest) {
   const redirect_uri = url.searchParams.get('redirect_uri');
   const state = url.searchParams.get('state');
   const scope = url.searchParams.get('scope') || 'blog:read policy:read draft:create offline_access';
+  const response_type = url.searchParams.get('response_type');
+  const code_challenge = url.searchParams.get('code_challenge');
+  const code_challenge_method = url.searchParams.get('code_challenge_method');
+  const resource = url.searchParams.get('resource');
+
+  console.log("[OAUTH AUTHORIZE] request", {
+    responseType: response_type,
+    clientId: client_id,
+    redirectUriPresent: !!redirect_uri,
+    statePresent: !!state,
+    scopePresent: !!scope,
+    codeChallengePresent: !!code_challenge,
+    codeChallengeMethod: code_challenge_method,
+    resourcePresent: !!resource,
+  });
 
   if (!client_id || !redirect_uri || !state) {
     return new NextResponse('Missing required OAuth parameters', { status: 400 });
@@ -82,6 +97,9 @@ export async function GET(req: NextRequest) {
           <input type="hidden" name="redirect_uri" value="${redirect_uri}" />
           <input type="hidden" name="state" value="${state}" />
           <input type="hidden" name="scope" value="${scope}" />
+          ${code_challenge ? `<input type="hidden" name="code_challenge" value="${code_challenge}" />` : ''}
+          ${code_challenge_method ? `<input type="hidden" name="code_challenge_method" value="${code_challenge_method}" />` : ''}
+          ${resource ? `<input type="hidden" name="resource" value="${resource}" />` : ''}
           <button type="submit">Cho phép kết nối</button>
         </form>
       </div>
@@ -103,6 +121,9 @@ export async function POST(req: NextRequest) {
   const redirect_uri = formData.get('redirect_uri') as string;
   const state = formData.get('state') as string;
   const scope = formData.get('scope') as string;
+  const code_challenge = formData.get('code_challenge') as string | null;
+  const code_challenge_method = formData.get('code_challenge_method') as string | null;
+  const resource = formData.get('resource') as string | null;
 
   if (!client_id || !redirect_uri || !state) {
     return new NextResponse('Missing parameters', { status: 400 });
@@ -114,6 +135,12 @@ export async function POST(req: NextRequest) {
   const redirectUrl = new URL(redirect_uri);
   redirectUrl.searchParams.set('code', code);
   redirectUrl.searchParams.set('state', state);
+
+  console.log("[OAUTH AUTHORIZE] redirect", {
+    redirectUriPresent: !!redirect_uri,
+    stateReturned: !!state,
+    codeCreated: true,
+  });
 
   return NextResponse.redirect(redirectUrl.toString());
 }
