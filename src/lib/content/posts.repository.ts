@@ -237,14 +237,14 @@ export class PostsRepository {
       is_ai_generated: true, // HARD-LOCK
       category_id: draftData.category_id || null,
       keywords: draftData.tags || [],
-      featured_image: draftData.featured_image || null,
-      featured_image_alt: draftData.featured_image_alt || null,
+      image_url: draftData.featured_image || null,
       meta_title: draftData.seo?.title || draftData.title,
       meta_description: draftData.seo?.description || draftData.excerpt,
       seo_keywords: {
         primary: draftData.seo?.primary_keyword,
         secondary: draftData.seo?.secondary_keywords,
-        quality_score: draftData.quality?.overall
+        quality_score: draftData.quality?.overall,
+        image_alt: draftData.featured_image_alt || null
       },
       schema_org: draftData.schema_org,
       source_task_id: draftData.task_id,

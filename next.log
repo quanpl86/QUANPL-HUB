@@ -11,3 +11,6 @@
   · serverActions
 
   Reload env: .env.local
+○ Compiling / ...
+ GET / 200 in 12.8s (next.js: 10.6s, application-code: 2.2s)
+ GET / 200 in 1861ms (next.js: 15ms, application-code: 1847ms)
