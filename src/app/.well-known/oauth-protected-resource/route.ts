@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
+import { getOAuthIssuer, getOAuthResource } from '@/lib/oauth-security';
 
 export async function GET() {
   return NextResponse.json({
-    resource: "https://kingdragonhub.com/api/mcp",
+    resource: getOAuthResource(),
     authorization_servers: [
-      "https://kingdragonhub.com"
+      getOAuthIssuer()
     ],
     scopes_supported: [
       "blog:read",

@@ -1,9 +1,7 @@
-export async function GET(req: Request) {
-  const host = req.headers.get('host');
-  // For tunneling like ngrok/cloudflared, it usually passes the original host.
-  // However, x-forwarded-proto might be https
-  const proto = req.headers.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
-  const issuer = `${proto}://${host}`;
+import { getOAuthIssuer } from '@/lib/oauth-security';
+
+export async function GET() {
+  const issuer = getOAuthIssuer();
 
   return Response.json({
     issuer,
@@ -12,6 +10,7 @@ export async function GET(req: Request) {
     response_types_supported: ["code"],
     grant_types_supported: ["authorization_code", "refresh_token"],
     token_endpoint_auth_methods_supported: ["client_secret_post", "client_secret_basic"],
+    code_challenge_methods_supported: ["S256"],
     scopes_supported: ["blog:read", "policy:read", "draft:create", "offline_access"]
   });
 }

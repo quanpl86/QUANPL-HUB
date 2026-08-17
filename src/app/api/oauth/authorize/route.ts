@@ -1,17 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAdmin } from '@/lib/auth-utils';
-import { signToken } from '@/lib/oauth-utils';
+import { issueAuthorizationCode } from '@/lib/oauth-code-store';
+import {
+  getOAuthClientId,
+  getOAuthResource,
+  isAllowedOAuthRedirectUri,
+  isValidPkceRequest,
+  normalizeOAuthScope,
+} from '@/lib/oauth-security';
+
+function oauthRequestError(description: string) {
+  console.warn('[OAUTH AUTHORIZE] REJECT', { description });
+  return new NextResponse(description, { status: 400 });
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const client_id = url.searchParams.get('client_id');
   const redirect_uri = url.searchParams.get('redirect_uri');
   const state = url.searchParams.get('state');
-  const scope = url.searchParams.get('scope') || 'blog:read policy:read draft:create offline_access';
+  const scope = normalizeOAuthScope(url.searchParams.get('scope'));
   const response_type = url.searchParams.get('response_type');
   const code_challenge = url.searchParams.get('code_challenge');
   const code_challenge_method = url.searchParams.get('code_challenge_method');
-  const resource = url.searchParams.get('resource');
+  const resource = url.searchParams.get('resource') || getOAuthResource();
 
   console.log("[OAUTH AUTHORIZE] request", {
     responseType: response_type,
@@ -24,8 +45,16 @@ export async function GET(req: NextRequest) {
     resourcePresent: !!resource,
   });
 
-  if (!client_id || !redirect_uri || !state) {
-    return new NextResponse('Missing required OAuth parameters', { status: 400 });
+  if (response_type !== 'code') return oauthRequestError('Unsupported response_type');
+  if (client_id !== getOAuthClientId()) return oauthRequestError('Unknown OAuth client');
+  if (!redirect_uri || !isAllowedOAuthRedirectUri(redirect_uri)) {
+    return oauthRequestError('Invalid redirect_uri');
+  }
+  if (!state) return oauthRequestError('Missing state');
+  if (!scope) return oauthRequestError('Invalid scope');
+  if (resource !== getOAuthResource()) return oauthRequestError('Invalid resource');
+  if (!isValidPkceRequest(code_challenge, code_challenge_method)) {
+    return oauthRequestError('Invalid PKCE parameters');
   }
 
   const isAdmin = await checkAdmin();
@@ -93,13 +122,14 @@ export async function GET(req: NextRequest) {
           <li class="danger">✗ KHÔNG XÓA DỮ LIỆU</li>
         </ul>
         <form method="POST" action="/api/oauth/authorize">
-          <input type="hidden" name="client_id" value="${client_id}" />
-          <input type="hidden" name="redirect_uri" value="${redirect_uri}" />
-          <input type="hidden" name="state" value="${state}" />
-          <input type="hidden" name="scope" value="${scope}" />
-          ${code_challenge ? `<input type="hidden" name="code_challenge" value="${code_challenge}" />` : ''}
-          ${code_challenge_method ? `<input type="hidden" name="code_challenge_method" value="${code_challenge_method}" />` : ''}
-          ${resource ? `<input type="hidden" name="resource" value="${resource}" />` : ''}
+          <input type="hidden" name="response_type" value="code" />
+          <input type="hidden" name="client_id" value="${escapeHtmlAttribute(client_id)}" />
+          <input type="hidden" name="redirect_uri" value="${escapeHtmlAttribute(redirect_uri)}" />
+          <input type="hidden" name="state" value="${escapeHtmlAttribute(state)}" />
+          <input type="hidden" name="scope" value="${escapeHtmlAttribute(scope)}" />
+          ${code_challenge ? `<input type="hidden" name="code_challenge" value="${escapeHtmlAttribute(code_challenge)}" />` : ''}
+          ${code_challenge_method ? `<input type="hidden" name="code_challenge_method" value="${escapeHtmlAttribute(code_challenge_method)}" />` : ''}
+          <input type="hidden" name="resource" value="${escapeHtmlAttribute(resource)}" />
           <button type="submit">Cho phép kết nối</button>
         </form>
       </div>
@@ -117,35 +147,56 @@ export async function POST(req: NextRequest) {
   }
 
   const formData = await req.formData();
+  const response_type = formData.get('response_type') as string | null;
   const client_id = formData.get('client_id') as string;
   const redirect_uri = formData.get('redirect_uri') as string;
   const state = formData.get('state') as string;
-  const scope = formData.get('scope') as string;
+  const scope = normalizeOAuthScope(formData.get('scope') as string | null);
   const code_challenge = formData.get('code_challenge') as string | null;
   const code_challenge_method = formData.get('code_challenge_method') as string | null;
-  const resource = formData.get('resource') as string | null;
+  const resource = (formData.get('resource') as string | null) || getOAuthResource();
 
-  if (!client_id || !redirect_uri || !state) {
-    return new NextResponse('Missing parameters', { status: 400 });
+  if (response_type !== 'code') return oauthRequestError('Unsupported response_type');
+  if (client_id !== getOAuthClientId()) return oauthRequestError('Unknown OAuth client');
+  if (!redirect_uri || !isAllowedOAuthRedirectUri(redirect_uri)) {
+    return oauthRequestError('Invalid redirect_uri');
+  }
+  if (!state) return oauthRequestError('Missing state');
+  if (!scope) return oauthRequestError('Invalid scope');
+  if (resource !== getOAuthResource()) return oauthRequestError('Invalid resource');
+  if (!isValidPkceRequest(code_challenge, code_challenge_method)) {
+    return oauthRequestError('Invalid PKCE parameters');
   }
 
-  // TEMPORARY DEBUG: Use a tiny code to test if ChatGPT is rejecting long strings
-  const code = "test_code_123";
-  
-  const redirectUrl = new URL(redirect_uri);
-  const storedRedirectUri = formData.get('redirect_uri') as string;
-  const storedState = formData.get('state') as string;
+  let code: string;
+  try {
+    code = await issueAuthorizationCode({
+      clientId: client_id,
+      redirectUri: redirect_uri,
+      scope,
+      resource,
+      codeChallenge: code_challenge,
+      codeChallengeMethod: code_challenge_method,
+    });
+  } catch (error) {
+    console.error('[OAUTH AUTHORIZE] code persistence failed', error);
+    return new NextResponse('OAuth server configuration error', { status: 500 });
+  }
 
+  const redirectUrl = new URL(redirect_uri);
   redirectUrl.searchParams.set('code', code);
-  redirectUrl.searchParams.set('state', storedState);
+  redirectUrl.searchParams.set('state', state);
 
   console.log("[OAUTH AUTHORIZE] redirect", {
-    redirectUriPresent: !!redirect_uri,
-    redirectUriExact: redirect_uri === storedRedirectUri,
-    stateReturned: !!storedState,
-    stateRoundTripExact: state === storedState,
+    redirectUriValidated: true,
+    stateReturned: true,
+    resourceValidated: true,
+    codeLength: code.length,
     codeCreated: true,
   });
 
+  // The consent form posts to this route. A 303 is required so the browser
+  // follows the OAuth callback with GET; NextResponse defaults to 307, which
+  // would preserve POST and ChatGPT rejects that callback with HTTP 400.
   return NextResponse.redirect(redirectUrl, 303);
 }

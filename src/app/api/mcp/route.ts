@@ -1,8 +1,13 @@
 import { McpServer, createMcpHandler } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { verifyToken } from "@/lib/oauth-utils";
+import { getOAuthIssuer, getOAuthResource } from "@/lib/oauth-security";
 import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Unknown error";
+}
 
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
@@ -80,12 +85,12 @@ function createKingDragonHubMcpServer() {
             },
           ],
         };
-      } catch (err: any) {
+      } catch (err: unknown) {
         return {
           content: [
             {
               type: "text",
-              text: JSON.stringify({ error: err.message }),
+              text: JSON.stringify({ error: errorMessage(err) }),
             },
           ],
           isError: true,
@@ -152,9 +157,9 @@ function createKingDragonHubMcpServer() {
           return {
             content: [{ type: "text", text: JSON.stringify(result) }],
           };
-        } catch (err: any) {
+        } catch (err: unknown) {
           return {
-            content: [{ type: "text", text: JSON.stringify({ error: err.message }) }],
+            content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }],
             isError: true,
           };
         }
@@ -178,17 +183,27 @@ export async function POST(req: Request) {
   // Support token via header or query param for SSE (EventSource doesn't support custom headers in browser, but SDK supports headers)
   const authHeader = req.headers.get("authorization");
   
-  const isDevBearer = authHeader === `Bearer ${secret}`;
+  const isDevBearer = process.env.MCP_ALLOW_STATIC_BEARER === "true"
+    && authHeader === `Bearer ${secret}`;
   let isOAuthToken = false;
   if (authHeader) {
     const decoded = verifyToken(authHeader);
-    if (decoded && decoded.type === 'access') {
+    if (decoded
+      && decoded.type === 'access'
+      && decoded.iss === getOAuthIssuer()
+      && decoded.aud === getOAuthResource()
+      && typeof decoded.scope === 'string') {
       isOAuthToken = true;
     }
   }
 
   if (!isDevBearer && !isOAuthToken) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response("Unauthorized", {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": `Bearer resource_metadata="${getOAuthIssuer()}/.well-known/oauth-protected-resource", scope="blog:read policy:read draft:create"`,
+      },
+    });
   }
 
   // Chuyển tiếp Request cho handler xử lý
