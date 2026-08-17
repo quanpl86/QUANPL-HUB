@@ -111,7 +111,7 @@ Strict Configuration Constraints:
   console.log("\n[Timeline] Output items from first run:");
   let foundApproval = null;
 
-  for (const item of response.output) {
+  for (const item of response.output as any[]) {
     if ((item.type as string) === "mcp_list_tools") {
       console.log(`[MCP LIST TOOLS] Server: ${item.server_label}`);
     } else if ((item.type as string) === "mcp_call") {
@@ -154,7 +154,7 @@ Strict Configuration Constraints:
   });
 
   console.log("\n[Timeline] Output items from continuation:");
-  for (const item of continuation.output) {
+  for (const item of continuation.output as any[]) {
     if (item.type === "mcp_call") {
       console.log(`[MCP CALL] ${item.name} -> ID: ${item.id}`);
     } else if (item.type === "mcp_call_response") {
