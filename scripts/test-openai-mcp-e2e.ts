@@ -112,13 +112,13 @@ Strict Configuration Constraints:
   let foundApproval = null;
 
   for (const item of response.output) {
-    if (item.type === "mcp_list_tools") {
+    if ((item.type as string) === "mcp_list_tools") {
       console.log(`[MCP LIST TOOLS] Server: ${item.server_label}`);
-    } else if (item.type === "mcp_call") {
+    } else if ((item.type as string) === "mcp_call") {
       console.log(`[MCP CALL] ${item.name} -> ID: ${item.id}`);
-    } else if (item.type === "mcp_call_response") {
+    } else if ((item.type as string) === "mcp_call_response") {
       console.log(`[MCP CALL RESPONSE] For Call ID: ${item.call_id}`);
-    } else if (item.type === "mcp_approval_request") {
+    } else if ((item.type as string) === "mcp_approval_request") {
       console.log(`\n[APPROVAL REQUIRED] Tool: ${item.name}`);
       console.log("Arguments:\n", JSON.stringify(item.arguments, null, 2));
       foundApproval = item;
