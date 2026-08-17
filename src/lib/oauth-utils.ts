@@ -13,8 +13,8 @@ export function signToken(payload: object, expiresInMs: number): string {
 
 export function verifyToken(token: string): any | null {
   try {
-    if (token.startsWith('Bearer ')) {
-      token = token.slice(7);
+    if (token.toLowerCase().startsWith('bearer ')) {
+      token = token.slice(7).trim();
     }
     const decoded = Buffer.from(token, 'base64url').toString('utf8');
     const lastDotIdx = decoded.lastIndexOf('.');
