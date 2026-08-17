@@ -846,7 +846,7 @@ async function sendTelegramNotification(topic: string, slug: string) {
   if (!token || !chatId) return;
 
   try {
-    const dashboardUrl = process.env.DASHBOARD_URL || 'http://localhost:3000';
+    const dashboardUrl = process.env.DASHBOARD_URL || 'https://kingdragonhub.com';
     const message = `🐉 *KING DRAGON HUB*\n\n📝 Bài viết: *${topic}*\n\n🔗 ${dashboardUrl}/admin/posts/edit/${slug}`;
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
@@ -862,7 +862,7 @@ async function sendEmailNotification(topic: string, slug: string) {
   if (!user || !pass) return;
 
   try {
-    const dashboardUrl = process.env.DASHBOARD_URL || 'http://localhost:3000';
+    const dashboardUrl = process.env.DASHBOARD_URL || 'https://kingdragonhub.com';
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
     await transporter.sendMail({
       from: `"KING DRAGON HUB" <${user}>`,

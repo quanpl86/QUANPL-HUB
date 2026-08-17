@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { EditorialPolicyRepository } from "../editorial/editorial-policy.repository";
+import { sendDraftEmailNotification } from "../notifications/email";
 
 // Helper to get an admin Supabase client for backend operations
 function getSupabaseAdmin() {
@@ -146,23 +147,21 @@ export class PostsRepository {
     if (!draftData.idempotency_key) {
       throw new Error("Missing idempotency_key");
     }
-    if (!draftData.task_id) {
-      throw new Error("Missing task_id");
-    }
-
-    // Verify task_id exists in content_tasks
-    const { data: task, error: taskError } = await supabase
-      .from("content_tasks")
-      .select("id")
-      .eq("id", draftData.task_id)
-      .maybeSingle();
-      
-    if (taskError && taskError.code !== '22P02') {
-      // 22P02 is invalid input syntax for uuid, which also means unknown task_id
-      throw new Error(`DATABASE_ERROR: ${taskError.message}`);
-    }
-    if (!task) {
-      throw new Error("UNKNOWN_TASK_ID");
+    // Verify task_id exists in content_tasks ONLY IF PROVIDED
+    if (draftData.task_id) {
+      const { data: task, error: taskError } = await supabase
+        .from("content_tasks")
+        .select("id")
+        .eq("id", draftData.task_id)
+        .maybeSingle();
+        
+      if (taskError && taskError.code !== '22P02') {
+        // 22P02 is invalid input syntax for uuid, which also means unknown task_id
+        throw new Error(`DATABASE_ERROR: ${taskError.message}`);
+      }
+      if (!task) {
+        throw new Error("UNKNOWN_TASK_ID");
+      }
     }
 
     // 2. Check Idempotency Replay
@@ -225,15 +224,21 @@ export class PostsRepository {
       throw new Error("QUALITY_GATE_FAILED: Source quality below threshold");
     }
 
+    // Build Rich Content (AIO/SEO Standards)
+    const finalContent = buildRichContent(draftData);
+
     // 4. Chuẩn bị dữ liệu và Hard-Lock Governance
     const insertData: any = {
       title: draftData.title,
       slug: draftData.slug,
       excerpt: draftData.excerpt,
-      content: draftData.content_markdown,
+      content: finalContent,
       is_published: false, // HARD-LOCK
       is_ai_generated: true, // HARD-LOCK
+      category_id: draftData.category_id || null,
       keywords: draftData.tags || [],
+      featured_image: draftData.featured_image || null,
+      featured_image_alt: draftData.featured_image_alt || null,
       meta_title: draftData.seo?.title || draftData.title,
       meta_description: draftData.seo?.description || draftData.excerpt,
       seo_keywords: {
@@ -295,6 +300,9 @@ async function handleDraftSuccess(supabase: any, data: any, draftData: any, acti
     }).eq("id", draftData.task_id);
   }
 
+  // Gửi email thông báo cho Admin (không await để tránh chặn response của API)
+  sendDraftEmailNotification(data.title, data.id).catch(console.error);
+
   return {
     success: true,
     created: true,
@@ -306,4 +314,57 @@ async function handleDraftSuccess(supabase: any, data: any, draftData: any, acti
     source_task_id: draftData.task_id,
     policy_version: activePolicy.policy_version
   };
+}
+
+// Helper: Render AIO & SEO structured data into final Markdown
+function buildRichContent(draftData: any): string {
+  let md = "";
+
+  // 1. TLDR (Answer First - AIO)
+  if (draftData.aio?.tldr) {
+    md += `> **Tóm tắt (TLDR):** ${draftData.aio.tldr}\n\n`;
+  }
+
+  // 2. Key Takeaways (AIO)
+  if (draftData.aio?.key_takeaways && draftData.aio.key_takeaways.length > 0) {
+    md += `## 🎯 Những Điểm Chính (Key Takeaways)\n`;
+    draftData.aio.key_takeaways.forEach((point: string) => {
+      md += `- ${point}\n`;
+    });
+    md += `\n`;
+  }
+
+  // 3. Core Content (SEO & Semantic Headings)
+  md += `${draftData.content_markdown}\n\n`;
+
+  // 4. FAQ (AIO - Structured Information)
+  if (draftData.aio?.faq && draftData.aio.faq.length > 0) {
+    md += `--- \n## ❓ Câu Hỏi Thường Gặp (FAQ)\n`;
+    draftData.aio.faq.forEach((item: any) => {
+      md += `**Q: ${item.question}**\n${item.answer}\n\n`;
+    });
+  }
+
+  // 5. Internal Links (SEO Semantic Topic Cluster)
+  if (draftData.internal_links && draftData.internal_links.length > 0) {
+    md += `--- \n## 🔗 Đọc Thêm\n`;
+    draftData.internal_links.forEach((link: any) => {
+      md += `- [${link.anchor}](${link.url})\n`;
+    });
+    md += `\n`;
+  }
+
+  // 6. References (E-E-A-T & Academic Integrity)
+  if (draftData.references && draftData.references.length > 0) {
+    md += `--- \n## 📚 Nguồn Tham Khảo\n`;
+    draftData.references.forEach((ref: any, index: number) => {
+      md += `${index + 1}. [${ref.title}](${ref.url}) `;
+      if (ref.author || ref.year) {
+        md += `*(${ref.author || 'N/A'}, ${ref.year || 'N/A'})* `;
+      }
+      md += `- Nguồn Tier: ${ref.tier || 'N/A'}\n`;
+    });
+  }
+
+  return md;
 }

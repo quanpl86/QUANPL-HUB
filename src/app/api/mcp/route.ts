@@ -116,6 +116,8 @@ function createKingDragonHubMcpServer() {
           content_markdown: z.string(),
           category_id: z.string().optional(),
           tags: z.array(z.string()).optional(),
+          featured_image: z.string().optional(),
+          featured_image_alt: z.string().optional(),
           seo: z.object({
             title: z.string(),
             description: z.string(),
