@@ -186,6 +186,18 @@ export class PostsRepository {
       await EditorialCalendarRepository.claimForWriting(supabase, calendarId);
     }
 
+    try {
+      return await this.insertDraft(supabase, draftData, taskId, calendarId);
+    } catch (err: any) {
+      if (calendarId) {
+        await EditorialCalendarRepository.markWriteFailed(supabase, calendarId, err.message || String(err)).catch(console.error);
+      }
+      throw err;
+    }
+  }
+
+  private static async insertDraft(supabase: any, draftData: any, taskId: string | null, calendarId: string | null) {
+
     // Verify task_id exists in content_tasks ONLY IF PROVIDED
     if (taskId) {
       const { data: task, error: taskError } = await supabase
@@ -389,6 +401,150 @@ export class PostsRepository {
       throw err;
     }
   }
+
+  static async updateDraft(draftData: any) {
+    const supabase = getSupabaseAdmin();
+    const calendarId = sanitizeTaskId(draftData.calendar_id);
+    if (!calendarId) throw new Error("calendar_id is required for update_blog_draft");
+    const slot = await EditorialCalendarRepository.get(supabase, calendarId);
+    if (!slot.result_post_id) throw new Error("NO_DRAFT: create_blog_draft first");
+    if (slot.status !== "revision_requested" && slot.status !== "drafted") {
+      throw new Error("INVALID_STATUS: only rejected or waiting drafts can be updated");
+    }
+    if (slot.week_id) {
+      const { data: week, error } = await supabase
+        .from("editorial_weeks")
+        .select("status")
+        .eq("id", slot.week_id)
+        .maybeSingle();
+      if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+      if (!week || week.status !== "approved") {
+        throw new Error("WEEK_NOT_APPROVED: the weekly list must be approved before writing");
+      }
+    }
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .select("id, is_published, slug")
+      .eq("id", slot.result_post_id)
+      .maybeSingle();
+    if (postError) throw new Error(`DATABASE_ERROR: ${postError.message}`);
+    if (!post) throw new Error("DRAFT_NOT_FOUND");
+    if (post.is_published) throw new Error("PLAN_LOCKED: published posts cannot be updated by MCP");
+
+    const prepared = await prepareValidatedDraft(supabase, draftData);
+    const { error: updError } = await supabase.from("posts").update({
+      title: prepared.title,
+      excerpt: prepared.excerpt,
+      content: prepared.content,
+      image_url: prepared.image_url,
+      category_id: prepared.category_id,
+      keywords: prepared.keywords,
+      tags: prepared.tags,
+      meta_title: prepared.meta_title,
+      meta_description: prepared.meta_description,
+      seo_keywords: prepared.seo_keywords,
+      schema_org: prepared.schema_org,
+      article_package: prepared.article_package,
+      is_published: false,
+      updated_at: new Date().toISOString(),
+    }).eq("id", post.id);
+    if (updError) {
+      await EditorialCalendarRepository.markWriteFailed(supabase, calendarId, updError.message).catch(console.error);
+      throw new Error("Failed to update draft: " + updError.message);
+    }
+    await EditorialCalendarRepository.markDrafted(supabase, calendarId, post.id, prepared.seoScore);
+    sendDraftEmailNotification(prepared.title, post.id).catch(console.error);
+    return {
+      success: true,
+      created: false,
+      updated: true,
+      draft: {
+        id: post.id,
+        slug: post.slug,
+        review_url: `https://kingdragonhub.com/admin/posts/edit/${post.id}`,
+      },
+    };
+  }
+}
+
+async function prepareValidatedDraft(supabase: any, draftData: any) {
+  const activePolicy = await EditorialPolicyRepository.getActivePolicy();
+  if (draftData.policy_version !== activePolicy.policy_version) {
+    throw new Error("QUALITY_GATE_FAILED: policy_version mismatch");
+  }
+  if (draftData.policy_hash !== activePolicy.policy_hash) {
+    throw new Error("QUALITY_GATE_FAILED: policy_hash mismatch");
+  }
+  if ((draftData.references?.length || 0) < activePolicy.source_policy.minimum_sources) {
+    throw new Error("QUALITY_GATE_FAILED: Not enough references");
+  }
+  if ((draftData.internal_links?.length || 0) < activePolicy.internal_linking.minimum_links) {
+    throw new Error("QUALITY_GATE_FAILED: Not enough internal_links");
+  }
+  if (draftData.quality.hard_fail_conditions?.length) {
+    throw new Error(`QUALITY_GATE_FAILED: Hard fail conditions met - ${draftData.quality.hard_fail_conditions.join(", ")}`);
+  }
+  if (draftData.quality.overall < activePolicy.quality_gate.overall_min) {
+    throw new Error("QUALITY_GATE_FAILED: Overall quality below threshold");
+  }
+
+  const pkg = normalizeArticlePackage(draftData);
+  const mediaCheck = validateArticlePackage(pkg, {
+    requireV7Fields: process.env.MCP_REQUIRE_V7_FIELDS === "true",
+  });
+  if (mediaCheck.errors.length > 0) {
+    throw new Error(`QUALITY_GATE_FAILED: ${formatPackageErrors(mediaCheck.errors)}`);
+  }
+  const compiled = await compileArticleHtml(pkg);
+  const seoReport = analyzeSystemSeo({
+    title: draftData.title,
+    meta_title: draftData.seo?.title || draftData.title,
+    meta_description: draftData.seo?.description || draftData.excerpt,
+    excerpt: draftData.excerpt,
+    image_url: pkg.featured_image?.url,
+    image_alt: pkg.featured_image?.alt,
+    content: compiled.html,
+    content_markdown: pkg.content_markdown,
+    primary_keyword: draftData.seo?.primary_keyword,
+    faq_count: pkg.aio.faq.length,
+  });
+  if (seoReport.score < SEO_SCORE_MIN) {
+    throw new Error(formatSeoGateError(seoReport));
+  }
+  const taxonomy = await resolvePostTaxonomy(supabase, {
+    category_id: draftData.category_id,
+    category: draftData.category,
+    subject: draftData.subject,
+    field: draftData.field,
+    title: draftData.title,
+    tags: draftData.tags,
+    seo: draftData.seo,
+  });
+  const warnings = dedupeIssues([...mediaCheck.warnings, ...compiled.warnings, ...taxonomy.warnings]);
+  return {
+    title: draftData.title,
+    excerpt: draftData.excerpt,
+    content: compiled.html,
+    category_id: taxonomy.category_id,
+    keywords: taxonomy.keywords,
+    tags: taxonomy.tags,
+    image_url: pkg.featured_image?.url || null,
+    meta_title: draftData.seo?.title || draftData.title,
+    meta_description: draftData.seo?.description || draftData.excerpt,
+    seo_keywords: {
+      primary: draftData.seo?.primary_keyword,
+      secondary: draftData.seo?.secondary_keywords,
+      quality_score: draftData.quality?.overall,
+      seo_score: seoReport.score,
+    },
+    schema_org: draftData.schema_org,
+    article_package: {
+      ...buildArticlePackageSnapshot(pkg, warnings),
+      category: taxonomy.category,
+      tags: taxonomy.tags,
+    },
+    seoScore: seoReport.score,
+  };
 }
 
 async function handleDraftSuccess(
@@ -403,7 +559,7 @@ async function handleDraftSuccess(
   const calendarId = sanitizeTaskId(draftData.calendar_id);
   if (calendarId) {
     try {
-      await EditorialCalendarRepository.markDrafted(supabase, calendarId, data.id);
+      await EditorialCalendarRepository.markDrafted(supabase, calendarId, data.id, seoScore);
     } catch (error) {
       console.error("[PostsRepository] mark calendar drafted failed:", error);
     }

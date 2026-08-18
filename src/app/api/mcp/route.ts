@@ -49,7 +49,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.7.0",
+    version: "7.8.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -125,7 +125,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.7.0",
+          mcp_version: "7.8.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -136,6 +136,7 @@ function createKingDragonHubMcpServer() {
             "add_editorial_comment",
             "get_due_editorial_slots",
             "list_editorial_calendar",
+            "update_blog_draft",
           ],
           review_desk: "/admin/editorial",
           calendar_workflow: {
@@ -248,7 +249,7 @@ function createKingDragonHubMcpServer() {
     {
       description: "List individual calendar slots. Prefer list_editorial_weeks for the weekly review loop. Use get_due_editorial_slots to find what to write today.",
       inputSchema: z.object({
-        status: z.enum(["proposed", "approved", "revision_requested", "writing", "drafted", "cancelled"]).optional(),
+        status: z.enum(["proposed", "approved", "revision_requested", "writing", "drafted", "published", "cancelled"]).optional(),
       }),
     },
     async ({ status }) => {
@@ -264,7 +265,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_due_editorial_slots",
     {
-      description: "Return approved slots whose scheduled datetime has arrived in Asia/Ho_Chi_Minh, plus upcoming approved slots. Call this at the start of every writing session. Write only the due list. Do not write upcoming slots. ChatGPT cannot auto-wake; the user must open this conversation on the due day.",
+      description: "Return work for this session. due = week-approved slots that are due and have no draft yet — create_blog_draft(calendar_id). revise = drafted articles the admin rejected — update_blog_draft(calendar_id). blocked = slot looks due but the weekly list is not approved; do not write. upcoming = approved but not due yet. Never write blocked or upcoming.",
       inputSchema: z.object({}),
     },
     async () => {
@@ -275,7 +276,7 @@ function createKingDragonHubMcpServer() {
             type: "text",
             text: JSON.stringify({
               ...result,
-              instruction: "Write each due slot now with generate_and_upload_blog_image then create_blog_draft(calendar_id). Leave upcoming slots untouched. After each draft the admin receives a review email.",
+              instruction: "Write due[] with create_blog_draft(calendar_id). Fix revise[] with update_blog_draft(calendar_id) after reading admin comments. Ignore blocked[] until the admin approves the week. Do not write upcoming[].",
             }),
           }],
         };
@@ -411,6 +412,54 @@ function createKingDragonHubMcpServer() {
           const { id, ...patch } = input;
           const slot = await EditorialCalendarRepository.revise(getSupabaseAdmin(), id, patch);
           return { content: [{ type: "text", text: JSON.stringify({ slot }) }] };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "update_blog_draft",
+      {
+        description: "Revise an existing DRAFT after admin rejected the article. calendar_id required. Same Article Package v7 gates as create_blog_draft. Only DRAFT→DRAFT. Published posts are rejected. After success the slot returns to drafted (awaiting review).",
+        inputSchema: z.object({
+          calendar_id: z.string(),
+          schema_version: z.string(),
+          idempotency_key: z.string(),
+          policy_version: z.string(),
+          policy_hash: z.string(),
+          title: z.string(),
+          slug: z.string(),
+          excerpt: z.string(),
+          content_markdown: z.string(),
+          field: z.string().optional(),
+          subject: z.string().optional(),
+          category_id: z.string().optional(),
+          category: z.string().optional(),
+          tags: z.array(z.string()).optional(),
+          featured_image: z.object({
+            purpose: z.literal("article_cover"),
+            prompt: z.string(),
+            alt: z.string(),
+            caption: z.string().optional(),
+            suggested_filename: z.string().optional(),
+            url: z.string().nullable(),
+          }),
+          featured_image_url: z.string().nullable(),
+          featured_image_alt: z.string().optional(),
+          inline_images: z.array(z.any()),
+          seo: z.any(),
+          aio: z.any(),
+          references: z.array(z.any()),
+          internal_links: z.array(z.any()),
+          quality: z.any(),
+          task_id: z.string().optional().nullable(),
+        }),
+      },
+      async (draftData) => {
+        try {
+          const result = await PostsRepository.updateDraft(draftData);
+          return { content: [{ type: "text", text: JSON.stringify(result) }] };
         } catch (err: unknown) {
           return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
         }

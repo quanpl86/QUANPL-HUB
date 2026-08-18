@@ -11,6 +11,7 @@ import { PreviewModal } from '@/components/admin/PreviewModal';
 import { ArrowLeft, Loader2, Eye, Maximize, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { CoverImageUpload } from '@/components/admin/CoverImageUpload';
+import { EditorialDraftReview } from '@/components/admin/editorial/EditorialDraftReview';
 import dynamic from 'next/dynamic';
 
 const CyberEditor = dynamic(() => import('@/components/admin/editor/CyberEditor').then(mod => mod.CyberEditor), {
@@ -171,6 +172,8 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
           </CyberButton>
         </div>
       </div>
+
+      <EditorialDraftReview postId={id} />
 
       <form ref={formRef} onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 space-y-6">

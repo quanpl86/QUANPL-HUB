@@ -26,6 +26,7 @@ import {
   approveEditorialWeek,
   cancelEditorialSlot,
   cancelEditorialWeek,
+  rejectEditorialDraft,
   releaseEditorialSlotNow,
   reorderEditorialSlots,
   requestEditorialRevision,
@@ -35,7 +36,7 @@ import {
 } from '@/app/actions/editorial-calendar';
 import { isSlotDue, type EditorialSlot } from '@/lib/content/editorial-calendar';
 import type { EditorialComment } from '@/lib/content/editorial-comments';
-import { DEFAULT_REVISION_CONSTRAINTS, isoWeekLabel, type RevisionConstraints } from '@/lib/content/editorial-plan';
+import { DEFAULT_REVISION_CONSTRAINTS, computeEditorialPerformance, isoWeekLabel, type RevisionConstraints } from '@/lib/content/editorial-plan';
 import type { EditorialWeek } from '@/lib/content/editorial-week';
 
 const WEEK_LABELS: Record<string, string> = {
@@ -59,7 +60,8 @@ const SLOT_LABELS: Record<string, string> = {
   approved: 'Đã duyệt',
   revision_requested: 'Đã yêu cầu ChatGPT sửa',
   writing: 'Đang viết bài',
-  drafted: 'Đã có bản nháp',
+  drafted: 'Chờ bạn đọc bài',
+  published: 'Đã đăng — xong',
   cancelled: 'Đã hủy',
 };
 
@@ -78,6 +80,8 @@ const EVENT_LABELS: Record<string, string> = {
   revised: 'ChatGPT gửi bản sửa',
   approved: 'Bạn đã duyệt và khóa tuần',
   cancelled: 'Bạn đã hủy tuần',
+  article_rejected: 'Bạn trả bài — ChatGPT cần sửa',
+  article_published: 'Bạn đã đăng bài — task xong',
 };
 
 const DIFF_FIELD_LABELS: Record<string, string> = {
@@ -147,6 +151,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
     ready: weeks.filter((week) => week.status === 'revision_ready').length,
     approved: weeks.filter((week) => week.status === 'approved').length,
   };
+  const performance = computeEditorialPerformance(weeks);
 
   const replaceWeek = (updated: EditorialWeek) => {
     setWeeks((current) => current.map((week) => (week.id === updated.id ? updated : week)));
@@ -195,6 +200,21 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
             <p className="text-[11px] text-muted mt-1">{hint}</p>
           </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="border border-brand-orange/20 p-4 space-y-1">
+          <p className="text-sm font-semibold">Hiệu suất lập kế hoạch</p>
+          <p className="text-sm">Đạt: {performance.planning.passed} tuần · Không đạt: {performance.planning.failed} tuần</p>
+          <p className="text-sm">Đang xem: {performance.planning.in_review} · Trung bình số lần sửa: {performance.planning.avg_revisions}</p>
+          <p className="text-sm font-semibold">Tỉ lệ đạt: {performance.planning.pass_rate}%</p>
+        </div>
+        <div className="border border-brand-orange/20 p-4 space-y-1">
+          <p className="text-sm font-semibold">Hiệu suất viết bài</p>
+          <p className="text-sm">Chờ đọc: {performance.writing.drafted} · Đã đăng: {performance.writing.published} · Bị trả: {performance.writing.rejected}</p>
+          <p className="text-sm">Lần gửi draft lỗi: {performance.writing.write_fails}{performance.writing.avg_seo != null ? ` · Điểm SEO TB: ${performance.writing.avg_seo}` : ''}</p>
+          <p className="text-sm font-semibold">Tỉ lệ đăng / bài đã viết: {performance.writing.pass_rate}%</p>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -508,6 +528,7 @@ function WeekWorkspace({
                   index={index}
                   pending={pending}
                   planLocked={briefLocked}
+                  weekApproved={week.status === 'approved'}
                   startTransition={startTransition}
                   onSlot={onSlot}
                 />
@@ -525,6 +546,7 @@ function SortableSlotCard(props: {
   index: number;
   pending: boolean;
   planLocked: boolean;
+  weekApproved: boolean;
   startTransition: (action: () => void | Promise<void>) => void;
   onSlot: (slot: EditorialSlot) => void;
 }) {
@@ -541,6 +563,7 @@ function SlotEditor({
   index,
   pending,
   planLocked,
+  weekApproved,
   startTransition,
   onSlot,
   dragHandle,
@@ -549,14 +572,17 @@ function SlotEditor({
   index: number;
   pending: boolean;
   planLocked?: boolean;
+  weekApproved?: boolean;
   startTransition: (action: () => void | Promise<void>) => void;
   onSlot: (slot: EditorialSlot) => void;
   dragHandle: { attributes: any; listeners: any };
 }) {
   const [draft, setDraft] = useState(toDraft(slot));
   const [note, setNote] = useState('');
+  const [rejectNote, setRejectNote] = useState('');
   const due = isSlotDue(slot);
-  const locked = Boolean(planLocked) || slot.status === 'cancelled' || slot.status === 'drafted';
+  const locked = Boolean(planLocked) || slot.status === 'cancelled' || slot.status === 'drafted' || slot.status === 'published';
+  const canWrite = Boolean(weekApproved) && (slot.status === 'approved' || slot.status === 'writing');
 
   React.useEffect(() => {
     setDraft(toDraft(slot));
@@ -600,6 +626,7 @@ function SlotEditor({
               {slot.scheduled_time ? ` ${slot.scheduled_time}` : ''}
               {slot.status === 'approved' && due ? ' · đến hạn' : ''}
               {slot.status === 'approved' && !due ? ' · chưa đến giờ' : ''}
+              {canWrite ? '' : slot.status === 'approved' ? ' · chưa duyệt cả tuần nên chưa viết được' : ''}
             </p>
             {slot.result_post_id && (
               <a href={`/admin/posts/edit/${slot.result_post_id}`} className="tech-mono text-[11px] text-brand-orange underline uppercase">
@@ -793,7 +820,46 @@ function SlotEditor({
               </button>
             </div>
           )}
-          {slot.status === 'approved' && !due && (
+          {slot.status === 'approved' && !weekApproved && (
+            <p className="text-sm text-brand-orange">
+              Bài này đã duyệt riêng nhưng cả tuần chưa duyệt. ChatGPT không viết được cho đến khi bạn bấm Duyệt cả tuần.
+            </p>
+          )}
+          {slot.status === 'drafted' && slot.result_post_id && (
+            <div className="space-y-2 border border-brand-orange/20 p-3">
+              <p className="text-sm">Hệ thống đã nhận bản nháp. Đọc bài rồi đăng hoặc trả lại ChatGPT.</p>
+              <textarea
+                value={rejectNote}
+                onChange={(event) => setRejectNote(event.target.value)}
+                placeholder="Nếu trả bài: ghi vì sao và cần sửa gì"
+                className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
+                rows={3}
+              />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  disabled={pending}
+                  onClick={() => startTransition(async () => {
+                    try {
+                      onSlot({ ...(await rejectEditorialDraft(slot.id, rejectNote)), comments: slot.comments });
+                      setRejectNote('');
+                      toast.success('Đã trả bài. Lần sau bảo ChatGPT: check tuần và sửa bài bị trả.');
+                    } catch (error: any) {
+                      toast.error(humanError(error.message));
+                    }
+                  })}
+                  className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
+                >
+                  Trả bài cho ChatGPT
+                </button>
+              </div>
+            </div>
+          )}
+          {slot.status === 'revision_requested' && slot.result_post_id && (
+            <p className="text-sm text-brand-orange">
+              Đã trả bài. ChatGPT sẽ thấy khi bạn bảo: check tuần / sửa bài bị trả.
+            </p>
+          )}
+          {canWrite && !due && (
             <button
               disabled={pending}
               onClick={() => startTransition(async () => {

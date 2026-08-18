@@ -4,6 +4,8 @@ import { getSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 import { checkAdmin } from '@/lib/auth-utils';
+import { EditorialCalendarRepository } from '@/lib/content/editorial-calendar';
+import { EditorialPlanAudit } from '@/lib/content/editorial-plan';
 
 // Helper để tạo slug chuẩn tiếng Việt
 function slugify(text: string) {
@@ -128,7 +130,23 @@ export async function updatePost(id: any, formData: FormData, content: string) {
     return { success: false, error: error.message };
   }
 
+  if (isPublished) {
+    const slots = await EditorialCalendarRepository.markPublishedByPostId(getSupabaseAdmin(), id);
+    for (const slot of slots) {
+      if (slot.week_id) {
+        await EditorialPlanAudit.log(getSupabaseAdmin(), {
+          week_id: slot.week_id,
+          slot_id: slot.id,
+          event: 'article_published',
+          actor: 'admin',
+          payload: { post_id: id },
+        }).catch(console.error);
+      }
+    }
+  }
+
   revalidatePath('/admin/posts');
+  revalidatePath('/admin/editorial');
   revalidatePath('/sitemap.xml');
   if (slug) revalidatePath(`/posts/${slug}`); // Revalidate bài viết cụ thể
   revalidatePath('/');

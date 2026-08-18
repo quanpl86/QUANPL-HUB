@@ -13,6 +13,7 @@ export const EDITORIAL_SLOT_STATUSES = [
   "revision_requested",
   "writing",
   "drafted",
+  "published",
   "cancelled",
 ] as const;
 
@@ -46,6 +47,10 @@ export type EditorialSlot = {
   status: EditorialSlotStatus;
   item_order: number;
   result_post_id: string | null;
+  write_attempts: number;
+  write_fails: number;
+  last_write_error: string | null;
+  last_seo_score: number | null;
   last_due_reminder_at: string | null;
   comments: import("./editorial-comments").EditorialComment[];
   created_at: string;
@@ -206,6 +211,10 @@ export function toSlot(row: any): EditorialSlot {
     status: row.status,
     item_order: Number(row.item_order || 0),
     result_post_id: row.result_post_id,
+    write_attempts: Number(row.write_attempts || 0),
+    write_fails: Number(row.write_fails || 0),
+    last_write_error: row.last_write_error || null,
+    last_seo_score: row.last_seo_score == null ? null : Number(row.last_seo_score),
     last_due_reminder_at: row.last_due_reminder_at || null,
     comments: [],
     created_at: row.created_at,
@@ -434,6 +443,9 @@ export class EditorialCalendarRepository {
         throw new Error("WEEK_NOT_APPROVED: the weekly list must be approved before writing");
       }
     }
+    if (slot.result_post_id) {
+      throw new Error("USE_UPDATE_BLOG_DRAFT: this slot already has a draft");
+    }
     if (slot.status !== "approved" && slot.status !== "writing") {
       throw new Error("CALENDAR_NOT_APPROVED: only approved slots can be written");
     }
@@ -443,6 +455,10 @@ export class EditorialCalendarRepository {
       );
     }
     if (slot.status === "approved") {
+      await supabase
+        .from("editorial_calendar")
+        .update({ write_attempts: (slot.write_attempts || 0) + 1 })
+        .eq("id", id);
       return this.setStatus(supabase, id, "writing");
     }
     return slot;
@@ -465,10 +481,16 @@ export class EditorialCalendarRepository {
     return toSlot(data);
   }
 
-  static async markDrafted(supabase: any, id: string, postId: string) {
+  static async markDrafted(supabase: any, id: string, postId: string, seoScore?: number | null) {
+    const payload: Record<string, unknown> = {
+      status: "drafted",
+      result_post_id: postId,
+      last_write_error: null,
+    };
+    if (seoScore != null) payload.last_seo_score = seoScore;
     const { data, error } = await supabase
       .from("editorial_calendar")
-      .update({ status: "drafted", result_post_id: postId })
+      .update(payload)
       .eq("id", id)
       .select("*")
       .single();
@@ -476,21 +498,91 @@ export class EditorialCalendarRepository {
     return toSlot(data);
   }
 
+  static async markWriteFailed(supabase: any, id: string, message: string) {
+    const slot = await this.get(supabase, id);
+    const { data, error } = await supabase
+      .from("editorial_calendar")
+      .update({
+        status: slot.result_post_id ? "revision_requested" : "approved",
+        write_fails: (slot.write_fails || 0) + 1,
+        last_write_error: message.slice(0, 500),
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+    return toSlot(data);
+  }
+
+  static async markPublishedByPostId(supabase: any, postId: string) {
+    const { data, error } = await supabase
+      .from("editorial_calendar")
+      .update({ status: "published" })
+      .eq("result_post_id", postId)
+      .select("*");
+    if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+    return ((data || []) as unknown[]).map(toSlot);
+  }
+
+  static async getByPostId(supabase: any, postId: string) {
+    const { data, error } = await supabase
+      .from("editorial_calendar")
+      .select("*")
+      .eq("result_post_id", postId)
+      .maybeSingle();
+    if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+    return data ? toSlot(data) : null;
+  }
+
   static async listDue(supabase: any, now = new Date()): Promise<{
     timezone: string;
     now: string;
     due: EditorialSlot[];
+    revise: EditorialSlot[];
     upcoming: EditorialSlot[];
+    blocked: Array<EditorialSlot & { blocked_reason: string }>;
   }> {
     const writable = await this.list(supabase);
-    const candidates = writable.filter((slot: EditorialSlot) =>
-      (slot.status === "approved" || slot.status === "writing") && !slot.result_post_id
+    const weekIds = [...new Set(writable.map((slot) => slot.week_id).filter(Boolean))] as string[];
+    const weekStatus = new Map<string, string>();
+    if (weekIds.length) {
+      const { data, error } = await supabase.from("editorial_weeks").select("id, status").in("id", weekIds);
+      if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+      for (const week of data || []) weekStatus.set(week.id, week.status);
+    }
+    const weekApproved = (slot: EditorialSlot) =>
+      !slot.week_id || weekStatus.get(slot.week_id) === "approved";
+
+    const blocked = writable
+      .filter((slot) =>
+        (slot.status === "approved" || slot.status === "writing") &&
+        !slot.result_post_id &&
+        isSlotDue(slot, now) &&
+        !weekApproved(slot)
+      )
+      .map((slot) => ({
+        ...slot,
+        blocked_reason: "WEEK_NOT_APPROVED: admin must approve the whole weekly list before writing",
+      }));
+
+    const writeCandidates = writable.filter((slot) =>
+      weekApproved(slot) &&
+      (slot.status === "approved" || slot.status === "writing") &&
+      !slot.result_post_id
     );
+    const revise = writable.filter((slot) =>
+      weekApproved(slot) &&
+      slot.status === "revision_requested" &&
+      Boolean(slot.result_post_id)
+    );
+
     return {
       timezone: EDITORIAL_TIMEZONE,
       now: now.toISOString(),
-      due: candidates.filter((slot) => isSlotDue(slot, now)),
-      upcoming: candidates.filter((slot) => !isSlotDue(slot, now)),
+      due: writeCandidates.filter((slot) => isSlotDue(slot, now)),
+      revise,
+      upcoming: writeCandidates.filter((slot) => !isSlotDue(slot, now)),
+      blocked,
     };
   }
 

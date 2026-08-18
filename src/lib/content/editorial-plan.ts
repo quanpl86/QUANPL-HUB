@@ -363,3 +363,73 @@ export class EditorialPlanAudit {
     }));
   }
 }
+
+export type EditorialPerformance = {
+  planning: {
+    weeks: number;
+    passed: number;
+    failed: number;
+    in_review: number;
+    avg_revisions: number;
+    pass_rate: number;
+  };
+  writing: {
+    slots: number;
+    drafted: number;
+    published: number;
+    rejected: number;
+    write_fails: number;
+    avg_seo: number | null;
+    pass_rate: number;
+  };
+};
+
+export function computeEditorialPerformance(
+  weeks: Array<{
+    status: string;
+    revision_number?: number;
+    slots: Array<{
+      status: string;
+      result_post_id?: string | null;
+      write_fails?: number;
+      last_seo_score?: number | null;
+    }>;
+  }>
+): EditorialPerformance {
+  const planningPassed = weeks.filter((week) => week.status === "approved").length;
+  const planningFailed = weeks.filter((week) => week.status === "cancelled").length;
+  const planningReview = weeks.filter((week) =>
+    week.status === "proposed" || week.status === "revision_requested" || week.status === "revision_ready"
+  ).length;
+  const revisionSum = weeks.reduce((sum, week) => sum + Number(week.revision_number || 1), 0);
+  const slots = weeks.flatMap((week) => week.slots);
+  const drafted = slots.filter((slot) => slot.status === "drafted").length;
+  const published = slots.filter((slot) => slot.status === "published").length;
+  const rejected = slots.filter((slot) => slot.status === "revision_requested" && slot.result_post_id).length;
+  const writeFails = slots.reduce((sum, slot) => sum + Number(slot.write_fails || 0), 0);
+  const seoValues = slots.map((slot) => slot.last_seo_score).filter((score): score is number => score != null);
+  const writingDone = published + drafted + rejected;
+  return {
+    planning: {
+      weeks: weeks.length,
+      passed: planningPassed,
+      failed: planningFailed,
+      in_review: planningReview,
+      avg_revisions: weeks.length ? Math.round((revisionSum / weeks.length) * 10) / 10 : 0,
+      pass_rate: planningPassed + planningFailed
+        ? Math.round((planningPassed / (planningPassed + planningFailed)) * 100)
+        : 0,
+    },
+    writing: {
+      slots: slots.length,
+      drafted,
+      published,
+      rejected,
+      write_fails: writeFails,
+      avg_seo: seoValues.length
+        ? Math.round(seoValues.reduce((sum, score) => sum + score, 0) / seoValues.length)
+        : null,
+      pass_rate: writingDone ? Math.round((published / writingDone) * 100) : 0,
+    },
+  };
+}

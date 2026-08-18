@@ -16,6 +16,7 @@ import {
   assertPlanUnlocked,
   assertRevisionBase,
   assertRichWeeklySlots,
+  computeEditorialPerformance,
   enforceRevisionConstraints,
 } from "../src/lib/content/editorial-plan.ts";
 
@@ -124,6 +125,61 @@ test("approved plan is PLAN_LOCKED", () => {
   assert.throws(() => assertPlanUnlocked("approved"), /PLAN_LOCKED/);
   assert.doesNotThrow(() => assertPlanUnlocked("proposed"));
   assert.doesNotThrow(() => assertPlanUnlocked("revision_ready"));
+});
+
+test("due list keeps a slot blocked when the week is not approved", async () => {
+  const slots = [{
+    id: "slot-1",
+    week_id: "week-1",
+    title: "Due but week proposed",
+    status: "approved",
+    scheduled_date: "2020-01-01",
+    scheduled_time: "00:00",
+    tags: [],
+    item_order: 0,
+  }];
+  const mock = {
+    from(table: string) {
+      const query: any = {
+        select() { return query; },
+        eq() { return query; },
+        in() { return query; },
+        order() { return query; },
+        limit() { return query; },
+        is() { return query; },
+        then(resolve: any) {
+          if (table === "editorial_weeks") resolve({ data: [{ id: "week-1", status: "proposed" }], error: null });
+          else resolve({ data: slots, error: null });
+        },
+      };
+      return query;
+    },
+  };
+  const result = await EditorialCalendarRepository.listDue(mock, new Date("2026-08-18T12:00:00.000Z"));
+  assert.equal(result.due.length, 0);
+  assert.equal(result.blocked.length, 1);
+  assert.match(result.blocked[0].blocked_reason, /WEEK_NOT_APPROVED/);
+});
+
+test("performance treats published as write pass and rejected drafts as write fail", () => {
+  const stats = computeEditorialPerformance([
+    {
+      status: "approved",
+      revision_number: 2,
+      slots: [
+        { status: "published", last_seo_score: 96 },
+        { status: "revision_requested", result_post_id: "p1", write_fails: 1 },
+        { status: "drafted", last_seo_score: 95 },
+      ],
+    },
+    { status: "cancelled", revision_number: 1, slots: [] },
+  ]);
+  assert.equal(stats.planning.passed, 1);
+  assert.equal(stats.planning.failed, 1);
+  assert.equal(stats.planning.pass_rate, 50);
+  assert.equal(stats.writing.published, 1);
+  assert.equal(stats.writing.rejected, 1);
+  assert.equal(stats.writing.pass_rate, 33);
 });
 
 test("target_audience and content_angle aliases map onto existing columns", () => {

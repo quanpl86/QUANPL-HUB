@@ -179,7 +179,49 @@ export async function cancelEditorialSlot(id: string) {
 
 export async function releaseEditorialSlotNow(id: string) {
   const supabase = await requireAdmin();
+  const slot = await EditorialCalendarRepository.get(supabase, id);
+  if (slot.week_id) {
+    const week = await EditorialWeekRepository.get(supabase, slot.week_id);
+    if (week.status !== 'approved') {
+      throw new Error('Cần duyệt cả tuần trước khi cho viết bài');
+    }
+  }
   const updated = await EditorialCalendarRepository.releaseNow(supabase, id);
   revalidateDesk();
+  return updated;
+}
+
+export async function getEditorialSlotByPostId(postId: string) {
+  const supabase = await requireAdmin();
+  return EditorialCalendarRepository.getByPostId(supabase, postId);
+}
+
+export async function rejectEditorialDraft(slotId: string, feedback: string) {
+  const supabase = await requireAdmin();
+  const note = feedback.trim();
+  if (!note) throw new Error('Cần ghi rõ vì sao trả bài và ChatGPT phải sửa gì');
+  const slot = await EditorialCalendarRepository.get(supabase, slotId);
+  if (slot.status !== 'drafted' && slot.status !== 'writing') {
+    throw new Error('Chỉ trả được bài đang chờ duyệt');
+  }
+  if (!slot.result_post_id) throw new Error('Bài này chưa có bản nháp');
+  if (slot.week_id) {
+    await EditorialCommentRepository.add(supabase, {
+      week_id: slot.week_id,
+      slot_id: slotId,
+      author: 'admin',
+      body: note,
+    });
+    await EditorialPlanAudit.log(supabase, {
+      week_id: slot.week_id,
+      slot_id: slotId,
+      event: 'article_rejected',
+      actor: 'admin',
+      payload: { feedback: note },
+    });
+  }
+  const updated = await EditorialCalendarRepository.setStatus(supabase, slotId, 'revision_requested', note);
+  revalidateDesk();
+  revalidatePath(`/admin/posts/edit/${slot.result_post_id}`);
   return updated;
 }
