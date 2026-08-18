@@ -1,6 +1,7 @@
 'use server';
 
 import { getSupabaseServer } from '@/lib/supabase-server';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 import { checkAdmin } from '@/lib/auth-utils';
 
@@ -134,9 +135,14 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   return { success: true };
 }
 
-export async function deletePost(id: number) {
+export async function deletePost(id: string | number) {
   if (!await checkAdmin()) throw new Error('Unauthorized');
-  const supabase = await getSupabaseServer();
+  const supabase = getSupabaseAdmin();
+
+  await supabase
+    .from('content_tasks')
+    .update({ result_post_id: null })
+    .eq('result_post_id', id);
 
   const { error } = await supabase
     .from('posts')
@@ -145,7 +151,7 @@ export async function deletePost(id: number) {
 
   if (error) {
     console.error('Error deleting post:', error);
-    return;
+    throw new Error(error.message);
   }
 
   revalidatePath('/admin/posts');
