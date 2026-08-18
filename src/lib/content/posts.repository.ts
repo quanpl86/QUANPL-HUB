@@ -315,7 +315,7 @@ async function handleDraftSuccess(supabase: any, data: any, draftData: any, acti
     slug: data.slug,
     review_url: `https://kingdragonhub.com/admin/posts/preview?id=${data.id}`,
     status: "DRAFT",
-    source_task_id: draftData.task_id,
+    source_task_id: sanitizedTaskId,
     policy_version: activePolicy.policy_version
   };
 }
