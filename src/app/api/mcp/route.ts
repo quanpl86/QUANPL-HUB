@@ -5,6 +5,7 @@ import { getOAuthIssuer, getOAuthResource } from "@/lib/oauth-security";
 import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
 import { normalizeArticlePackage } from "@/lib/content/article-package";
+import { generateAndUploadBlogImage } from "@/lib/content/blog-image";
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown error";
@@ -13,7 +14,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.0.0",
+    version: "7.1.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -77,7 +78,8 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.0.0",
+          mcp_version: "7.1.0",
+          media_tool: "generate_and_upload_blog_image",
           schema_version: "article-package/7.0",
           create_blog_draft_required_fields: [
             "schema_version",
@@ -141,9 +143,43 @@ function createKingDragonHubMcpServer() {
   // [Tool 4]: create_blog_draft
   if (process.env.MCP_ENABLE_WRITE === "true") {
     server.registerTool(
+      "generate_and_upload_blog_image",
+      {
+        description: "Generate an editorial blog image, upload it to GitHub, and return a persistent RAW URL. Use image_id=cover for the article cover. Then put the returned url into featured_image.url (and featured_image_url) before create_blog_draft. Does not create a post. Preschool/child scenes must be illustration-only.",
+        inputSchema: z.object({
+          idempotency_key: z.string().describe("Same key as the draft. Retry overwrites the same GitHub path."),
+          image_id: z.string().describe("cover or an inline id such as img-01"),
+          purpose: z.enum([
+            "article_cover",
+            "concept_diagram",
+            "workflow",
+            "comparison",
+            "case_study",
+            "explainer",
+          ]),
+          prompt: z.string().describe("English illustration prompt. No photorealistic children."),
+          alt: z.string().describe("Vietnamese alt text. Required. Copied into featured_image.alt / img alt."),
+          aspect: z.enum(["16:9", "4:3", "1:1"]).optional(),
+          filename: z.string().optional(),
+        }),
+      },
+      async (input) => {
+        try {
+          const result = await generateAndUploadBlogImage(input);
+          return { content: [{ type: "text", text: JSON.stringify(result) }] };
+        } catch (err: unknown) {
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. Required v7 fields: schema_version, featured_image (object), featured_image_url, inline_images[], aio.direct_answer, seo.search_intent, seo.semantic_entities. content_markdown is the clean narrative only (may include {{IMAGE:id}}). featured_image.url and inline url may be null. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. For a visible cover: call generate_and_upload_blog_image with image_id=cover first, then set featured_image.url and featured_image_url to that RAW URL and featured_image.alt to the alt you sent. Required fields: schema_version, featured_image object, featured_image_url, inline_images[], aio.direct_answer, seo.search_intent, seo.semantic_entities. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
