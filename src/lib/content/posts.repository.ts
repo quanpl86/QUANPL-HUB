@@ -11,6 +11,7 @@ import {
 } from "./article-package";
 import { compileArticleHtml } from "./compile-article-html";
 import { loadTaxonomyCatalog, resolvePostTaxonomy } from "./taxonomy";
+import { analyzeSystemSeo, formatSeoGateError, SEO_SCORE_MIN } from "./seo-advisor";
 
 function sanitizeTaskId(taskId: unknown): string | null {
   if (typeof taskId !== "string") return null;
@@ -276,6 +277,22 @@ export class PostsRepository {
       finalContent = buildRichContent(draftData);
     }
 
+    const seoReport = analyzeSystemSeo({
+      title: draftData.title,
+      meta_title: draftData.seo?.title || draftData.title,
+      meta_description: draftData.seo?.description || draftData.excerpt,
+      excerpt: draftData.excerpt,
+      image_url: pkg.featured_image?.url,
+      image_alt: pkg.featured_image?.alt,
+      content: finalContent,
+      content_markdown: pkg.content_markdown,
+      primary_keyword: draftData.seo?.primary_keyword,
+      faq_count: pkg.aio.faq.length,
+    });
+    if (seoReport.score < SEO_SCORE_MIN) {
+      throw new Error(formatSeoGateError(seoReport));
+    }
+
     const taxonomy = await resolvePostTaxonomy(supabase, {
       category_id: draftData.category_id,
       category: draftData.category,
@@ -315,6 +332,7 @@ export class PostsRepository {
         primary: draftData.seo?.primary_keyword,
         secondary: draftData.seo?.secondary_keywords,
         quality_score: draftData.quality?.overall,
+        seo_score: seoReport.score,
         image_alt: pkg.featured_image?.alt || null,
         search_intent: pkg.seo.search_intent || null,
         semantic_entities: pkg.seo.semantic_entities || null,
@@ -345,7 +363,7 @@ export class PostsRepository {
             .select()
             .single();
           if (fallbackError) throw new Error("Failed to create draft: " + fallbackError.message);
-          return await handleDraftSuccess(supabase, fallbackData, draftData, activePolicy, warnings);
+          return await handleDraftSuccess(supabase, fallbackData, draftData, activePolicy, warnings, seoReport.score);
         }
         if (missingColumn && error.message?.includes('idempotency_key')) {
           delete insertData.idempotency_key;
@@ -355,11 +373,11 @@ export class PostsRepository {
             .select()
             .single();
           if (fallbackError) throw new Error("Failed to create draft: " + fallbackError.message);
-          return await handleDraftSuccess(supabase, fallbackData, draftData, activePolicy, warnings);
+          return await handleDraftSuccess(supabase, fallbackData, draftData, activePolicy, warnings, seoReport.score);
         }
         throw new Error("Failed to create draft: " + error.message);
       }
-      return await handleDraftSuccess(supabase, data, draftData, activePolicy, warnings);
+      return await handleDraftSuccess(supabase, data, draftData, activePolicy, warnings, seoReport.score);
 
     } catch (err: any) {
       console.error("[PostsRepository] createDraft error:", err);
@@ -373,7 +391,8 @@ async function handleDraftSuccess(
   data: any,
   draftData: any,
   activePolicy: any,
-  warnings: PackageIssue[] = []
+  warnings: PackageIssue[] = [],
+  seoScore: number | null = null
 ) {
   const taskId = sanitizeTaskId(draftData.task_id);
 
@@ -406,6 +425,7 @@ async function handleDraftSuccess(
     source_task_id: taskId,
     policy_version: activePolicy.policy_version,
     quality_overall: draftData.quality?.overall ?? null,
+    seo_score: seoScore,
     warnings,
     category_id: data.category_id ?? null,
     tags: data.tags ?? []

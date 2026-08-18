@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { Brain, CheckCircle2, AlertTriangle, XCircle, Info, Lightbulb, Zap, Search } from 'lucide-react';
 import { CyberCard } from '../ui/CyberCard';
 
+import { analyzeSystemSeo } from '@/lib/content/seo-advisor';
+
 interface Post {
   id: string;
   title: string;
@@ -13,6 +15,8 @@ interface Post {
   excerpt: string | null;
   image_url: string | null;
   keywords: string[] | null;
+  content?: string | null;
+  seo_keywords?: { image_alt?: string; primary?: string } | null;
 }
 
 export const SeoAdvisor = ({ post }: { post: Post }) => {
@@ -23,54 +27,18 @@ export const SeoAdvisor = ({ post }: { post: Post }) => {
     setMounted(true);
   }, []);
 
-  // Phân tích chi tiết bằng Tiếng Việt
-  const analysis = [
-    {
-      label: 'Tiêu đề Meta',
-      value: post.meta_title || 'Chưa có',
-      status: !post.meta_title ? 'error' : (post.meta_title.length >= 50 && post.meta_title.length <= 70) ? 'success' : 'warning',
-      message: !post.meta_title ? 'Thiếu Tiêu đề Meta. Đây là yếu tố sống còn để xuất hiện trên kết quả tìm kiếm.' : 
-               (post.meta_title.length < 50) ? `Tiêu đề quá ngắn (${post.meta_title.length} ký tự). Mục tiêu nên từ 50-70 ký tự.` : 
-               (post.meta_title.length > 70) ? `Tiêu đề quá dài (${post.meta_title.length} ký tự). Google sẽ cắt bớt phần thừa.` : 
-               'Độ dài hoàn hảo để hiển thị tốt nhất trên công cụ tìm kiếm.',
-      suggestion: 'Sử dụng từ khóa chính ngay ở đầu tiêu đề và giữ độ dài trong khoảng 50-70 ký tự.'
-    },
-    {
-      label: 'Mô tả Meta',
-      value: post.meta_description || 'Chưa có',
-      status: !post.meta_description ? 'error' : (post.meta_description.length >= 120 && post.meta_description.length <= 160) ? 'success' : 'warning',
-      message: !post.meta_description ? 'Thiếu Mô tả Meta. Công cụ tìm kiếm sẽ tự chọn nội dung ngẫu nhiên để hiển thị.' : 
-               (post.meta_description.length < 120) ? `Mô tả quá ngắn (${post.meta_description.length} ký tự). Nên từ 120-160 ký tự.` : 
-               (post.meta_description.length > 160) ? `Mô tả quá dài (${post.meta_description.length} ký tự). Sẽ bị cắt bớt khi hiển thị.` : 
-               'Độ dài tối ưu giúp tăng tỷ lệ người dùng bấm vào bài viết (CTR).',
-      suggestion: 'Tóm tắt nội dung hấp dẫn, chứa từ khóa chính và lời kêu gọi hành động.'
-    },
-    {
-      label: 'Đoạn trích (Excerpt)',
-      value: post.excerpt ? 'Đã có' : 'Chưa có',
-      status: !post.excerpt ? 'error' : (post.excerpt.length >= 50) ? 'success' : 'warning',
-      message: !post.excerpt ? 'Thiếu đoạn trích. Rất quan trọng để hiển thị bản xem trước và cho AI tóm tắt.' : 
-               (post.excerpt.length < 50) ? 'Đoạn trích quá ngắn. AI có thể gặp khó khăn khi hiểu nội dung chính.' : 
-               'Độ dài đoạn trích tốt cho việc lập chỉ mục hệ thống.',
-      suggestion: 'Viết một đoạn dẫn nhập thu hút từ 50-100 ký tự để làm nổi bật nội dung.'
-    },
-    {
-      label: 'Tài nguyên hình ảnh',
-      value: post.image_url ? 'Đã thiết lập' : 'Chưa có',
-      status: post.image_url ? 'success' : 'error',
-      message: post.image_url ? 'Đã phát hiện hình ảnh đại diện chất lượng.' : 'Thiếu ảnh đại diện. Bài viết có hình ảnh tăng 80% khả năng được click.',
-      suggestion: 'Luôn thêm ảnh đại diện sắc nét, liên quan đến nội dung bài viết.'
-    },
-    {
-      label: 'Alt Text Nội dung',
-      value: (post as any).content?.includes('alt=') ? 'Đã phát hiện' : 'Cần kiểm tra',
-      status: (post as any).content?.includes('alt=') ? 'success' : 'warning',
-      message: (post as any).content?.includes('alt=') ? 'Các hình ảnh trong bài viết đã có thuộc tính mô tả (alt).' : 'Một số hình ảnh trong nội dung có thể thiếu mô tả (alt).',
-      suggestion: 'Đảm bảo mọi hình ảnh chèn trong bài viết đều có thẻ Alt để tối ưu tìm kiếm hình ảnh và hỗ trợ người khiếm thị.'
-    }
-  ];
-
-  const score = Math.round((analysis.filter(a => a.status === 'success').length / analysis.length) * 100);
+  const report = analyzeSystemSeo({
+    title: post.title,
+    meta_title: post.meta_title,
+    meta_description: post.meta_description,
+    excerpt: post.excerpt,
+    image_url: post.image_url,
+    image_alt: post.seo_keywords?.image_alt,
+    content: post.content,
+    primary_keyword: post.seo_keywords?.primary || post.keywords?.[0] || null,
+  });
+  const analysis = report.checks;
+  const score = report.score;
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">

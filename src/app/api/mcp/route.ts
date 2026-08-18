@@ -193,7 +193,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. HARD REQUIREMENTS: featured_image.url must be a persistent HTTPS URL; inline_images must include at least 2 items with HTTPS URLs and matching {{IMAGE:id}} placeholders in content_markdown. Call generate_and_upload_blog_image for cover + img-01 + img-02 BEFORE this tool. Also call get_blog_categories and send category/tags. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95 (meta title 50-70 chars, meta description 120-160, excerpt >= 50, cover+alt, keyword in title and intro, >=2 H2/H3, FAQ 3-6). If rejected with SEO_SCORE_*, fix those checks and retry. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
