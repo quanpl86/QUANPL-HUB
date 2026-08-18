@@ -105,9 +105,9 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. content_markdown is the clean narrative only (may include {{IMAGE:id}}). AIO/FAQ/citations/media are structured fields. featured_image is an object with purpose/prompt/alt/url (url may be null in Phase A+B). Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. Required v7 fields: schema_version, featured_image (object), featured_image_url, inline_images[], aio.direct_answer, seo.search_intent, seo.semantic_entities. content_markdown is the clean narrative only (may include {{IMAGE:id}}). featured_image.url and inline url may be null. Never publish.",
         inputSchema: z.object({
-          schema_version: z.string().optional().describe("article-package/7.0"),
+          schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
           idempotency_key: z.string(),
           policy_version: z.string(),
@@ -124,9 +124,9 @@ function createKingDragonHubMcpServer() {
             alt: z.string(),
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
-            url: z.string().nullable().optional(),
-          }).optional().describe("Cover spec. url may be null until generate_and_upload_blog_image exists."),
-          featured_image_url: z.string().optional().describe("Legacy v6 cover URL. Prefer featured_image object."),
+            url: z.string().nullable(),
+          }).describe("Cover spec object. url may be null until generate_and_upload_blog_image exists."),
+          featured_image_url: z.string().nullable().describe("Legacy v6 cover URL alias. Send null when using featured_image object."),
           featured_image_alt: z.string().optional(),
           inline_images: z.array(z.object({
             id: z.string(),
@@ -139,8 +139,8 @@ function createKingDragonHubMcpServer() {
             alt: z.string(),
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
-            url: z.string().nullable().optional(),
-          })).optional().describe("0-4 informational inline images. Use {{IMAGE:id}} in content_markdown."),
+            url: z.string().nullable(),
+          })).describe("0-4 informational inline images. Use {{IMAGE:id}} in content_markdown. Empty array is valid."),
           seo: z.object({
             title: z.string(),
             description: z.string(),
@@ -149,11 +149,11 @@ function createKingDragonHubMcpServer() {
             search_intent: z.object({
               primary: z.string(),
               secondary_questions: z.array(z.string()).optional(),
-            }).optional(),
-            semantic_entities: z.array(z.string()).optional(),
+            }),
+            semantic_entities: z.array(z.string()),
           }),
           aio: z.object({
-            direct_answer: z.string().optional().describe("50-100 word answer-first paragraph."),
+            direct_answer: z.string().describe("50-100 word answer-first paragraph."),
             tldr: z.string(),
             key_takeaways: z.array(z.string()),
             faq: z.array(z.object({

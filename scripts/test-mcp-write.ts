@@ -86,19 +86,31 @@ async function runTests() {
     idempotency_key: "TEST-IDEMP-" + Date.now(),
     policy_version: activePolicy.policy_version,
     policy_hash: activePolicy.policy_hash,
+    schema_version: "article-package/7.0",
     title: "Test Article for MCP-04",
     slug: "test-article-mcp-04-" + Date.now(),
     excerpt: "This is a test article",
     content_markdown: "## Hello\nThis is test content.",
     category_id: undefined,
     tags: ["test", "mcp"],
+    featured_image: {
+      purpose: "article_cover",
+      prompt: "Test cover illustration, no text, 16:9",
+      alt: "Test cover",
+      url: null,
+    },
+    featured_image_url: null,
+    inline_images: [],
     seo: {
       title: "Test Article for MCP-04",
       description: "This is a test article description",
       primary_keyword: "mcp-04",
-      secondary_keywords: ["test"]
+      secondary_keywords: ["test"],
+      search_intent: { primary: "informational" },
+      semantic_entities: ["MCP"],
     },
     aio: {
+      direct_answer: "This is a test direct answer for Article Package v7.",
       tldr: "TLDR",
       key_takeaways: ["takeaway 1", "takeaway 2"]
     },
