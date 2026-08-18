@@ -12,6 +12,8 @@ const CATS: CategoryRow[] = [
   { id: 3, name: "STEM Education", slug: "stem-education" },
   { id: 4, name: "Artificial Intelligence", slug: "artificial-intelligence" },
   { id: 5, name: "Robotics & Hardware", slug: "robotics-hardware" },
+  { id: 11, name: "Early Childhood Education", slug: "early-childhood-education" },
+  { id: 12, name: "AI in Education", slug: "ai-in-education" },
 ];
 
 test("matches existing category by exact name", () => {
@@ -31,12 +33,12 @@ test("matches existing category by id", () => {
   assert.equal(picked?.category.slug, "artificial-intelligence");
 });
 
-test("infers STEM Education from preschool teaching haystack", () => {
+test("infers Early Childhood Education from preschool teaching haystack", () => {
   const picked = pickExistingCategory(CATS, {
     haystack: "ai va game hoa trong hoc tap cho giao vien mam non hoc lieu",
   });
   assert.ok(picked);
-  assert.equal(picked?.category.slug, "stem-education");
+  assert.equal(picked?.category.slug, "early-childhood-education");
 });
 
 test("slugify taxonomy strips vietnamese", () => {

@@ -14,7 +14,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.2.0",
+    version: "7.3.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -44,7 +44,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_blog_categories",
     {
-      description: "List existing KingDragonHub categories (id, name, slug, description). Prefer an existing category when calling create_blog_draft. Only invent a new category name when nothing fits.",
+      description: "Return the full KingDragonHub taxonomy tree: Lĩnh vực (fields) → Chủ đề (subjects) → Danh mục (categories), plus suggested_tags. Always call this before create_blog_draft. Prefer an existing category_id. Send field/subject/category names if you are unsure. Only propose a new category when nothing in the tree fits.",
       inputSchema: z.object({}),
     },
     async () => {
@@ -90,7 +90,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.2.0",
+          mcp_version: "7.3.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           schema_version: "article-package/7.0",
@@ -203,9 +203,11 @@ function createKingDragonHubMcpServer() {
           slug: z.string(),
           excerpt: z.string(),
           content_markdown: z.string(),
-          category_id: z.string().optional().describe("Existing category id from get_blog_categories. Prefer this over creating a new category."),
-          category: z.string().optional().describe("Category name or slug. Matched against existing categories first; created only if nothing fits."),
-          tags: z.array(z.string()).optional().describe("Editorial tags shown in admin. If omitted, derived from SEO keywords/entities."),
+          field: z.string().optional().describe("Lĩnh vực name or slug from get_blog_categories, e.g. Education & Skills."),
+          subject: z.string().optional().describe("Chủ đề name or slug from get_blog_categories, e.g. EARLY CHILDHOOD or PEDAGOGY."),
+          category_id: z.string().optional().describe("Existing danh mục id from get_blog_categories. Prefer this over creating a new category."),
+          category: z.string().optional().describe("Danh mục name or slug. Matched against existing categories first; created only if nothing fits."),
+          tags: z.array(z.string()).optional().describe("Editorial tags shown in admin. Prefer suggested_tags from the chosen category, in Vietnamese."),
           featured_image: z.object({
             purpose: z.literal("article_cover"),
             prompt: z.string(),

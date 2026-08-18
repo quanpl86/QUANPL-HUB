@@ -10,7 +10,7 @@ import {
   type PackageIssue,
 } from "./article-package";
 import { compileArticleHtml } from "./compile-article-html";
-import { resolvePostTaxonomy } from "./taxonomy";
+import { loadTaxonomyCatalog, resolvePostTaxonomy } from "./taxonomy";
 
 function sanitizeTaskId(taskId: unknown): string | null {
   if (typeof taskId !== "string") return null;
@@ -78,14 +78,15 @@ export class PostsRepository {
 
   static async getCategories() {
     const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
-      .from("categories")
-      .select("id, name, slug, description")
-      .order("name");
-    if (error) {
-      return { categories: [], error: error.message };
+    try {
+      const catalog = await loadTaxonomyCatalog(supabase);
+      return {
+        usage: "Prefer an existing category_id from tree. Send field/subject/category names if unsure. Only create a new category when nothing in the tree fits.",
+        ...catalog,
+      };
+    } catch (error: any) {
+      return { fields: [], subjects: [], categories: [], tree: [], error: error.message };
     }
-    return { categories: data || [] };
   }
 
   /**
@@ -278,6 +279,8 @@ export class PostsRepository {
     const taxonomy = await resolvePostTaxonomy(supabase, {
       category_id: draftData.category_id,
       category: draftData.category,
+      subject: draftData.subject,
+      field: draftData.field,
       title: draftData.title,
       tags: draftData.tags,
       seo: draftData.seo,
