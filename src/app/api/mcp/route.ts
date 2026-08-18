@@ -4,6 +4,7 @@ import { verifyToken } from "@/lib/oauth-utils";
 import { getOAuthIssuer, getOAuthResource } from "@/lib/oauth-security";
 import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
+import { normalizeArticlePackage } from "@/lib/content/article-package";
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown error";
@@ -69,7 +70,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_editorial_guidelines",
     {
-      description: "Lấy bộ quy tắc biên tập (Editorial Guidelines) của KingDragonHub.",
+      description: "Authoritative editorial policy. Use policy_version and policy_hash verbatim. Do not paraphrase thresholds.",
       inputSchema: z.object({
         include_details: z.boolean().optional().describe("Mặc định là true"),
       })
@@ -104,8 +105,9 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Tạo bản nháp (DRAFT) cho bài viết mới. Bài viết sẽ luôn ở trạng thái DRAFT.",
+        description: "Create a review-only DRAFT from Article Package v7. content_markdown is the clean narrative only (may include {{IMAGE:id}}). AIO/FAQ/citations/media are structured fields. featured_image is an object with purpose/prompt/alt/url (url may be null in Phase A+B). Never publish.",
         inputSchema: z.object({
+          schema_version: z.string().optional().describe("article-package/7.0"),
           task_id: z.string().optional().nullable(),
           idempotency_key: z.string(),
           policy_version: z.string(),
@@ -116,15 +118,42 @@ function createKingDragonHubMcpServer() {
           content_markdown: z.string(),
           category_id: z.string().optional(),
           tags: z.array(z.string()).optional(),
-          featured_image: z.string().optional(),
+          featured_image: z.object({
+            purpose: z.literal("article_cover"),
+            prompt: z.string(),
+            alt: z.string(),
+            caption: z.string().optional(),
+            suggested_filename: z.string().optional(),
+            url: z.string().nullable().optional(),
+          }).optional().describe("Cover spec. url may be null until generate_and_upload_blog_image exists."),
+          featured_image_url: z.string().optional().describe("Legacy v6 cover URL. Prefer featured_image object."),
           featured_image_alt: z.string().optional(),
+          inline_images: z.array(z.object({
+            id: z.string(),
+            purpose: z.enum(["concept_diagram", "workflow", "comparison", "case_study", "explainer"]),
+            position: z.object({
+              placeholder: z.string().optional(),
+              after_heading_id: z.string().optional(),
+            }).optional(),
+            prompt: z.string(),
+            alt: z.string(),
+            caption: z.string().optional(),
+            suggested_filename: z.string().optional(),
+            url: z.string().nullable().optional(),
+          })).optional().describe("0-4 informational inline images. Use {{IMAGE:id}} in content_markdown."),
           seo: z.object({
             title: z.string(),
             description: z.string(),
             primary_keyword: z.string(),
             secondary_keywords: z.array(z.string()),
+            search_intent: z.object({
+              primary: z.string(),
+              secondary_questions: z.array(z.string()).optional(),
+            }).optional(),
+            semantic_entities: z.array(z.string()).optional(),
           }),
           aio: z.object({
+            direct_answer: z.string().optional().describe("50-100 word answer-first paragraph."),
             tldr: z.string(),
             key_takeaways: z.array(z.string()),
             faq: z.array(z.object({
@@ -155,7 +184,13 @@ function createKingDragonHubMcpServer() {
       },
       async (draftData) => {
         try {
-          const result = await PostsRepository.createDraft(draftData);
+          const pkg = normalizeArticlePackage(draftData);
+          const result = await PostsRepository.createDraft({
+            ...draftData,
+            featured_image: pkg.featured_image,
+            featured_image_alt: pkg.featured_image?.alt,
+            inline_images: pkg.inline_images,
+          });
           return {
             content: [{ type: "text", text: JSON.stringify(result) }],
           };

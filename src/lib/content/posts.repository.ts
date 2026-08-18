@@ -1,6 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
 import { EditorialPolicyRepository } from "../editorial/editorial-policy.repository";
 import { sendDraftEmailNotification } from "../notifications/email";
+import {
+  buildArticlePackageSnapshot,
+  dedupeIssues,
+  formatPackageErrors,
+  normalizeArticlePackage,
+  validateArticlePackage,
+  type PackageIssue,
+} from "./article-package";
+import { compileArticleHtml } from "./compile-article-html";
+
+function sanitizeTaskId(taskId: unknown): string | null {
+  if (typeof taskId !== "string") return null;
+  const trimmed = taskId.trim();
+  return trimmed === "" ? null : trimmed;
+}
 
 // Helper to get an admin Supabase client for backend operations
 function getSupabaseAdmin() {
@@ -149,14 +164,14 @@ export class PostsRepository {
     }
 
     // Sanitize task_id (ChatGPT sometimes sends empty string "")
-    const sanitizedTaskId = (draftData.task_id && draftData.task_id.trim() !== "") ? draftData.task_id : null;
+    const taskId = sanitizeTaskId(draftData.task_id);
 
     // Verify task_id exists in content_tasks ONLY IF PROVIDED
-    if (sanitizedTaskId) {
+    if (taskId) {
       const { data: task, error: taskError } = await supabase
         .from("content_tasks")
         .select("id")
-        .eq("id", sanitizedTaskId)
+        .eq("id", taskId)
         .maybeSingle();
         
       if (taskError && taskError.code !== '22P02') {
@@ -228,8 +243,27 @@ export class PostsRepository {
       throw new Error("QUALITY_GATE_FAILED: Source quality below threshold");
     }
 
-    // Build Rich Content (AIO/SEO Standards)
-    const finalContent = buildRichContent(draftData);
+    const pkg = normalizeArticlePackage(draftData);
+    const mediaCheck = validateArticlePackage(pkg, {
+      requireV7Fields: process.env.MCP_REQUIRE_V7_FIELDS === "true",
+    });
+    if (mediaCheck.errors.length > 0) {
+      throw new Error(`QUALITY_GATE_FAILED: ${formatPackageErrors(mediaCheck.errors)}`);
+    }
+
+    const compileNative = process.env.MCP_COMPILE_NATIVE_HTML !== "false";
+    let finalContent: string;
+    const compileWarnings: PackageIssue[] = [];
+    if (compileNative) {
+      const compiled = await compileArticleHtml(pkg);
+      finalContent = compiled.html;
+      compileWarnings.push(...compiled.warnings);
+    } else {
+      finalContent = buildRichContent(draftData);
+    }
+
+    const warnings = dedupeIssues([...mediaCheck.warnings, ...compileWarnings]);
+    const articlePackage = buildArticlePackageSnapshot(pkg, warnings);
 
     // 4. Chuẩn bị dữ liệu và Hard-Lock Governance
     const insertData: any = {
@@ -241,17 +275,21 @@ export class PostsRepository {
       is_ai_generated: true, // HARD-LOCK
       category_id: draftData.category_id || null,
       keywords: draftData.tags || [],
-      image_url: draftData.featured_image || null,
+      image_url: pkg.featured_image?.url || null,
       meta_title: draftData.seo?.title || draftData.title,
       meta_description: draftData.seo?.description || draftData.excerpt,
       seo_keywords: {
         primary: draftData.seo?.primary_keyword,
         secondary: draftData.seo?.secondary_keywords,
         quality_score: draftData.quality?.overall,
-        image_alt: draftData.featured_image_alt || null
+        image_alt: pkg.featured_image?.alt || null,
+        search_intent: pkg.seo.search_intent || null,
+        semantic_entities: pkg.seo.semantic_entities || null,
+        direct_answer: pkg.aio.direct_answer || null
       },
       schema_org: draftData.schema_org,
-      source_task_id: sanitizedTaskId,
+      source_task_id: taskId,
+      article_package: articlePackage,
     };
 
     // Chỉ add idempotency_key nếu migration đã chạy (chúng ta sẽ insert, nếu fail do schema thì catch và retry không có cột này)
@@ -265,21 +303,30 @@ export class PostsRepository {
         .single();
 
       if (error) {
-        if (error.message?.includes('does not exist') && error.message?.includes('idempotency_key')) {
-          // Fallback if column not migrated
+        const missingColumn = error.message?.includes('does not exist');
+        if (missingColumn && error.message?.includes('article_package')) {
+          delete insertData.article_package;
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from("posts")
+            .insert([insertData])
+            .select()
+            .single();
+          if (fallbackError) throw new Error("Failed to create draft: " + fallbackError.message);
+          return await handleDraftSuccess(supabase, fallbackData, draftData, activePolicy, warnings);
+        }
+        if (missingColumn && error.message?.includes('idempotency_key')) {
           delete insertData.idempotency_key;
           const { data: fallbackData, error: fallbackError } = await supabase
             .from("posts")
             .insert([insertData])
             .select()
             .single();
-            
           if (fallbackError) throw new Error("Failed to create draft: " + fallbackError.message);
-          return await handleDraftSuccess(supabase, fallbackData, draftData, activePolicy);
+          return await handleDraftSuccess(supabase, fallbackData, draftData, activePolicy, warnings);
         }
         throw new Error("Failed to create draft: " + error.message);
       }
-      return await handleDraftSuccess(supabase, data, draftData, activePolicy);
+      return await handleDraftSuccess(supabase, data, draftData, activePolicy, warnings);
 
     } catch (err: any) {
       console.error("[PostsRepository] createDraft error:", err);
@@ -288,9 +335,17 @@ export class PostsRepository {
   }
 }
 
-async function handleDraftSuccess(supabase: any, data: any, draftData: any, activePolicy: any) {
+async function handleDraftSuccess(
+  supabase: any,
+  data: any,
+  draftData: any,
+  activePolicy: any,
+  warnings: PackageIssue[] = []
+) {
+  const taskId = sanitizeTaskId(draftData.task_id);
+
   // Update Audit Log trong content_tasks
-  if (draftData.task_id) {
+  if (taskId) {
     await supabase.from("content_tasks").update({
       status: "AWAITING_REVIEW",
       result_post_id: data.id,
@@ -301,7 +356,7 @@ async function handleDraftSuccess(supabase: any, data: any, draftData: any, acti
         policy_hash: activePolicy.policy_hash,
         created_at: new Date().toISOString()
       })
-    }).eq("id", draftData.task_id);
+    }).eq("id", taskId);
   }
 
   // Gửi email thông báo cho Admin (không await để tránh chặn response của API)
@@ -313,10 +368,12 @@ async function handleDraftSuccess(supabase: any, data: any, draftData: any, acti
     draft_id: data.id,
     title: data.title,
     slug: data.slug,
-    review_url: `https://kingdragonhub.com/admin/posts/preview?id=${data.id}`,
+    review_url: `https://kingdragonhub.com/admin/posts/edit/${data.id}`,
     status: "DRAFT",
-    source_task_id: sanitizedTaskId,
-    policy_version: activePolicy.policy_version
+    source_task_id: taskId,
+    policy_version: activePolicy.policy_version,
+    quality_overall: draftData.quality?.overall ?? null,
+    warnings
   };
 }
 

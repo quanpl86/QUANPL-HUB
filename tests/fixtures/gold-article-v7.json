@@ -1,0 +1,84 @@
+{
+  "schema_version": "article-package/7.0",
+  "title": "5E Hay PBL? Cách Thiết Kế Bài Học STEM Không Biến Thành Làm Sản Phẩm Cho Vui",
+  "slug": "5e-hay-pbl-thiet-ke-bai-hoc-stem",
+  "excerpt": "So sánh 5E và PBL; hướng dẫn quyết định giữa đào tạo kiến thức nền và phát triển sản phẩm chức năng.",
+  "featured_image": {
+    "purpose": "article_cover",
+    "prompt": "Editorial infographic comparison of 5E instructional model versus PBL workflow in a STEM classroom, clean flat illustration, no text, 16:9",
+    "alt": "So sánh mô hình 5E và quy trình PBL trong lớp STEM",
+    "caption": "5E xây nền khái niệm; PBL phát triển năng lực sản xuất.",
+    "suggested_filename": "5e-vs-pbl-cover",
+    "url": "https://raw.githubusercontent.com/quanpl86/imgBlog/main/public/editor-assets/5e-vs-pbl-cover.webp"
+  },
+  "inline_images": [
+    {
+      "id": "img-01",
+      "purpose": "comparison",
+      "position": {
+        "placeholder": "img-01",
+        "after_heading_id": "co-so-hoc-thuat-ban-chat-cong-nghe"
+      },
+      "prompt": "Side-by-side educational comparison of 5E phases and PBL prototyping workflow, clean editorial infographic, no decorative text",
+      "alt": "Infographic giảng dạy STEM: 5E vs PBL",
+      "caption": "Khi nào dừng ở 5E và khi nào chuyển sang PBL.",
+      "suggested_filename": "5e-vs-pbl-inline",
+      "url": "https://raw.githubusercontent.com/quanpl86/imgBlog/main/public/editor-assets/5e-vs-pbl-inline.webp"
+    }
+  ],
+  "seo": {
+    "title": "5E hay PBL trong STEM? Khi nào dạy kiến thức và khi nào làm dự án",
+    "description": "So sánh 5E và PBL trong STEM, framework đánh giá Bloom/NGSS/ISTE/CSTA và checklist tích hợp AI.",
+    "primary_keyword": "5E hay PBL",
+    "secondary_keywords": ["STEM pedagogy", "5E model", "PBL"],
+    "search_intent": {
+      "primary": "Giáo viên muốn biết khi nào dùng 5E và khi nào dùng PBL",
+      "secondary_questions": [
+        "5E khác PBL ở điểm nào?",
+        "Làm sao map rubric với Bloom và NGSS?"
+      ]
+    },
+    "semantic_entities": ["5E", "PBL", "Bloom", "NGSS", "ISTE", "CSTA"]
+  },
+  "aio": {
+    "direct_answer": "5E phù hợp khi mục tiêu là mastery khái niệm; PBL phù hợp khi học sinh phải apply và deliver. Hybrid 5E rồi PBL cân bằng cả hai nếu giáo viên bắt đầu từ outcome đo được.",
+    "tldr": "5E xây nền tảng nhận thức; PBL phát triển năng lực sản xuất và giao tiếp; hybrid 5E→PBL cần bằng cả hai.",
+    "key_takeaways": [
+      "Quyết định dựa trên learning outcomes: mastery thì 5E; apply & deliver thì PBL.",
+      "Map mọi outcome sang Bloom + NGSS/ISTE/CSTA trước khi thiết kế rubric.",
+      "Dùng MVP + AI tools để đảm bảo sản phẩm có chức năng và ấn tượng."
+    ],
+    "faq": [
+      {
+        "question": "Khi nào nên dùng 5E thay vì PBL trong lớp STEM?",
+        "answer": "Chọn 5E khi mục tiêu là xây dựng conceptual models và transferability."
+      },
+      {
+        "question": "Làm sao map rubric với Bloom và NGSS?",
+        "answer": "Xác định verb Bloom cho mỗi LO, ghép tiêu chí NGSS/ISTE/CSTA, rồi chuyển thành descriptor 0-4."
+      },
+      {
+        "question": "Làm thế nào để sản phẩm vừa đúng kiến thức vừa wow?",
+        "answer": "Yêu cầu MVP chức năng nhỏ nhưng có feature thể hiện; dùng AI để sinh UI/code scaffold."
+      }
+    ]
+  },
+  "content_markdown": "## So sánh thực chiến: khi nào dạy kiến thức cốt lõi\n\nThực tế triển khai hybrid 5E→PBL đã giảm tỉ lệ dự án dở dang.\n\n## Cơ sở học thuật & bản chất công nghệ\n\n5E là inquiry-based sequence. PBL là project-based learning.\n\n{{IMAGE:img-01}}\n\n## Quy trình thực hành triển khai\n\nBắt đầu từ measurable outcomes rồi mới chọn model.\n",
+  "references": [
+    {
+      "title": "The BSCS 5E Instructional Model",
+      "url": "https://bscs.org/resources/5e/",
+      "source_type": "B"
+    },
+    {
+      "title": "What is PBL?",
+      "url": "https://www.pblworks.org/what-is-pbl",
+      "source_type": "B"
+    },
+    {
+      "title": "Next Generation Science Standards",
+      "url": "https://www.nextgenscience.org/",
+      "source_type": "A"
+    }
+  ]
+}

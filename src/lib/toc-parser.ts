@@ -7,8 +7,9 @@ export interface TocItem {
 /**
  * Slugify a heading text to create a valid HTML id attribute.
  * Handles Vietnamese diacritics by normalizing and stripping accents.
+ * Shared with the Article Package compiler so after_heading_id matches the public TOC.
  */
-function slugify(text: string): string {
+export function slugifyHeading(text: string): string {
   return text
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
@@ -39,10 +40,17 @@ export function parseHtmlWithToc(htmlString: string): { toc: TocItem[]; html: st
 
   const modifiedHtml = htmlString.replace(regex, (match, tag, attrs, innerHtml) => {
     // textContent can be roughly extracted by removing inner HTML tags
-    const text = innerHtml.replace(/<[^>]+>/g, '').trim();
+    const text = innerHtml
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .trim();
     if (!text) return match; // skip empty headings
 
-    let baseId = slugify(text);
+    let baseId = slugifyHeading(text);
     if (!baseId) baseId = 'section';
 
     // Ensure uniqueness
