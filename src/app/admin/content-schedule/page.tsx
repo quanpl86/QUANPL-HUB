@@ -1,8 +1,16 @@
 import { ContentScheduleBoard } from '@/components/admin/content-planner/ContentScheduleBoard';
+import { EditorialCalendarBoard } from '@/components/admin/editorial/EditorialCalendarBoard';
 import { getContentScheduleState } from '@/app/actions/content-schedules';
+import { listEditorialCalendar } from '@/app/actions/editorial-calendar';
 
 export default async function ContentSchedulePage() {
   const scheduleState = await getContentScheduleState();
+  let editorialSlots = [];
+  try {
+    editorialSlots = await listEditorialCalendar();
+  } catch {
+    editorialSlots = [];
+  }
 
   return (
     <div className="min-h-screen dragon-grid">
@@ -11,9 +19,11 @@ export default async function ContentSchedulePage() {
           LỊCH TRÌNH <span className="cyber-text-gradient">NỘI DUNG</span>
         </h1>
         <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-bold">
-          {'// CONTENT_ROADMAP_PIPELINE // DRAFT → IN_PROGRESS → DONE //'}
+          {'// CHATGPT_CALENDAR + HUMAN_ROADMAP //'}
         </p>
       </div>
+
+      <EditorialCalendarBoard initialSlots={editorialSlots} />
 
       <ContentScheduleBoard
         initialItems={scheduleState.items}

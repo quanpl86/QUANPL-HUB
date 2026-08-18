@@ -6,6 +6,8 @@ import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
 import { normalizeArticlePackage } from "@/lib/content/article-package";
 import { generateAndUploadBlogImage } from "@/lib/content/blog-image";
+import { EditorialCalendarRepository } from "@/lib/content/editorial-calendar";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown error";
@@ -14,7 +16,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.3.0",
+    version: "7.4.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -90,7 +92,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.3.0",
+          mcp_version: "7.4.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           schema_version: "article-package/7.0",
@@ -154,8 +156,84 @@ function createKingDragonHubMcpServer() {
     }
   );
 
+  server.registerTool(
+    "list_editorial_calendar",
+    {
+      description: "List ChatGPT editorial calendar slots. Use status=approved to find briefs that are ready to write. status=revision_requested means the admin asked you to revise the brief via revise_editorial_slot before writing.",
+      inputSchema: z.object({
+        status: z.enum(["proposed", "approved", "revision_requested", "writing", "drafted", "cancelled"]).optional(),
+      }),
+    },
+    async ({ status }) => {
+      try {
+        const slots = await EditorialCalendarRepository.list(getSupabaseAdmin(), status);
+        return { content: [{ type: "text", text: JSON.stringify({ slots }) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+      }
+    }
+  );
+
   // [Tool 4]: create_blog_draft
   if (process.env.MCP_ENABLE_WRITE === "true") {
+    server.registerTool(
+      "propose_editorial_calendar",
+      {
+        description: "Propose 1-12 ChatGPT calendar slots for admin review. Slots start as proposed. Do NOT write the full article yet. After admin approves, list_editorial_calendar(status=approved) then create_blog_draft with calendar_id.",
+        inputSchema: z.object({
+          slots: z.array(z.object({
+            title: z.string(),
+            angle: z.string().optional(),
+            audience: z.string().optional(),
+            goal: z.string().optional(),
+            scheduled_date: z.string().optional().describe("YYYY-MM-DD"),
+            field: z.string().optional(),
+            subject: z.string().optional(),
+            category: z.string().optional(),
+            tags: z.array(z.string()).optional(),
+            notes: z.string().optional(),
+          })).min(1).max(12),
+        }),
+      },
+      async ({ slots }) => {
+        try {
+          const created = await EditorialCalendarRepository.propose(getSupabaseAdmin(), slots);
+          return { content: [{ type: "text", text: JSON.stringify({ created }) }] };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "revise_editorial_slot",
+      {
+        description: "Revise a calendar slot after admin set status=revision_requested. Updates the brief and returns it to proposed for another review. Do not write the article until it is approved.",
+        inputSchema: z.object({
+          id: z.string(),
+          title: z.string().optional(),
+          angle: z.string().optional(),
+          audience: z.string().optional(),
+          goal: z.string().optional(),
+          scheduled_date: z.string().optional(),
+          field: z.string().optional(),
+          subject: z.string().optional(),
+          category: z.string().optional(),
+          tags: z.array(z.string()).optional(),
+          notes: z.string().optional(),
+        }),
+      },
+      async (input) => {
+        try {
+          const { id, ...patch } = input;
+          const slot = await EditorialCalendarRepository.revise(getSupabaseAdmin(), id, patch);
+          return { content: [{ type: "text", text: JSON.stringify({ slot }) }] };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
     server.registerTool(
       "generate_and_upload_blog_image",
       {
@@ -193,10 +271,11 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95 (meta title 50-70 chars, meta description 120-160, excerpt >= 50, cover+alt, keyword in title and intro, >=2 H2/H3, FAQ 3-6). If rejected with SEO_SCORE_*, fix those checks and retry. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. Free mode: calendar_id=null. Schedule mode: calendar_id must be an approved slot from list_editorial_calendar. HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
+          calendar_id: z.string().optional().nullable().describe("Approved editorial calendar slot id. Required when writing from the ChatGPT schedule. Leave null for free-write mode."),
           idempotency_key: z.string(),
           policy_version: z.string(),
           policy_hash: z.string(),

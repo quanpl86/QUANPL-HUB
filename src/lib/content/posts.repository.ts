@@ -12,6 +12,7 @@ import {
 import { compileArticleHtml } from "./compile-article-html";
 import { loadTaxonomyCatalog, resolvePostTaxonomy } from "./taxonomy";
 import { analyzeSystemSeo, formatSeoGateError, SEO_SCORE_MIN } from "./seo-advisor";
+import { EditorialCalendarRepository } from "./editorial-calendar";
 
 function sanitizeTaskId(taskId: unknown): string | null {
   if (typeof taskId !== "string") return null;
@@ -180,6 +181,10 @@ export class PostsRepository {
 
     // Sanitize task_id (ChatGPT sometimes sends empty string "")
     const taskId = sanitizeTaskId(draftData.task_id);
+    const calendarId = sanitizeTaskId(draftData.calendar_id);
+    if (calendarId) {
+      await EditorialCalendarRepository.claimForWriting(supabase, calendarId);
+    }
 
     // Verify task_id exists in content_tasks ONLY IF PROVIDED
     if (taskId) {
@@ -395,6 +400,14 @@ async function handleDraftSuccess(
   seoScore: number | null = null
 ) {
   const taskId = sanitizeTaskId(draftData.task_id);
+  const calendarId = sanitizeTaskId(draftData.calendar_id);
+  if (calendarId) {
+    try {
+      await EditorialCalendarRepository.markDrafted(supabase, calendarId, data.id);
+    } catch (error) {
+      console.error("[PostsRepository] mark calendar drafted failed:", error);
+    }
+  }
 
   // Update Audit Log trong content_tasks
   if (taskId) {
