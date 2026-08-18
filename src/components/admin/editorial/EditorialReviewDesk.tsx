@@ -172,9 +172,15 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
     );
   };
 
-  const dueCount = weeks.flatMap((week) => week.slots).filter((slot) =>
-    (slot.status === 'approved' || slot.status === 'writing') && !slot.result_post_id && isSlotDue(slot)
-  ).length;
+  const dueSlots = weeks.flatMap((week) =>
+    week.slots
+      .filter((slot) =>
+        (slot.status === 'approved' || slot.status === 'writing') && !slot.result_post_id && isSlotDue(slot)
+      )
+      .map((slot) => ({ slot, week }))
+  );
+  const writeReadyCount = dueSlots.filter((item) => item.week.status === 'approved').length;
+  const waitingWeekCount = dueSlots.filter((item) => item.week.status !== 'approved').length;
 
   return (
     <div className="space-y-6">
@@ -207,13 +213,21 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
           <p className="text-sm font-semibold">Hiệu suất lập kế hoạch</p>
           <p className="text-sm">Đạt: {performance.planning.passed} tuần · Không đạt: {performance.planning.failed} tuần</p>
           <p className="text-sm">Đang xem: {performance.planning.in_review} · Trung bình số lần sửa: {performance.planning.avg_revisions}</p>
-          <p className="text-sm font-semibold">Tỉ lệ đạt: {performance.planning.pass_rate}%</p>
+          <p className="text-sm font-semibold">
+            {performance.planning.passed + performance.planning.failed
+              ? `Tỉ lệ đạt: ${performance.planning.pass_rate}%`
+              : 'Chưa chốt tuần nào — tỉ lệ đạt sẽ hiện sau khi bạn duyệt hoặc hủy'}
+          </p>
         </div>
         <div className="border border-brand-orange/20 p-4 space-y-1">
           <p className="text-sm font-semibold">Hiệu suất viết bài</p>
           <p className="text-sm">Chờ đọc: {performance.writing.drafted} · Đã đăng: {performance.writing.published} · Bị trả: {performance.writing.rejected}</p>
           <p className="text-sm">Lần gửi draft lỗi: {performance.writing.write_fails}{performance.writing.avg_seo != null ? ` · Điểm SEO TB: ${performance.writing.avg_seo}` : ''}</p>
-          <p className="text-sm font-semibold">Tỉ lệ đăng / bài đã viết: {performance.writing.pass_rate}%</p>
+          <p className="text-sm font-semibold">
+            {performance.writing.drafted + performance.writing.published + performance.writing.rejected
+              ? `Tỉ lệ đăng / bài đã viết: ${performance.writing.pass_rate}%`
+              : 'Chưa có bản nháp — tỉ lệ viết sẽ hiện sau khi ChatGPT gửi draft'}
+          </p>
         </div>
       </div>
 
@@ -231,9 +245,16 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
         ))}
       </div>
 
-      {dueCount > 0 && (
-        <div className="border border-brand-orange bg-brand-orange/10 p-4 tech-mono text-xs uppercase">
-          {dueCount} bài đã đến ngày giờ. Mở ChatGPT và bảo: viết các bài đến hạn hôm nay.
+      {waitingWeekCount > 0 && (
+        <div className="border border-brand-orange bg-brand-orange/10 p-4 text-sm">
+          Có {waitingWeekCount} bài đã đến ngày giờ nhưng tuần chưa duyệt.
+          Bấm <strong>Duyệt cả tuần</strong> trước. ChatGPT chưa viết được nếu chỉ duyệt từng bài.
+        </div>
+      )}
+      {writeReadyCount > 0 && (
+        <div className="border border-brand-orange bg-brand-orange/10 p-4 text-sm">
+          {writeReadyCount} bài đã duyệt cả tuần và đến hạn.
+          Mở ChatGPT và bảo: viết các bài đến hạn hôm nay.
         </div>
       )}
 
@@ -364,10 +385,22 @@ function WeekWorkspace({
           }}
           className="w-full bg-transparent border border-brand-orange/20 px-3 py-2 font-orbitron font-bold"
         />
-        <p className="tech-mono text-[11px] text-brand-orange uppercase">
+        <p className="text-xs text-brand-orange uppercase">
           {WEEK_LABELS[week.status]} · {weekTitleVi(isoWeekLabel(week.week_start))} · bản {week.revision_number}
           {locked ? ' · Đã khóa' : ''}
         </p>
+        {!locked && week.status === 'proposed' && (
+          <p className="text-sm">
+            Bước tiếp: đọc 3 bài bên dưới. Ổn thì bấm <strong>Duyệt cả tuần</strong>.
+            Cần chỉnh thì ghi chú rồi <strong>Gửi yêu cầu sửa</strong>.
+            Chỉ sau khi duyệt cả tuần, ChatGPT mới viết bài được.
+          </p>
+        )}
+        {locked && (
+          <p className="text-sm">
+            Bước tiếp: mở ChatGPT và bảo viết các bài đến hạn hôm nay (hoặc bấm Cho viết ngay nếu chưa tới giờ).
+          </p>
+        )}
         <textarea
           value={summary}
           disabled={briefLocked || pending}
@@ -408,14 +441,16 @@ function WeekWorkspace({
       {!cancelled && (week.status === 'proposed' || week.status === 'revision_ready') && (
         <div className="space-y-3 border border-brand-orange/20 p-4">
           <p className="text-sm font-semibold">Khi yêu cầu sửa, ChatGPT được phép đổi gì?</p>
-          <p className="text-xs text-muted">Ô đã tick = ChatGPT phải giữ nguyên phần đó.</p>
+          <p className="text-xs text-muted">
+            Nhóm “Giữ”: tick = không được đổi. Nhóm “Cho phép”: tick = được đổi.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
             {(
               [
-                ['keep_schedule', 'Giữ ngày giờ đăng'],
-                ['keep_category', 'Giữ danh mục'],
-                ['keep_cluster', 'Giữ lĩnh vực và chủ đề'],
-                ['keep_keyword', 'Giữ từ khóa chính'],
+                ['keep_schedule', 'Giữ ngày giờ đăng (không cho đổi)'],
+                ['keep_category', 'Giữ danh mục (không cho đổi)'],
+                ['keep_cluster', 'Giữ lĩnh vực và chủ đề (không cho đổi)'],
+                ['keep_keyword', 'Giữ từ khóa chính (không cho đổi)'],
                 ['allow_title_change', 'Cho phép đổi tiêu đề'],
                 ['allow_angle_change', 'Cho phép đổi góc viết'],
               ] as const
