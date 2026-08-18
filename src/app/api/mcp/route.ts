@@ -14,7 +14,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.1.0",
+    version: "7.2.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -38,6 +38,18 @@ function createKingDragonHubMcpServer() {
           },
         ],
       };
+    }
+  );
+
+  server.registerTool(
+    "get_blog_categories",
+    {
+      description: "List existing KingDragonHub categories (id, name, slug, description). Prefer an existing category when calling create_blog_draft. Only invent a new category name when nothing fits.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      const result = await PostsRepository.getCategories();
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
@@ -78,8 +90,9 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.1.0",
+          mcp_version: "7.2.0",
           media_tool: "generate_and_upload_blog_image",
+          taxonomy_tool: "get_blog_categories",
           schema_version: "article-package/7.0",
           create_blog_draft_required_fields: [
             "schema_version",
@@ -179,7 +192,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. For a visible cover: call generate_and_upload_blog_image with image_id=cover first, then set featured_image.url and featured_image_url to that RAW URL and featured_image.alt to the alt you sent. Required fields: schema_version, featured_image object, featured_image_url, inline_images[], aio.direct_answer, seo.search_intent, seo.semantic_entities. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. Call get_blog_categories first and send category_id or category name of an existing category when possible. Server matches existing categories before creating a new one. Also send tags. For a visible cover: call generate_and_upload_blog_image with image_id=cover first, then set featured_image.url / featured_image_url and featured_image.alt. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
@@ -190,8 +203,9 @@ function createKingDragonHubMcpServer() {
           slug: z.string(),
           excerpt: z.string(),
           content_markdown: z.string(),
-          category_id: z.string().optional(),
-          tags: z.array(z.string()).optional(),
+          category_id: z.string().optional().describe("Existing category id from get_blog_categories. Prefer this over creating a new category."),
+          category: z.string().optional().describe("Category name or slug. Matched against existing categories first; created only if nothing fits."),
+          tags: z.array(z.string()).optional().describe("Editorial tags shown in admin. If omitted, derived from SEO keywords/entities."),
           featured_image: z.object({
             purpose: z.literal("article_cover"),
             prompt: z.string(),

@@ -10,6 +10,7 @@ import {
   type PackageIssue,
 } from "./article-package";
 import { compileArticleHtml } from "./compile-article-html";
+import { resolvePostTaxonomy } from "./taxonomy";
 
 function sanitizeTaskId(taskId: unknown): string | null {
   if (typeof taskId !== "string") return null;
@@ -73,6 +74,18 @@ export class PostsRepository {
       posts: filteredData,
       count: filteredData.length
     };
+  }
+
+  static async getCategories() {
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("id, name, slug, description")
+      .order("name");
+    if (error) {
+      return { categories: [], error: error.message };
+    }
+    return { categories: data || [] };
   }
 
   /**
@@ -262,8 +275,24 @@ export class PostsRepository {
       finalContent = buildRichContent(draftData);
     }
 
-    const warnings = dedupeIssues([...mediaCheck.warnings, ...compileWarnings]);
-    const articlePackage = buildArticlePackageSnapshot(pkg, warnings);
+    const taxonomy = await resolvePostTaxonomy(supabase, {
+      category_id: draftData.category_id,
+      category: draftData.category,
+      title: draftData.title,
+      tags: draftData.tags,
+      seo: draftData.seo,
+    });
+
+    const warnings = dedupeIssues([
+      ...mediaCheck.warnings,
+      ...compileWarnings,
+      ...taxonomy.warnings,
+    ]);
+    const articlePackage = {
+      ...buildArticlePackageSnapshot(pkg, warnings),
+      category: taxonomy.category,
+      tags: taxonomy.tags,
+    };
 
     // 4. Chuẩn bị dữ liệu và Hard-Lock Governance
     const insertData: any = {
@@ -273,8 +302,9 @@ export class PostsRepository {
       content: finalContent,
       is_published: false, // HARD-LOCK
       is_ai_generated: true, // HARD-LOCK
-      category_id: draftData.category_id || null,
-      keywords: draftData.tags || [],
+      category_id: taxonomy.category_id,
+      keywords: taxonomy.keywords,
+      tags: taxonomy.tags,
       image_url: pkg.featured_image?.url || null,
       meta_title: draftData.seo?.title || draftData.title,
       meta_description: draftData.seo?.description || draftData.excerpt,
@@ -373,7 +403,9 @@ async function handleDraftSuccess(
     source_task_id: taskId,
     policy_version: activePolicy.policy_version,
     quality_overall: draftData.quality?.overall ?? null,
-    warnings
+    warnings,
+    category_id: data.category_id ?? null,
+    tags: data.tags ?? []
   };
 }
 
