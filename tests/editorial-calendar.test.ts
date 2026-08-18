@@ -127,6 +127,25 @@ test("approved plan is PLAN_LOCKED", () => {
   assert.doesNotThrow(() => assertPlanUnlocked("revision_ready"));
 });
 
+test("reopen rejects a slot that already has a draft", async () => {
+  const mock = {
+    from() {
+      return {
+        select() { return this; },
+        eq() { return this; },
+        maybeSingle: async () => ({
+          data: { id: "s1", status: "approved", result_post_id: "post-1", tags: [] },
+          error: null,
+        }),
+      };
+    },
+  };
+  await assert.rejects(
+    () => EditorialCalendarRepository.reopen(mock, "s1"),
+    /bản nháp/
+  );
+});
+
 test("due list keeps a slot blocked when the week is not approved", async () => {
   const slots = [{
     id: "slot-1",

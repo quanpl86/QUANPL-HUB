@@ -481,6 +481,29 @@ export class EditorialCalendarRepository {
     return toSlot(data);
   }
 
+  static async reopen(supabase: any, id: string, restore?: { scheduled_date?: string | null; scheduled_time?: string | null }) {
+    const slot = await this.get(supabase, id);
+    if (slot.result_post_id) {
+      throw new Error("Bài đã có bản nháp. Hãy dùng Trả bài cho ChatGPT, không hoàn về đầu được.");
+    }
+    if (slot.status !== "approved" && slot.status !== "writing") {
+      throw new Error("Chỉ hoàn được bài đang duyệt hoặc đang mở viết, chưa có bản nháp");
+    }
+    const { data, error } = await supabase
+      .from("editorial_calendar")
+      .update({
+        status: "proposed",
+        admin_feedback: "",
+        scheduled_date: restore?.scheduled_date ?? slot.scheduled_date,
+        scheduled_time: restore?.scheduled_time ?? slot.scheduled_time,
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+    return toSlot(data);
+  }
+
   static async markDrafted(supabase: any, id: string, postId: string, seoScore?: number | null) {
     const payload: Record<string, unknown> = {
       status: "drafted",

@@ -170,6 +170,37 @@ export async function requestEditorialRevision(id: string, feedback: string) {
   return updated;
 }
 
+export async function reopenEditorialSlot(id: string) {
+  const supabase = await requireAdmin();
+  const slot = await EditorialCalendarRepository.get(supabase, id);
+  let restore: { scheduled_date?: string | null; scheduled_time?: string | null } | undefined;
+  if (slot.week_id) {
+    const week = await EditorialWeekRepository.get(supabase, slot.week_id);
+    const snapSlots = Array.isArray(week.latest_revision?.snapshot?.slots)
+      ? (week.latest_revision?.snapshot?.slots as Array<{ id?: string; scheduled_date?: string; scheduled_time?: string }>)
+      : [];
+    const previous = snapSlots.find((item) => item.id === slot.id);
+    if (previous) {
+      restore = {
+        scheduled_date: previous.scheduled_date || slot.scheduled_date,
+        scheduled_time: previous.scheduled_time || slot.scheduled_time,
+      };
+    }
+    const updated = await EditorialCalendarRepository.reopen(supabase, id, restore);
+    await EditorialPlanAudit.log(supabase, {
+      week_id: slot.week_id,
+      slot_id: id,
+      event: 'slot_reopened',
+      actor: 'admin',
+    });
+    revalidateDesk();
+    return updated;
+  }
+  const updated = await EditorialCalendarRepository.reopen(supabase, id, restore);
+  revalidateDesk();
+  return updated;
+}
+
 export async function cancelEditorialSlot(id: string) {
   const supabase = await requireAdmin();
   const updated = await EditorialCalendarRepository.setStatus(supabase, id, 'cancelled');

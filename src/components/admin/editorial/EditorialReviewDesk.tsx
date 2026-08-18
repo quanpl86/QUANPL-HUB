@@ -28,6 +28,7 @@ import {
   cancelEditorialWeek,
   rejectEditorialDraft,
   releaseEditorialSlotNow,
+  reopenEditorialSlot,
   reorderEditorialSlots,
   requestEditorialRevision,
   requestEditorialWeekRevision,
@@ -52,7 +53,7 @@ const PIPELINE: { key: string; label: string }[] = [
   { key: 'proposed', label: 'Chờ duyệt' },
   { key: 'revision_requested', label: 'Đang chờ sửa' },
   { key: 'revision_ready', label: 'Đã sửa, chờ xem' },
-  { key: 'approved', label: 'Đã duyệt' },
+  { key: 'approved', label: 'Tuần đã duyệt' },
 ];
 
 const SLOT_LABELS: Record<string, string> = {
@@ -82,6 +83,7 @@ const EVENT_LABELS: Record<string, string> = {
   cancelled: 'Bạn đã hủy tuần',
   article_rejected: 'Bạn trả bài — ChatGPT cần sửa',
   article_published: 'Bạn đã đăng bài — task xong',
+  slot_reopened: 'Bạn hoàn bài về chờ duyệt',
 };
 
 const DIFF_FIELD_LABELS: Record<string, string> = {
@@ -199,7 +201,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
           [`${kpi.proposed}`, 'Tuần chờ bạn duyệt'],
           [`${kpi.requested}`, 'Tuần đang chờ ChatGPT sửa'],
           [`${kpi.ready}`, 'Tuần ChatGPT đã sửa, chờ xem'],
-          [`${kpi.approved}`, 'Tuần đã duyệt'],
+          [`${kpi.approved}`, 'Tuần đã duyệt cả tuần'],
         ].map(([value, hint]) => (
           <div key={hint} className="border border-brand-orange/20 p-3 bg-cyber-black/5">
             <p className="font-orbitron text-sm font-bold">{value}</p>
@@ -244,6 +246,15 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
           </button>
         ))}
       </div>
+      <p className="text-xs text-muted">
+        Các nút lọc theo <strong>cả tuần</strong>, không theo từng bài.
+        Bấm “Duyệt bài” riêng thì tuần vẫn ở “Chờ duyệt” — mở tab Tất cả để thấy bài đó.
+      </p>
+      {filter === 'approved' && visibleWeeks.length === 0 && (
+        <p className="text-sm">
+          Chưa có tuần nào được bấm <strong>Duyệt cả tuần</strong>. Bài bạn đã duyệt riêng không hiện ở đây.
+        </p>
+      )}
 
       {waitingWeekCount > 0 && (
         <div className="border border-brand-orange bg-brand-orange/10 p-4 text-sm">
@@ -278,7 +289,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
                 <p className="font-orbitron text-sm font-bold">{week.title || `Tuần ${week.week_start}`}</p>
                 <p className="tech-mono text-[10px] text-brand-orange uppercase mt-1">{WEEK_LABELS[week.status]}</p>
                 <p className="tech-mono text-[10px] text-muted uppercase mt-1">
-                  {week.slots.length} bài · {week.comments.length} ghi chú tuần
+                  {week.slots.length} bài · {week.slots.filter((slot) => slot.status === 'approved').length} đã duyệt riêng · {week.comments.length} ghi chú
                 </p>
               </button>
             ))}
@@ -855,10 +866,28 @@ function SlotEditor({
               </button>
             </div>
           )}
-          {slot.status === 'approved' && !weekApproved && (
-            <p className="text-sm text-brand-orange">
-              Bài này đã duyệt riêng nhưng cả tuần chưa duyệt. ChatGPT không viết được cho đến khi bạn bấm Duyệt cả tuần.
-            </p>
+          {(slot.status === 'approved' || slot.status === 'writing') && !slot.result_post_id && (
+            <div className="space-y-2">
+              {slot.status === 'approved' && !weekApproved && (
+                <p className="text-sm text-brand-orange">
+                  Bài này đã duyệt riêng nhưng cả tuần chưa duyệt. ChatGPT không viết được cho đến khi bạn bấm Duyệt cả tuần.
+                </p>
+              )}
+              <button
+                disabled={pending}
+                onClick={() => startTransition(async () => {
+                  try {
+                    onSlot({ ...(await reopenEditorialSlot(slot.id)), comments: slot.comments });
+                    toast.success('Đã hoàn bài về chờ duyệt. Ngày giờ được trả về bản trước khi mở viết ngay (nếu có).');
+                  } catch (error: any) {
+                    toast.error(humanError(error.message));
+                  }
+                })}
+                className="px-3 py-2 border border-brand-orange/40 font-orbitron text-[11px] uppercase"
+              >
+                Hoàn về chờ duyệt
+              </button>
+            </div>
           )}
           {slot.status === 'drafted' && slot.result_post_id && (
             <div className="space-y-2 border border-brand-orange/20 p-3">
