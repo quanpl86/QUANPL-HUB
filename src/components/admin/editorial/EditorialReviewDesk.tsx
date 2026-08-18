@@ -39,6 +39,7 @@ import { isSlotDue, type EditorialSlot } from '@/lib/content/editorial-calendar'
 import type { EditorialComment } from '@/lib/content/editorial-comments';
 import { DEFAULT_REVISION_CONSTRAINTS, computeEditorialPerformance, isoWeekLabel, type RevisionConstraints } from '@/lib/content/editorial-plan';
 import type { EditorialWeek } from '@/lib/content/editorial-week';
+import { EditorialPromptKitDialog } from '@/components/admin/editorial/EditorialPromptKitDialog';
 
 const WEEK_LABELS: Record<string, string> = {
   proposed: 'Chờ bạn duyệt',
@@ -141,6 +142,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
   const [weeks, setWeeks] = useState(initialWeeks);
   const [selectedId, setSelectedId] = useState(initialWeeks[0]?.id || '');
   const [filter, setFilter] = useState('all');
+  const [promptOpen, setPromptOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const visibleWeeks = filter === 'all' ? weeks : weeks.filter((week) => week.status === filter);
   const selected = visibleWeeks.find((week) => week.id === selectedId) || visibleWeeks[0] || null;
@@ -186,14 +188,25 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">
-          DUYỆT LỊCH <span className="cyber-text-gradient">TUẦN</span>
-        </h1>
-        <p className="text-sm text-muted">
-          {weekTitleVi(iso)} — xem đề xuất của ChatGPT, góp ý, rồi duyệt hoặc yêu cầu sửa.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div>
+          <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">
+            DUYỆT LỊCH <span className="cyber-text-gradient">TUẦN</span>
+          </h1>
+          <p className="text-sm text-muted">
+            {weekTitleVi(iso)} — xem đề xuất của ChatGPT, góp ý, rồi duyệt hoặc yêu cầu sửa.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setPromptOpen(true)}
+          className="px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase shrink-0"
+        >
+          Prompt AI
+        </button>
       </div>
+
+      <EditorialPromptKitDialog open={promptOpen} onClose={() => setPromptOpen(false)} />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[

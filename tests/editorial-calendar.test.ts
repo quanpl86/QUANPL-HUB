@@ -11,6 +11,7 @@ import {
 } from "../src/lib/content/editorial-calendar.ts";
 import { EditorialCommentRepository } from "../src/lib/content/editorial-comments.ts";
 import { EDITORIAL_COMMANDS } from "../src/lib/content/editorial-commands.ts";
+import { EDITORIAL_PROMPT_KIT } from "../src/lib/content/editorial-prompt-kit.ts";
 import {
   DEFAULT_REVISION_CONSTRAINTS,
   applySlotAliases,
@@ -39,6 +40,16 @@ test("short command map covers plan, check, revise, and both write modes", () =>
     assert.ok(ids.includes(id), `missing command ${id}`);
   }
   assert.ok(EDITORIAL_COMMANDS.refuse.some((item) => /publish/i.test(item)));
+});
+
+test("admin prompt kit has all editorial job groups", () => {
+  const titles = EDITORIAL_PROMPT_KIT.map((section) => section.title).join(" ");
+  assert.match(titles, /Lập lịch/);
+  assert.match(titles, /Check lịch/);
+  assert.match(titles, /tự do/);
+  assert.match(titles, /theo tuần/);
+  assert.match(titles, /bị trả/);
+  assert.ok(EDITORIAL_PROMPT_KIT.every((section) => section.items.length > 0));
 });
 
 test("propose rejects an empty calendar", async () => {
