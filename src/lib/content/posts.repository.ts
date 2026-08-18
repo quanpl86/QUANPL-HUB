@@ -147,12 +147,16 @@ export class PostsRepository {
     if (!draftData.idempotency_key) {
       throw new Error("Missing idempotency_key");
     }
+
+    // Sanitize task_id (ChatGPT sometimes sends empty string "")
+    const sanitizedTaskId = (draftData.task_id && draftData.task_id.trim() !== "") ? draftData.task_id : null;
+
     // Verify task_id exists in content_tasks ONLY IF PROVIDED
-    if (draftData.task_id) {
+    if (sanitizedTaskId) {
       const { data: task, error: taskError } = await supabase
         .from("content_tasks")
         .select("id")
-        .eq("id", draftData.task_id)
+        .eq("id", sanitizedTaskId)
         .maybeSingle();
         
       if (taskError && taskError.code !== '22P02') {
@@ -247,7 +251,7 @@ export class PostsRepository {
         image_alt: draftData.featured_image_alt || null
       },
       schema_org: draftData.schema_org,
-      source_task_id: draftData.task_id,
+      source_task_id: sanitizedTaskId,
     };
 
     // Chỉ add idempotency_key nếu migration đã chạy (chúng ta sẽ insert, nếu fail do schema thì catch và retry không có cột này)

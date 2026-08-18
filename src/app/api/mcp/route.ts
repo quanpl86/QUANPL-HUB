@@ -106,7 +106,7 @@ function createKingDragonHubMcpServer() {
       {
         description: "Tạo bản nháp (DRAFT) cho bài viết mới. Bài viết sẽ luôn ở trạng thái DRAFT.",
         inputSchema: z.object({
-          task_id: z.string(),
+          task_id: z.string().optional().nullable(),
           idempotency_key: z.string(),
           policy_version: z.string(),
           policy_hash: z.string(),
