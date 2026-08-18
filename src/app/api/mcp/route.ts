@@ -13,7 +13,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "2.0.0",
+    version: "7.0.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -64,6 +64,44 @@ function createKingDragonHubMcpServer() {
         ],
       };
     }
+  );
+
+  server.registerTool(
+    "get_article_package_contract",
+    {
+      description: "Return the frozen Article Package v7 contract that create_blog_draft must advertise. Use this to verify the live MCP schema, not the ChatGPT cached snapshot.",
+      inputSchema: z.object({})
+    },
+    async () => ({
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          mcp_server: "KingDragonHub-MCP",
+          mcp_version: "7.0.0",
+          schema_version: "article-package/7.0",
+          create_blog_draft_required_fields: [
+            "schema_version",
+            "featured_image",
+            "featured_image_url",
+            "inline_images",
+            "aio.direct_answer",
+            "seo.search_intent",
+            "seo.semantic_entities",
+          ],
+          featured_image: {
+            type: "object",
+            required: ["purpose", "prompt", "alt", "url"],
+            purpose: "article_cover",
+            url_nullable: true,
+          },
+          inline_images: {
+            type: "array",
+            item_required: ["id", "purpose", "prompt", "alt", "url"],
+            url_nullable: true,
+          },
+        }, null, 2),
+      }],
+    })
   );
 
   // [Tool 3]: get_editorial_guidelines
