@@ -11,7 +11,7 @@ export const navItems = [
   { label: 'Chủ đề', href: '/admin/subjects', icon: BookOpen },
   { label: 'Danh mục', href: '/admin/categories', icon: Layers },
   { label: 'Bài viết', href: '/admin/posts', icon: FileText },
-  { label: 'Duyệt ChatGPT', href: '/admin/editorial', icon: ClipboardCheck },
+  { label: 'Duyệt lịch tuần', href: '/admin/editorial', icon: ClipboardCheck },
   { label: 'Lịch nội dung', href: '/admin/content-schedule', icon: CalendarClock },
   { label: 'Bình luận', href: '/admin/comments', icon: MessageSquare },
   { label: 'Tự động hóa', href: '/admin/automation', icon: Cpu },

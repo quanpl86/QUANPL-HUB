@@ -39,29 +39,97 @@ import { DEFAULT_REVISION_CONSTRAINTS, isoWeekLabel, type RevisionConstraints } 
 import type { EditorialWeek } from '@/lib/content/editorial-week';
 
 const WEEK_LABELS: Record<string, string> = {
-  proposed: 'Chờ duyệt danh sách',
-  revision_requested: 'Đã gửi ChatGPT — chờ sửa',
-  revision_ready: 'GPT đã sửa — chờ xem lại',
-  approved: 'Đã duyệt — LOCKED',
+  proposed: 'Chờ bạn duyệt',
+  revision_requested: 'Đã gửi ChatGPT — đang chờ sửa',
+  revision_ready: 'ChatGPT đã sửa — chờ bạn xem lại',
+  approved: 'Đã duyệt — đã khóa',
   cancelled: 'Đã hủy',
 };
 
 const PIPELINE: { key: string; label: string }[] = [
   { key: 'all', label: 'Tất cả' },
   { key: 'proposed', label: 'Chờ duyệt' },
-  { key: 'revision_requested', label: 'Cần sửa' },
-  { key: 'revision_ready', label: 'Revision ready' },
+  { key: 'revision_requested', label: 'Đang chờ sửa' },
+  { key: 'revision_ready', label: 'Đã sửa, chờ xem' },
   { key: 'approved', label: 'Đã duyệt' },
 ];
 
 const SLOT_LABELS: Record<string, string> = {
   proposed: 'Chờ duyệt',
   approved: 'Đã duyệt',
-  revision_requested: 'Yêu cầu GPT sửa',
-  writing: 'Đang viết',
+  revision_requested: 'Đã yêu cầu ChatGPT sửa',
+  writing: 'Đang viết bài',
   drafted: 'Đã có bản nháp',
   cancelled: 'Đã hủy',
 };
+
+const ACTOR_LABELS: Record<string, string> = {
+  admin: 'Bạn',
+  chatgpt: 'ChatGPT',
+  system: 'Hệ thống',
+};
+
+const EVENT_LABELS: Record<string, string> = {
+  proposed: 'ChatGPT gửi danh sách tuần',
+  brief_edited: 'Bạn đã chỉnh nội dung đề xuất',
+  reordered: 'Bạn đã đổi thứ tự bài',
+  comment_added: 'Có ghi chú mới',
+  revision_requested: 'Bạn yêu cầu ChatGPT sửa',
+  revised: 'ChatGPT gửi bản sửa',
+  approved: 'Bạn đã duyệt và khóa tuần',
+  cancelled: 'Bạn đã hủy tuần',
+};
+
+const DIFF_FIELD_LABELS: Record<string, string> = {
+  title: 'Tiêu đề',
+  summary: 'Tóm tắt tuần',
+  week_start: 'Ngày bắt đầu tuần',
+  angle: 'Góc viết',
+  audience: 'Đối tượng đọc',
+  goal: 'Mục tiêu',
+  outline: 'Dàn ý',
+  scheduled_date: 'Ngày đăng',
+  scheduled_time: 'Giờ đăng',
+  field: 'Lĩnh vực',
+  subject: 'Chủ đề',
+  category: 'Danh mục',
+  primary_keyword: 'Từ khóa chính',
+  search_intent: 'Người đọc đang tìm gì',
+  why_this_article: 'Vì sao viết bài này',
+  source_strategy: 'Nguồn sẽ dùng',
+};
+
+function weekTitleVi(iso: string) {
+  const match = /^(\d{4})-W(\d{2})$/.exec(iso);
+  if (!match) return iso ? `Tuần ${iso}` : 'Chưa có tuần';
+  return `Tuần ${Number(match[2])}/${match[1]}`;
+}
+
+function diffPathLabel(path: string) {
+  if (path === 'title' || path === 'summary' || path === 'week_start') {
+    return DIFF_FIELD_LABELS[path];
+  }
+  const slotMatch = /^slot\.[^.]+\.(.+)$/.exec(path);
+  if (slotMatch) return `Bài · ${DIFF_FIELD_LABELS[slotMatch[1]] || slotMatch[1]}`;
+  if (path.startsWith('slot.')) return 'Bài (đã xóa hoặc đổi)';
+  return path;
+}
+
+function humanError(message: string) {
+  if (message.includes('PLAN_LOCKED')) return 'Tuần đã duyệt nên bị khóa. Không sửa đề xuất được nữa.';
+  if (message.includes('REVISION_CONFLICT')) return 'ChatGPT đang sửa trên bản cũ. Hãy bảo nó đọc lại tuần rồi sửa tiếp.';
+  if (message.includes('CONSTRAINT_VIOLATION')) {
+    const field = message.replace('CONSTRAINT_VIOLATION: ', '').trim();
+    return `ChatGPT sửa sai phần bị khóa: ${DIFF_FIELD_LABELS[field] || field}`;
+  }
+  if (message.includes('INVALID_SLOT')) return `Thiếu thông tin bắt buộc: ${message.replace('INVALID_SLOT: ', '')}`;
+  if (message.includes('Unauthorized')) return 'Bạn chưa đăng nhập quyền quản trị.';
+  return message;
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-xs text-muted mb-1">{children}</p>;
+}
 
 export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialWeek[] }) {
   const [weeks, setWeeks] = useState(initialWeeks);
@@ -107,24 +175,24 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
     <div className="space-y-6">
       <div>
         <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">
-          BÀN DUYỆT <span className="cyber-text-gradient">CHATGPT</span>
+          DUYỆT LỊCH <span className="cyber-text-gradient">TUẦN</span>
         </h1>
-        <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-bold">
-          {`// TRUNG TÂM ĐIỀU HÀNH NỘI DUNG · ${iso || 'CHƯA CÓ TUẦN'} //`}
+        <p className="text-sm text-muted">
+          {weekTitleVi(iso)} — xem đề xuất của ChatGPT, góp ý, rồi duyệt hoặc yêu cầu sửa.
         </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
-          [`${kpi.total} bài`, 'Tổng slot'],
-          [`${kpi.proposed} chờ duyệt`, 'proposed'],
-          [`${kpi.requested} cần sửa`, 'revision_requested'],
-          [`${kpi.ready} xem lại`, 'revision_ready'],
-          [`${kpi.approved} đã duyệt`, 'approved'],
+          [`${kpi.total} bài`, 'Tổng số bài trong các tuần'],
+          [`${kpi.proposed}`, 'Tuần chờ bạn duyệt'],
+          [`${kpi.requested}`, 'Tuần đang chờ ChatGPT sửa'],
+          [`${kpi.ready}`, 'Tuần ChatGPT đã sửa, chờ xem'],
+          [`${kpi.approved}`, 'Tuần đã duyệt'],
         ].map(([value, hint]) => (
           <div key={hint} className="border border-brand-orange/20 p-3 bg-cyber-black/5">
             <p className="font-orbitron text-sm font-bold">{value}</p>
-            <p className="tech-mono text-[10px] text-muted uppercase">{hint}</p>
+            <p className="text-[11px] text-muted mt-1">{hint}</p>
           </div>
         ))}
       </div>
@@ -134,7 +202,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
           <button
             key={item.key}
             onClick={() => setFilter(item.key)}
-            className={`px-3 py-1 font-orbitron text-[11px] uppercase border ${
+            className={`px-3 py-1 text-[12px] border ${
               filter === item.key ? 'border-brand-orange bg-brand-orange text-white' : 'border-brand-orange/30'
             }`}
           >
@@ -145,13 +213,13 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
 
       {dueCount > 0 && (
         <div className="border border-brand-orange bg-brand-orange/10 p-4 tech-mono text-xs uppercase">
-          {dueCount} bài đến hạn. Mở ChatGPT: viết các slot đến hạn hôm nay.
+          {dueCount} bài đã đến ngày giờ. Mở ChatGPT và bảo: viết các bài đến hạn hôm nay.
         </div>
       )}
 
       {weeks.length === 0 ? (
         <div className="border border-dashed border-brand-orange/30 p-10 text-center tech-mono text-xs text-muted uppercase">
-          Chưa có lịch tuần. ChatGPT gọi propose_editorial_week — danh sách sẽ hiện ở đây để bạn kéo thứ tự, sửa brief và comment.
+          Chưa có lịch tuần. Bảo ChatGPT đề xuất danh sách bài trong tuần — danh sách sẽ hiện ở đây để bạn kéo thứ tự, sửa nội dung và ghi chú.
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)] gap-6">
@@ -169,7 +237,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
                 <p className="font-orbitron text-sm font-bold">{week.title || `Tuần ${week.week_start}`}</p>
                 <p className="tech-mono text-[10px] text-brand-orange uppercase mt-1">{WEEK_LABELS[week.status]}</p>
                 <p className="tech-mono text-[10px] text-muted uppercase mt-1">
-                  {week.slots.length} bài · {week.comments.length} comment tuần
+                  {week.slots.length} bài · {week.comments.length} ghi chú tuần
                 </p>
               </button>
             ))}
@@ -248,9 +316,9 @@ function WeekWorkspace({
             comments: next.find((item) => item.id === slot.id)?.comments || [],
           })),
         });
-        toast.success('Đã đổi thứ tự. ChatGPT sẽ thấy item_order mới.');
+        toast.success('Đã đổi thứ tự bài. ChatGPT sẽ thấy thứ tự mới.');
       } catch (error: any) {
-        toast.error(error.message);
+        toast.error(humanError(error.message));
       }
     });
   };
@@ -269,7 +337,7 @@ function WeekWorkspace({
                   onWeek(await updateEditorialWeekMeta(week.id, { title, summary }));
                   toast.success('Đã lưu tiêu đề tuần.');
                 } catch (error: any) {
-                  toast.error(error.message);
+                  toast.error(humanError(error.message));
                 }
               });
             }
@@ -277,8 +345,8 @@ function WeekWorkspace({
           className="w-full bg-transparent border border-brand-orange/20 px-3 py-2 font-orbitron font-bold"
         />
         <p className="tech-mono text-[11px] text-brand-orange uppercase">
-          {WEEK_LABELS[week.status]} · {isoWeekLabel(week.week_start)} · rev #{week.revision_number}
-          {locked ? ' · LOCKED' : ''}
+          {WEEK_LABELS[week.status]} · {weekTitleVi(isoWeekLabel(week.week_start))} · bản {week.revision_number}
+          {locked ? ' · Đã khóa' : ''}
         </p>
         <textarea
           value={summary}
@@ -291,7 +359,7 @@ function WeekWorkspace({
                   onWeek(await updateEditorialWeekMeta(week.id, { title, summary }));
                   toast.success('Đã lưu tóm tắt tuần.');
                 } catch (error: any) {
-                  toast.error(error.message);
+                  toast.error(humanError(error.message));
                 }
               });
             }
@@ -305,30 +373,31 @@ function WeekWorkspace({
       <CommentThread
         comments={week.comments}
         pending={pending}
-        placeholder="Comment chi tiết cho cả kế hoạch tuần..."
+        placeholder="Ghi chú cho cả kế hoạch tuần..."
         onSubmit={(body) => startTransition(async () => {
           try {
             const comment = await addEditorialReviewComment({ week_id: week.id, body });
             onWeek({ ...week, comments: [...week.comments, comment] });
-            toast.success('Đã lưu comment tuần.');
+            toast.success('Đã lưu ghi chú tuần.');
           } catch (error: any) {
-            toast.error(error.message);
+            toast.error(humanError(error.message));
           }
         })}
       />
 
       {!cancelled && (week.status === 'proposed' || week.status === 'revision_ready') && (
         <div className="space-y-3 border border-brand-orange/20 p-4">
-          <p className="tech-mono text-[11px] uppercase text-muted">Yêu cầu hiệu chỉnh — constraint server enforce</p>
+          <p className="text-sm font-semibold">Khi yêu cầu sửa, ChatGPT được phép đổi gì?</p>
+          <p className="text-xs text-muted">Ô đã tick = ChatGPT phải giữ nguyên phần đó.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
             {(
               [
-                ['keep_schedule', 'Giữ lịch'],
-                ['keep_category', 'Giữ category'],
-                ['keep_cluster', 'Giữ cluster (field/subject)'],
-                ['keep_keyword', 'Giữ keyword'],
-                ['allow_title_change', 'Cho đổi title'],
-                ['allow_angle_change', 'Cho đổi content angle'],
+                ['keep_schedule', 'Giữ ngày giờ đăng'],
+                ['keep_category', 'Giữ danh mục'],
+                ['keep_cluster', 'Giữ lĩnh vực và chủ đề'],
+                ['keep_keyword', 'Giữ từ khóa chính'],
+                ['allow_title_change', 'Cho phép đổi tiêu đề'],
+                ['allow_angle_change', 'Cho phép đổi góc viết'],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="flex items-center gap-2">
@@ -347,9 +416,9 @@ function WeekWorkspace({
               onClick={() => startTransition(async () => {
                 try {
                   onWeek(await approveEditorialWeek(week.id));
-                  toast.success('Đã duyệt và khóa plan.');
+                  toast.success('Đã duyệt và khóa lịch tuần.');
                 } catch (error: any) {
-                  toast.error(error.message);
+                  toast.error(humanError(error.message));
                 }
               })}
               className="px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase"
@@ -368,9 +437,9 @@ function WeekWorkspace({
                 try {
                   onWeek(await requestEditorialWeekRevision(week.id, weekNote, constraints));
                   setWeekNote('');
-                  toast.success('Đã gửi revision_requested. GPT phải dựa trên revision hiện tại.');
+                  toast.success('Đã gửi yêu cầu sửa. Hãy bảo ChatGPT: sửa.');
                 } catch (error: any) {
-                  toast.error(error.message);
+                  toast.error(humanError(error.message));
                 }
               })}
               className="px-4 py-2 border border-brand-orange text-brand-orange font-orbitron text-xs uppercase"
@@ -384,7 +453,7 @@ function WeekWorkspace({
                   onWeek(await cancelEditorialWeek(week.id));
                   toast.success('Đã hủy tuần.');
                 } catch (error: any) {
-                  toast.error(error.message);
+                  toast.error(humanError(error.message));
                 }
               })}
               className="px-4 py-2 text-red-500 font-orbitron text-xs uppercase"
@@ -397,14 +466,14 @@ function WeekWorkspace({
 
       {week.diff?.length > 0 && (
         <div className="border border-brand-orange/20 p-4 space-y-2">
-          <p className="tech-mono text-[11px] uppercase">Diff revision #{Math.max(1, week.revision_number - 1)} → #{week.revision_number}</p>
+          <p className="text-sm font-semibold">So sánh bản {Math.max(1, week.revision_number - 1)} → bản {week.revision_number}</p>
           {week.diff.slice(0, 20).map((item) => (
-            <p key={item.path} className="text-sm font-mono">
-              <span className="text-muted">{item.path}</span>
+            <p key={item.path} className="text-sm">
+              <span className="text-muted">{diffPathLabel(item.path)}</span>
               <br />
-              <span className="text-red-400">- {item.before || '∅'}</span>
+              <span className="text-red-500">Trước: {item.before || '(trống)'}</span>
               <br />
-              <span className="text-green-500">+ {item.after || '∅'}</span>
+              <span className="text-green-600">Sau: {item.after || '(trống)'}</span>
             </p>
           ))}
         </div>
@@ -412,14 +481,14 @@ function WeekWorkspace({
 
       {week.activity?.length > 0 && (
         <div className="border border-brand-orange/20 p-4 space-y-2">
-          <p className="tech-mono text-[11px] uppercase">Hoạt động</p>
+          <p className="text-sm font-semibold">Nhật ký</p>
           {week.activity.map((item) => (
             <p key={item.id} className="text-sm">
-              <span className="tech-mono text-[10px] text-muted uppercase">
-                {new Date(item.created_at).toLocaleString('vi-VN')} · {item.actor}
+              <span className="text-[11px] text-muted">
+                {new Date(item.created_at).toLocaleString('vi-VN')} · {ACTOR_LABELS[item.actor] || item.actor}
               </span>
               <br />
-              {item.event}
+              {EVENT_LABELS[item.event] || item.event}
             </p>
           ))}
         </div>
@@ -427,7 +496,7 @@ function WeekWorkspace({
 
       <div>
         <p className="tech-mono text-[11px] text-muted uppercase mb-3">
-          {briefLocked ? 'Plan đã khóa — không kéo thả / không sửa brief' : 'Kéo tay cầm để đổi thứ tự bài gửi review'}
+          {briefLocked ? 'Tuần đã khóa — không kéo thả và không sửa đề xuất' : 'Kéo biểu tượng bên trái để đổi thứ tự bài'}
         </p>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={slotIds} strategy={verticalListSortingStrategy}>
@@ -503,9 +572,9 @@ function SlotEditor({
           article_objectives: draft.article_objectives.split('|').map((item) => item.trim()).filter(Boolean),
         });
         onSlot({ ...saved, comments: slot.comments });
-        toast.success('Đã lưu brief. ChatGPT sẽ thấy bản mới.');
+        toast.success('Đã lưu đề xuất bài. ChatGPT sẽ thấy bản mới.');
       } catch (error: any) {
-        toast.error(error.message);
+        toast.error(humanError(error.message));
       }
     });
   };
@@ -538,83 +607,135 @@ function SlotEditor({
               </a>
             )}
           </div>
-          <input
-            value={draft.title}
-            disabled={locked || pending}
-            onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
-            className="w-full bg-transparent border border-brand-orange/20 px-3 py-2 font-semibold"
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <FieldLabel>Tiêu đề bài</FieldLabel>
             <input
-              type="date"
-              value={draft.scheduled_date}
+              value={draft.title}
               disabled={locked || pending}
-              onChange={(event) => setDraft((current) => ({ ...current, scheduled_date: event.target.value }))}
-              className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
-            />
-            <input
-              type="time"
-              value={draft.scheduled_time}
-              disabled={locked || pending}
-              onChange={(event) => setDraft((current) => ({ ...current, scheduled_time: event.target.value }))}
-              className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
+              onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+              placeholder="Tên bài sẽ đăng"
+              className="w-full bg-transparent border border-brand-orange/20 px-3 py-2 font-semibold"
             />
           </div>
-          <input
-            value={draft.angle}
-            disabled={locked || pending}
-            onChange={(event) => setDraft((current) => ({ ...current, angle: event.target.value }))}
-            placeholder="Góc viết"
-            className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
-          />
-          <textarea
-            value={draft.outline}
-            disabled={locked || pending}
-            onChange={(event) => setDraft((current) => ({ ...current, outline: event.target.value }))}
-            rows={4}
-            placeholder="Nội dung / dàn ý"
-            className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
-          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input value={draft.audience} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, audience: event.target.value }))} placeholder="Đối tượng" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.goal} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, goal: event.target.value }))} placeholder="Mục tiêu" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.field} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, field: event.target.value }))} placeholder="Lĩnh vực" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.subject} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, subject: event.target.value }))} placeholder="Chủ đề" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.category} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))} placeholder="Danh mục" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.tags} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, tags: event.target.value }))} placeholder="Tags, cách nhau bởi dấu phẩy" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.search_intent} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, search_intent: event.target.value }))} placeholder="Search intent" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.primary_keyword} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, primary_keyword: event.target.value }))} placeholder="Primary keyword" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-            <input value={draft.secondary_keywords} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, secondary_keywords: event.target.value }))} placeholder="Secondary keywords" className="border border-brand-orange/20 bg-transparent px-3 py-2 text-sm md:col-span-2" />
+            <div>
+              <FieldLabel>Ngày đăng</FieldLabel>
+              <input
+                type="date"
+                value={draft.scheduled_date}
+                disabled={locked || pending}
+                onChange={(event) => setDraft((current) => ({ ...current, scheduled_date: event.target.value }))}
+                className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <FieldLabel>Giờ đăng</FieldLabel>
+              <input
+                type="time"
+                value={draft.scheduled_time}
+                disabled={locked || pending}
+                onChange={(event) => setDraft((current) => ({ ...current, scheduled_time: event.target.value }))}
+                className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
+              />
+            </div>
           </div>
-          <textarea value={draft.why_this_article} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, why_this_article: event.target.value }))} rows={2} placeholder="Why this article" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-          <textarea value={draft.source_strategy} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, source_strategy: event.target.value }))} rows={2} placeholder="Source strategy" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
-          <input value={draft.article_objectives} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, article_objectives: event.target.value }))} placeholder="Article objectives, cách nhau bởi |" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+          <div>
+            <FieldLabel>Góc viết — bài này khác các bài khác ở điểm nào</FieldLabel>
+            <input
+              value={draft.angle}
+              disabled={locked || pending}
+              onChange={(event) => setDraft((current) => ({ ...current, angle: event.target.value }))}
+              placeholder="Ví dụ: không hỏi AI có thay giáo viên không, mà chia việc máy / việc người"
+              className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <FieldLabel>Dàn ý nội dung</FieldLabel>
+            <textarea
+              value={draft.outline}
+              disabled={locked || pending}
+              onChange={(event) => setDraft((current) => ({ ...current, outline: event.target.value }))}
+              rows={4}
+              placeholder="Các ý chính sẽ viết trong bài"
+              className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <FieldLabel>Đối tượng đọc</FieldLabel>
+              <input value={draft.audience} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, audience: event.target.value }))} placeholder="Ai sẽ đọc bài này" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <FieldLabel>Mục tiêu bài viết</FieldLabel>
+              <input value={draft.goal} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, goal: event.target.value }))} placeholder="Đọc xong người ta làm được gì" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <FieldLabel>Lĩnh vực</FieldLabel>
+              <input value={draft.field} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, field: event.target.value }))} placeholder="Ví dụ: Giáo dục" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <FieldLabel>Chủ đề</FieldLabel>
+              <input value={draft.subject} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, subject: event.target.value }))} placeholder="Ví dụ: Phương pháp giảng dạy" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <FieldLabel>Danh mục</FieldLabel>
+              <input value={draft.category} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))} placeholder="Danh mục trên website" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <FieldLabel>Thẻ (cách nhau bởi dấu phẩy)</FieldLabel>
+              <input value={draft.tags} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, tags: event.target.value }))} placeholder="ví dụ: 5E, AI, giáo viên" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <FieldLabel>Người đọc đang tìm gì</FieldLabel>
+              <input value={draft.search_intent} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, search_intent: event.target.value }))} placeholder="Họ gõ gì trên Google, muốn biết điều gì" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <FieldLabel>Từ khóa chính</FieldLabel>
+              <input value={draft.primary_keyword} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, primary_keyword: event.target.value }))} placeholder="Cụm từ chính của bài" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+            <div className="md:col-span-2">
+              <FieldLabel>Từ khóa phụ (cách nhau bởi dấu phẩy)</FieldLabel>
+              <input value={draft.secondary_keywords} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, secondary_keywords: event.target.value }))} placeholder="Các cụm từ liên quan" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Vì sao viết bài này</FieldLabel>
+            <textarea value={draft.why_this_article} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, why_this_article: event.target.value }))} rows={2} placeholder="Bài này lấp chỗ trống gì trên blog" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <FieldLabel>Nguồn sẽ dùng</FieldLabel>
+            <textarea value={draft.source_strategy} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, source_strategy: event.target.value }))} rows={2} placeholder="Ví dụ: UNESCO, nghiên cứu 2025–2026, case lớp học" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <FieldLabel>Các mục tiêu cụ thể (cách nhau bởi dấu | )</FieldLabel>
+            <input value={draft.article_objectives} disabled={locked || pending} onChange={(event) => setDraft((current) => ({ ...current, article_objectives: event.target.value }))} placeholder="Mục tiêu 1 | Mục tiêu 2" className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm" />
+          </div>
           {!locked && (
             <button
               disabled={pending}
               onClick={save}
               className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
             >
-              Lưu brief
+              Lưu đề xuất bài
             </button>
           )}
 
           <CommentThread
             comments={slot.comments}
             pending={pending}
-            placeholder="Comment chi tiết cho bài này..."
+            placeholder="Ghi chú cho bài này..."
             onSubmit={(body) => startTransition(async () => {
               try {
-                if (!slot.week_id) throw new Error('Slot lẻ không có tuần để gắn comment');
+                if (!slot.week_id) throw new Error('Bài này chưa thuộc tuần nào nên chưa gắn ghi chú được');
                 const comment = await addEditorialReviewComment({
                   week_id: slot.week_id,
                   slot_id: slot.id,
                   body,
                 });
                 onSlot({ ...slot, comments: [...slot.comments, comment] });
-                toast.success('Đã lưu comment bài.');
+                toast.success('Đã lưu ghi chú bài.');
               } catch (error: any) {
-                toast.error(error.message);
+                toast.error(humanError(error.message));
               }
             })}
           />
@@ -628,7 +749,7 @@ function SlotEditor({
                     onSlot({ ...(await approveEditorialSlot(slot.id)), comments: slot.comments });
                     toast.success('Đã duyệt bài.');
                   } catch (error: any) {
-                    toast.error(error.message);
+                    toast.error(humanError(error.message));
                   }
                 })}
                 className="px-3 py-2 bg-brand-orange text-white font-orbitron text-[11px] uppercase"
@@ -638,7 +759,7 @@ function SlotEditor({
               <input
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
-                placeholder="Ghi chú gửi kèm (tuỳ chọn nếu đã comment)"
+                placeholder="Ghi chú gửi kèm (không bắt buộc nếu đã viết ở trên)"
                 className="flex-1 border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
               />
               <button
@@ -649,12 +770,12 @@ function SlotEditor({
                     setNote('');
                     toast.success('Đã gửi ChatGPT sửa bài này.');
                   } catch (error: any) {
-                    toast.error(error.message);
+                    toast.error(humanError(error.message));
                   }
                 })}
                 className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
               >
-                Gửi GPT sửa bài
+                Gửi ChatGPT sửa bài
               </button>
               <button
                 disabled={pending}
@@ -663,7 +784,7 @@ function SlotEditor({
                     onSlot({ ...(await cancelEditorialSlot(slot.id)), comments: slot.comments });
                     toast.success('Đã hủy bài.');
                   } catch (error: any) {
-                    toast.error(error.message);
+                    toast.error(humanError(error.message));
                   }
                 })}
                 className="px-3 py-2 text-red-500 font-orbitron text-[11px] uppercase"
@@ -680,7 +801,7 @@ function SlotEditor({
                   onSlot({ ...(await releaseEditorialSlotNow(slot.id)), comments: slot.comments });
                   toast.success('Đã mở viết ngay.');
                 } catch (error: any) {
-                  toast.error(error.message);
+                  toast.error(humanError(error.message));
                 }
               })}
               className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
@@ -733,7 +854,7 @@ function CommentThread({
           }}
           className="px-3 py-2 border border-brand-orange/40 font-orbitron text-[11px] uppercase"
         >
-          Thêm comment
+          Thêm ghi chú
         </button>
       </div>
     </div>

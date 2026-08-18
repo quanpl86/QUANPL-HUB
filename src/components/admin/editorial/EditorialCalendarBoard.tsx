@@ -35,14 +35,14 @@ export function EditorialCalendarBoard({
             Lịch tuần <span className="text-brand-orange">ChatGPT</span>
           </h2>
           <p className="tech-mono text-[11px] text-muted uppercase mt-1">
-            Kéo thả, sửa brief và comment chi tiết nằm ở bàn duyệt
+            Kéo thả, sửa đề xuất và ghi chú nằm ở trang Duyệt lịch tuần
           </p>
         </div>
         <Link
           href="/admin/editorial"
           className="px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase self-start"
         >
-          Mở bàn duyệt
+          Mở trang duyệt
         </Link>
       </div>
 
@@ -52,7 +52,7 @@ export function EditorialCalendarBoard({
 
       {initialWeeks.length === 0 && initialLooseSlots.length === 0 && (
         <p className="tech-mono text-xs text-muted uppercase">
-          Chưa có slot. Bảo ChatGPT gọi propose_editorial_week.
+          Chưa có lịch tuần. Bảo ChatGPT đề xuất danh sách bài trong tuần.
         </p>
       )}
 
@@ -65,7 +65,7 @@ export function EditorialCalendarBoard({
           >
             <p className="font-semibold">{week.title || `Tuần ${week.week_start}`}</p>
             <p className="tech-mono text-[11px] text-brand-orange uppercase mt-1">
-              {WEEK_LABELS[week.status]} · {week.slots.length} bài · {week.comments.length} comment
+              {WEEK_LABELS[week.status]} · {week.slots.length} bài · {week.comments.length} ghi chú
             </p>
           </Link>
         ))}

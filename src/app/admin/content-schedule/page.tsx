@@ -24,7 +24,7 @@ export default async function ContentSchedulePage() {
           LỊCH TRÌNH <span className="cyber-text-gradient">NỘI DUNG</span>
         </h1>
         <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-bold">
-          {'// CHATGPT_WEEKLY_PLAN + HUMAN_ROADMAP //'}
+          Lịch tuần ChatGPT và lộ trình nội dung do bạn lên
         </p>
       </div>
 
