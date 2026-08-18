@@ -10,6 +10,7 @@ import {
   parseSlotDueAt,
 } from "../src/lib/content/editorial-calendar.ts";
 import { EditorialCommentRepository } from "../src/lib/content/editorial-comments.ts";
+import { EDITORIAL_COMMANDS } from "../src/lib/content/editorial-commands.ts";
 import {
   DEFAULT_REVISION_CONSTRAINTS,
   applySlotAliases,
@@ -19,6 +20,13 @@ import {
   computeEditorialPerformance,
   enforceRevisionConstraints,
 } from "../src/lib/content/editorial-plan.ts";
+
+test("short command map covers free write, week check, and due write", () => {
+  const ids = EDITORIAL_COMMANDS.commands.map((item) => item.id);
+  assert.deepEqual(ids, ["free_write", "check_week_plan", "write_due_from_week", "revise_week_plan"]);
+  assert.match(EDITORIAL_COMMANDS.commands[0].hear.join(" "), /tự do/);
+  assert.match(EDITORIAL_COMMANDS.commands[2].do.join(" "), /calendar_id/);
+});
 
 test("propose rejects an empty calendar", async () => {
   await assert.rejects(

@@ -10,6 +10,7 @@ import { EditorialCalendarRepository } from "@/lib/content/editorial-calendar";
 import { EditorialWeekRepository } from "@/lib/content/editorial-week";
 import { EditorialCommentRepository } from "@/lib/content/editorial-comments";
 import { EditorialPlanAudit } from "@/lib/content/editorial-plan";
+import { EDITORIAL_COMMANDS } from "@/lib/content/editorial-commands";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 const editorialSlotSchema = z.object({
@@ -49,7 +50,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.8.0",
+    version: "7.9.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -117,7 +118,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Return the frozen Article Package v7 contract that create_blog_draft must advertise. Use this to verify the live MCP schema, not the ChatGPT cached snapshot.",
+      description: "Contract canary + short Vietnamese command map. Call first in every session. If the user speaks briefly (viết tự do / kiểm tra lịch tuần / viết bài đến hạn), follow short_commands in this payload or get_editorial_commands.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -125,10 +126,11 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.8.0",
+          mcp_version: "7.9.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
+            "get_editorial_commands",
             "propose_editorial_week",
             "list_editorial_weeks",
             "get_editorial_week",
@@ -139,6 +141,8 @@ function createKingDragonHubMcpServer() {
             "update_blog_draft",
           ],
           review_desk: "/admin/editorial",
+          command_tool: "get_editorial_commands",
+          short_commands: EDITORIAL_COMMANDS,
           calendar_workflow: {
             "1": "propose_editorial_week — send the weekly article list for review. Do NOT write articles yet.",
             "2": "Admin reviews at /admin/editorial: reorder (item_order), edit briefs, and leave detailed comments.",
@@ -175,6 +179,17 @@ function createKingDragonHubMcpServer() {
   );
 
   // [Tool 3]: get_editorial_guidelines
+  server.registerTool(
+    "get_editorial_commands",
+    {
+      description: "Map câu ngắn tiếng Việt sang đúng việc MCP. Gọi khi user nói: viết bài tự do, kiểm tra lịch tuần, tuần đã duyệt chưa, viết bài đến hạn/trễ hạn, sửa kế hoạch. Không đoán mode.",
+      inputSchema: z.object({}),
+    },
+    async () => ({
+      content: [{ type: "text", text: JSON.stringify(EDITORIAL_COMMANDS, null, 2) }],
+    })
+  );
+
   server.registerTool(
     "get_editorial_guidelines",
     {
