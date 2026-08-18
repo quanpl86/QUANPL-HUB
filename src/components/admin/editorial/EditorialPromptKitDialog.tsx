@@ -38,7 +38,7 @@ export function EditorialPromptKitDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 md:p-8" onClick={onClose}>
       <div
-        className="relative w-full max-w-3xl border border-brand-orange/40 bg-white dark:bg-[#171717] p-5 md:p-8 my-6 shadow-2xl"
+        className="relative w-full max-w-3xl border border-brand-orange/40 bg-[var(--card-bg)] text-[var(--foreground)] p-5 md:p-8 my-6 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-labelledby="prompt-kit-title"
@@ -67,7 +67,7 @@ export function EditorialPromptKitDialog({
               <h3 className="font-semibold mb-2">{section.title}</h3>
               <div className="space-y-2">
                 {section.items.map((item) => (
-                  <div key={item.text} className="border border-brand-orange/20 bg-slate-50 dark:bg-black/40 p-3 flex flex-col md:flex-row gap-2 md:items-start">
+                  <div key={item.text} className="border border-brand-orange/20 bg-[var(--background)] p-3 flex flex-col md:flex-row gap-2 md:items-start">
                     <div className="flex-1">
                       <p className="text-sm">{item.text}</p>
                       {item.note && <p className="text-xs text-muted mt-1">{item.note}</p>}
@@ -75,7 +75,7 @@ export function EditorialPromptKitDialog({
                     <button
                       type="button"
                       onClick={() => copy(item.text)}
-                      className="px-3 py-1 border border-brand-orange text-brand-orange bg-white dark:bg-transparent text-xs uppercase shrink-0 cursor-pointer transition-colors hover:bg-brand-orange hover:text-white"
+                      className="px-3 py-1 border border-brand-orange text-brand-orange bg-[var(--card-bg)] text-xs uppercase shrink-0 cursor-pointer transition-colors hover:bg-brand-orange hover:text-white"
                     >
                       Copy
                     </button>

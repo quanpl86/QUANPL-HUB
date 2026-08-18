@@ -141,11 +141,11 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 const BTN_PRIMARY =
   'px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase cursor-pointer transition-colors hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed';
 const BTN_SECONDARY =
-  'px-3 py-2 border border-brand-orange text-brand-orange bg-white dark:bg-transparent font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-brand-orange hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
+  'px-3 py-2 border border-brand-orange text-brand-orange bg-[var(--card-bg)] font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-brand-orange hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
 const BTN_GHOST =
-  'px-3 py-2 border border-brand-orange/50 text-foreground bg-white dark:bg-transparent font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:border-brand-orange hover:bg-brand-orange/10 disabled:opacity-50 disabled:cursor-not-allowed';
+  'px-3 py-2 border border-brand-orange/50 text-foreground bg-[var(--card-bg)] font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:border-brand-orange hover:bg-brand-orange/10 disabled:opacity-50 disabled:cursor-not-allowed';
 const BTN_DANGER =
-  'px-3 py-2 border border-red-400 text-red-500 bg-white dark:bg-transparent font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
+  'px-3 py-2 border border-red-400 text-red-500 bg-[var(--card-bg)] font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
 
 export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialWeek[] }) {
   const [weeks, setWeeks] = useState(initialWeeks);
@@ -307,7 +307,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
                 className={`w-full text-left border p-4 cursor-pointer transition-colors ${
                   selected?.id === week.id
                     ? 'border-brand-orange bg-brand-orange/10'
-                    : 'border-brand-orange/20 bg-white dark:bg-white/5 hover:border-brand-orange/60'
+                    : 'border-brand-orange/20 bg-[var(--card-bg)] hover:border-brand-orange/60'
                 }`}
               >
                 <p className="font-orbitron text-sm font-bold">{week.title || `Tuần ${week.week_start}`}</p>
@@ -400,7 +400,7 @@ function WeekWorkspace({
   };
 
   return (
-    <section className="border border-brand-orange/20 p-5 bg-white dark:bg-white/5 space-y-6">
+    <section className="border border-brand-orange/20 p-5 bg-[var(--card-bg)] space-y-6">
       <div className="space-y-3">
         <input
           value={title}
@@ -676,7 +676,7 @@ function SlotEditor({
   };
 
   return (
-    <article className="border border-brand-orange/20 p-4 bg-white dark:bg-white/5 space-y-3">
+    <article className="border border-brand-orange/20 p-4 bg-[var(--card-bg)] space-y-3">
       <div className="flex items-start gap-3">
         <button
           type="button"
