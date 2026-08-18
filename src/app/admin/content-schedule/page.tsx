@@ -1,15 +1,20 @@
 import { ContentScheduleBoard } from '@/components/admin/content-planner/ContentScheduleBoard';
 import { EditorialCalendarBoard } from '@/components/admin/editorial/EditorialCalendarBoard';
 import { getContentScheduleState } from '@/app/actions/content-schedules';
-import { listEditorialCalendar } from '@/app/actions/editorial-calendar';
+import { listEditorialWeeks, listLooseEditorialSlots } from '@/app/actions/editorial-calendar';
+import type { EditorialSlot } from '@/lib/content/editorial-calendar';
+import type { EditorialWeek } from '@/lib/content/editorial-week';
 
 export default async function ContentSchedulePage() {
   const scheduleState = await getContentScheduleState();
-  let editorialSlots = [];
+  let editorialWeeks: EditorialWeek[] = [];
+  let looseSlots: EditorialSlot[] = [];
   try {
-    editorialSlots = await listEditorialCalendar();
+    editorialWeeks = await listEditorialWeeks();
+    looseSlots = await listLooseEditorialSlots();
   } catch {
-    editorialSlots = [];
+    editorialWeeks = [];
+    looseSlots = [];
   }
 
   return (
@@ -19,11 +24,11 @@ export default async function ContentSchedulePage() {
           LỊCH TRÌNH <span className="cyber-text-gradient">NỘI DUNG</span>
         </h1>
         <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-bold">
-          {'// CHATGPT_CALENDAR + HUMAN_ROADMAP //'}
+          {'// CHATGPT_WEEKLY_PLAN + HUMAN_ROADMAP //'}
         </p>
       </div>
 
-      <EditorialCalendarBoard initialSlots={editorialSlots} />
+      <EditorialCalendarBoard initialWeeks={editorialWeeks} initialLooseSlots={looseSlots} />
 
       <ContentScheduleBoard
         initialItems={scheduleState.items}

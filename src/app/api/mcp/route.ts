@@ -7,7 +7,40 @@ import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repo
 import { normalizeArticlePackage } from "@/lib/content/article-package";
 import { generateAndUploadBlogImage } from "@/lib/content/blog-image";
 import { EditorialCalendarRepository } from "@/lib/content/editorial-calendar";
+import { EditorialWeekRepository } from "@/lib/content/editorial-week";
+import { EditorialCommentRepository } from "@/lib/content/editorial-comments";
+import { EditorialPlanAudit } from "@/lib/content/editorial-plan";
 import { getSupabaseAdmin } from "@/lib/supabase";
+
+const editorialSlotSchema = z.object({
+  id: z.string().optional().describe("Existing slot id when revising a week."),
+  title: z.string(),
+  angle: z.string().optional().describe("Góc viết / unique angle. Alias of content_angle."),
+  content_angle: z.string().optional().describe("Alias for angle."),
+  audience: z.string().optional(),
+  target_audience: z.string().optional().describe("Alias for audience."),
+  goal: z.string().optional(),
+  outline: z.string().optional().describe("Nội dung / dàn ý. Required for weekly plans."),
+  scheduled_date: z.string().optional().describe("YYYY-MM-DD in Asia/Ho_Chi_Minh."),
+  scheduled_time: z.string().optional().describe("HH:MM 24h Asia/Ho_Chi_Minh. Default 00:00 if omitted."),
+  field: z.string().optional(),
+  subject: z.string().optional(),
+  category: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  notes: z.string().optional(),
+  search_intent: z.string().optional().describe("Required on weekly plans."),
+  primary_keyword: z.string().optional().describe("Required on weekly plans."),
+  secondary_keywords: z.array(z.string()).optional(),
+  why_this_article: z.string().optional().describe("Required on weekly plans."),
+  source_strategy: z.string().optional().describe("Required on weekly plans."),
+  article_objectives: z.array(z.string()).optional(),
+  internal_link_suggestions: z.array(z.object({
+    post_id: z.string().optional(),
+    slug: z.string().optional(),
+    title: z.string().optional(),
+    reason: z.string().optional(),
+  })).optional(),
+});
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown error";
@@ -16,7 +49,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.4.0",
+    version: "7.7.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -92,9 +125,27 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.4.0",
+          mcp_version: "7.7.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
+          calendar_tools: [
+            "propose_editorial_week",
+            "list_editorial_weeks",
+            "get_editorial_week",
+            "revise_editorial_week",
+            "add_editorial_comment",
+            "get_due_editorial_slots",
+            "list_editorial_calendar",
+          ],
+          review_desk: "/admin/editorial",
+          calendar_workflow: {
+            "1": "propose_editorial_week — send the weekly article list for review. Do NOT write articles yet.",
+            "2": "Admin reviews at /admin/editorial: reorder (item_order), edit briefs, and leave detailed comments.",
+            "3": "If revision_requested: get_editorial_week, read comments + revision_constraints, then revise_editorial_week with based_on_revision=week.revision_number. Success moves the week to revision_ready. Stale based_on_revision returns REVISION_CONFLICT.",
+            "4": "After the week is approved: each session call get_due_editorial_slots. Write in item_order.",
+            "5": "Write only due slots via create_blog_draft(calendar_id). Server rejects writing before scheduled datetime.",
+            limitation: "ChatGPT cannot auto-wake at the scheduled time. The user must open a conversation or a ChatGPT scheduled task on the due day.",
+          },
           schema_version: "article-package/7.0",
           create_blog_draft_required_fields: [
             "schema_version",
@@ -157,9 +208,45 @@ function createKingDragonHubMcpServer() {
   );
 
   server.registerTool(
+    "list_editorial_weeks",
+    {
+      description: "List weekly article plans. proposed/revision_ready = waiting for admin. revision_requested = you must revise_editorial_week with based_on_revision. approved is LOCKED.",
+      inputSchema: z.object({
+        status: z.enum(["proposed", "revision_requested", "revision_ready", "approved", "cancelled"]).optional(),
+      }),
+    },
+    async ({ status }) => {
+      try {
+        const weeks = await EditorialWeekRepository.list(getSupabaseAdmin(), status);
+        return { content: [{ type: "text", text: JSON.stringify({ weeks }) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+      }
+    }
+  );
+
+  server.registerTool(
+    "get_editorial_week",
+    {
+      description: "Get one weekly plan with briefs, revision_number, revision_constraints, locked_at, latest_revision, field-level diff, comments, and recent activity. Always read comments and constraints before revise_editorial_week. Send based_on_revision=revision_number.",
+      inputSchema: z.object({
+        id: z.string(),
+      }),
+    },
+    async ({ id }) => {
+      try {
+        const week = await EditorialWeekRepository.get(getSupabaseAdmin(), id);
+        return { content: [{ type: "text", text: JSON.stringify({ week }) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+      }
+    }
+  );
+
+  server.registerTool(
     "list_editorial_calendar",
     {
-      description: "List ChatGPT editorial calendar slots. Use status=approved to find briefs that are ready to write. status=revision_requested means the admin asked you to revise the brief via revise_editorial_slot before writing.",
+      description: "List individual calendar slots. Prefer list_editorial_weeks for the weekly review loop. Use get_due_editorial_slots to find what to write today.",
       inputSchema: z.object({
         status: z.enum(["proposed", "approved", "revision_requested", "writing", "drafted", "cancelled"]).optional(),
       }),
@@ -174,25 +261,131 @@ function createKingDragonHubMcpServer() {
     }
   );
 
+  server.registerTool(
+    "get_due_editorial_slots",
+    {
+      description: "Return approved slots whose scheduled datetime has arrived in Asia/Ho_Chi_Minh, plus upcoming approved slots. Call this at the start of every writing session. Write only the due list. Do not write upcoming slots. ChatGPT cannot auto-wake; the user must open this conversation on the due day.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        const result = await EditorialCalendarRepository.listDue(getSupabaseAdmin());
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              ...result,
+              instruction: "Write each due slot now with generate_and_upload_blog_image then create_blog_draft(calendar_id). Leave upcoming slots untouched. After each draft the admin receives a review email.",
+            }),
+          }],
+        };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+      }
+    }
+  );
+
   // [Tool 4]: create_blog_draft
   if (process.env.MCP_ENABLE_WRITE === "true") {
     server.registerTool(
+      "propose_editorial_week",
+      {
+        description: "Submit a weekly article list for admin review. Each slot requires title, outline, scheduled_date, search_intent, primary_keyword, why_this_article, source_strategy. target_audience aliases audience; content_angle aliases angle. Do NOT write full articles.",
+        inputSchema: z.object({
+          week_start: z.string().describe("Any date in the week, YYYY-MM-DD. Normalized to Monday Asia/Ho_Chi_Minh."),
+          title: z.string().optional(),
+          summary: z.string().optional().describe("Why this week's mix of topics."),
+          slots: z.array(editorialSlotSchema).min(1).max(12),
+        }),
+      },
+      async (input) => {
+        try {
+          const week = await EditorialWeekRepository.propose(getSupabaseAdmin(), input);
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                week,
+                next: "Stop. Tell the admin to review /admin/editorial (drag order, edit briefs, comment). If they request changes, get_editorial_week, read comments, then revise_editorial_week. Do not write articles yet.",
+              }),
+            }],
+          };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "revise_editorial_week",
+      {
+        description: "Revise a weekly list after status=revision_requested. based_on_revision is REQUIRED and must match week.revision_number or the server returns REVISION_CONFLICT and does not write. Respect revision_constraints or receive CONSTRAINT_VIOLATION. Approved weeks return PLAN_LOCKED. Success sets status=revision_ready.",
+        inputSchema: z.object({
+          id: z.string(),
+          based_on_revision: z.number().describe("Must equal week.revision_number from get_editorial_week."),
+          week_start: z.string().optional(),
+          title: z.string().optional(),
+          summary: z.string().optional(),
+          slots: z.array(editorialSlotSchema).optional(),
+        }),
+      },
+      async (input) => {
+        try {
+          const { id, ...patch } = input;
+          const week = await EditorialWeekRepository.revise(getSupabaseAdmin(), id, patch);
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                week,
+                next: "Status is revision_ready. Stop. Admin reviews the diff at /admin/editorial.",
+              }),
+            }],
+          };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "add_editorial_comment",
+      {
+        description: "Reply to the admin review desk. Use after reading get_editorial_week comments. week_id required. slot_id set when the reply is about one article; omit slot_id for a week-level reply. Does not change approval status.",
+        inputSchema: z.object({
+          week_id: z.string(),
+          slot_id: z.string().optional().nullable(),
+          body: z.string().describe("Detailed reply. Vietnamese preferred if the admin wrote in Vietnamese."),
+        }),
+      },
+      async (input) => {
+        try {
+          const supabase = getSupabaseAdmin();
+          const comment = await EditorialCommentRepository.add(supabase, {
+            week_id: input.week_id,
+            slot_id: input.slot_id,
+            author: "chatgpt",
+            body: input.body,
+          });
+          await EditorialPlanAudit.log(supabase, {
+            week_id: input.week_id,
+            slot_id: input.slot_id,
+            event: "comment_added",
+            actor: "chatgpt",
+          });
+          return { content: [{ type: "text", text: JSON.stringify({ comment }) }] };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
       "propose_editorial_calendar",
       {
-        description: "Propose 1-12 ChatGPT calendar slots for admin review. Slots start as proposed. Do NOT write the full article yet. After admin approves, list_editorial_calendar(status=approved) then create_blog_draft with calendar_id.",
+        description: "Legacy: propose ungrouped slots. Prefer propose_editorial_week so the admin reviews one weekly list.",
         inputSchema: z.object({
-          slots: z.array(z.object({
-            title: z.string(),
-            angle: z.string().optional(),
-            audience: z.string().optional(),
-            goal: z.string().optional(),
-            scheduled_date: z.string().optional().describe("YYYY-MM-DD"),
-            field: z.string().optional(),
-            subject: z.string().optional(),
-            category: z.string().optional(),
-            tags: z.array(z.string()).optional(),
-            notes: z.string().optional(),
-          })).min(1).max(12),
+          slots: z.array(editorialSlotSchema).min(1).max(12),
         }),
       },
       async ({ slots }) => {
@@ -208,19 +401,9 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "revise_editorial_slot",
       {
-        description: "Revise a calendar slot after admin set status=revision_requested. Updates the brief and returns it to proposed for another review. Do not write the article until it is approved.",
-        inputSchema: z.object({
+        description: "Revise one slot after admin set that slot to revision_requested. Prefer revise_editorial_week when the whole week was sent back.",
+        inputSchema: editorialSlotSchema.partial().extend({
           id: z.string(),
-          title: z.string().optional(),
-          angle: z.string().optional(),
-          audience: z.string().optional(),
-          goal: z.string().optional(),
-          scheduled_date: z.string().optional(),
-          field: z.string().optional(),
-          subject: z.string().optional(),
-          category: z.string().optional(),
-          tags: z.array(z.string()).optional(),
-          notes: z.string().optional(),
         }),
       },
       async (input) => {
@@ -271,11 +454,11 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. Free mode: calendar_id=null. Schedule mode: calendar_id must be an approved slot from list_editorial_calendar. HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. Free mode: calendar_id=null. Schedule mode: calendar_id must be an approved due slot from get_due_editorial_slots. If the slot belongs to a week, that week must be approved. Server rejects writing before scheduled_date + scheduled_time (Asia/Ho_Chi_Minh). HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
-          calendar_id: z.string().optional().nullable().describe("Approved editorial calendar slot id. Required when writing from the ChatGPT schedule. Leave null for free-write mode."),
+          calendar_id: z.string().optional().nullable().describe("Approved due slot id from get_due_editorial_slots. Required in schedule mode. Leave null for free-write mode."),
           idempotency_key: z.string(),
           policy_version: z.string(),
           policy_hash: z.string(),

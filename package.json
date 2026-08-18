@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:oauth": "node --experimental-strip-types --test tests/oauth-security.test.ts",
-    "test:article-package": "node --experimental-strip-types --test tests/article-package.test.ts tests/compile-article-html.test.ts tests/blog-image.test.ts tests/taxonomy.test.ts tests/seo-advisor.test.ts"
+    "test:article-package": "node --experimental-strip-types --test tests/article-package.test.ts tests/compile-article-html.test.ts tests/blog-image.test.ts tests/taxonomy.test.ts tests/seo-advisor.test.ts tests/editorial-calendar.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
