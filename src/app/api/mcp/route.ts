@@ -107,12 +107,13 @@ function createKingDragonHubMcpServer() {
             type: "object",
             required: ["purpose", "prompt", "alt", "url"],
             purpose: "article_cover",
-            url_nullable: true,
+            url_required: true,
           },
           inline_images: {
             type: "array",
+            min_items_with_url: 2,
             item_required: ["id", "purpose", "prompt", "alt", "url"],
-            url_nullable: true,
+            url_required: true,
           },
         }, null, 2),
       }],
@@ -158,7 +159,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Generate an editorial blog image, upload it to GitHub, and return a persistent RAW URL. Use image_id=cover for the article cover. Then put the returned url into featured_image.url (and featured_image_url) before create_blog_draft. Does not create a post. Preschool/child scenes must be illustration-only.",
+        description: "Generate an editorial blog image, upload it to GitHub, and return a persistent RAW URL. REQUIRED before create_blog_draft: call once with image_id=cover (16:9), then at least twice for body images (img-01, img-02). Put those URLs into featured_image.url and inline_images[].url. Does not create a post. Preschool/child scenes must be illustration-only.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Retry overwrites the same GitHub path."),
           image_id: z.string().describe("cover or an inline id such as img-01"),
@@ -192,7 +193,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. Call get_blog_categories first and send category_id or category name of an existing category when possible. Server matches existing categories before creating a new one. Also send tags. For a visible cover: call generate_and_upload_blog_image with image_id=cover first, then set featured_image.url / featured_image_url and featured_image.alt. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. HARD REQUIREMENTS: featured_image.url must be a persistent HTTPS URL; inline_images must include at least 2 items with HTTPS URLs and matching {{IMAGE:id}} placeholders in content_markdown. Call generate_and_upload_blog_image for cover + img-01 + img-02 BEFORE this tool. Also call get_blog_categories and send category/tags. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
@@ -215,8 +216,8 @@ function createKingDragonHubMcpServer() {
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
             url: z.string().nullable(),
-          }).describe("Cover spec object. url may be null until generate_and_upload_blog_image exists."),
-          featured_image_url: z.string().nullable().describe("Legacy v6 cover URL alias. Send null when using featured_image object."),
+          }).describe("Cover spec. url MUST be a GitHub RAW HTTPS URL from generate_and_upload_blog_image."),
+          featured_image_url: z.string().nullable().describe("Same persistent cover URL as featured_image.url."),
           featured_image_alt: z.string().optional(),
           inline_images: z.array(z.object({
             id: z.string(),
@@ -230,7 +231,7 @@ function createKingDragonHubMcpServer() {
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
             url: z.string().nullable(),
-          })).describe("0-4 informational inline images. Use {{IMAGE:id}} in content_markdown. Empty array is valid."),
+          })).describe("At least 2 informational inline images with HTTPS urls. Each id must appear as {{IMAGE:id}} in content_markdown. Max 4. decoration is forbidden."),
           seo: z.object({
             title: z.string(),
             description: z.string(),

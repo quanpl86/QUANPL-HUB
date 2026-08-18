@@ -16,7 +16,7 @@ function baseDraft(overrides: Record<string, unknown> = {}) {
     title: "AI và game hóa trong giáo dục mầm non",
     slug: "ai-game-hoa-mam-non",
     excerpt: "Hướng dẫn thực hành",
-    content_markdown: "## Section\nBody",
+    content_markdown: "## Section\n{{IMAGE:img-01}}\n\n## Next\n{{IMAGE:img-02}}\n",
     seo: {
       title: "AI và game hóa",
       description: "desc",
@@ -54,6 +54,7 @@ test("A01 legacy featured_image string still normalizes", () => {
   const check = validateArticlePackage(normalizeArticlePackage(baseDraft({
     featured_image: "https://raw.githubusercontent.com/quanpl86/imgBlog/main/cover.webp",
     featured_image_alt: "Alt từ v6",
+    inline_images: twoInlineImages(),
   })));
   assert.equal(check.errors.length, 0);
 });
@@ -111,13 +112,13 @@ test("A05 media object persists into article_package snapshot", () => {
 
 test("A06 inline_images validate id and purpose", () => {
   const pkg = normalizeArticlePackage(baseDraft({
-    inline_images: [{
-      id: "img-01",
-      purpose: "concept_diagram",
-      prompt: "p",
-      alt: "a",
-      url: null,
-    }],
+    featured_image: {
+      purpose: "article_cover",
+      prompt: "prompt",
+      alt: "alt",
+      url: "https://raw.githubusercontent.com/x/y/cover.webp",
+    },
+    inline_images: twoInlineImages(),
   }));
   const check = validateArticlePackage(pkg);
   assert.equal(check.errors.length, 0);
@@ -160,27 +161,50 @@ test("A09 cover object missing prompt or alt is rejected", () => {
   assert.ok(missingAlt.errors.some((issue) => issue.code === "COVER_ALT_MISSING"));
 });
 
-test("A10 null URL is warning only", () => {
-  const check = validateArticlePackage(normalizeArticlePackage(baseDraft({
+test("A10 missing cover or fewer than 2 inline URLs is rejected", () => {
+  const noCover = validateArticlePackage(normalizeArticlePackage(baseDraft({
     featured_image: {
       purpose: "article_cover",
       prompt: "prompt",
       alt: "alt",
       url: null,
     },
-    inline_images: [{
+    inline_images: twoInlineImages(),
+  })));
+  assert.ok(noCover.errors.some((issue) => issue.code === "COVER_URL_MISSING"));
+
+  const oneInline = validateArticlePackage(normalizeArticlePackage(baseDraft({
+    featured_image: {
+      purpose: "article_cover",
+      prompt: "prompt",
+      alt: "alt",
+      url: "https://raw.githubusercontent.com/x/y/cover.webp",
+    },
+    inline_images: [twoInlineImages()[0]],
+  })));
+  assert.ok(oneInline.errors.some((issue) => issue.code === "INLINE_IMAGE_MIN"));
+});
+
+function twoInlineImages() {
+  return [
+    {
       id: "img-01",
-      purpose: "case_study",
+      purpose: "workflow",
       prompt: "p",
       alt: "a",
-      caption: "c",
-      url: null,
-    }],
-  })));
-  assert.equal(check.errors.length, 0);
-  assert.ok(check.warnings.some((issue) => issue.code === "MEDIA_URL_MISSING" && issue.image_id === "featured_image"));
-  assert.ok(check.warnings.some((issue) => issue.code === "MEDIA_URL_MISSING" && issue.image_id === "img-01"));
-});
+      caption: "c1",
+      url: "https://raw.githubusercontent.com/x/y/one.webp",
+    },
+    {
+      id: "img-02",
+      purpose: "explainer",
+      prompt: "p",
+      alt: "b",
+      caption: "c2",
+      url: "https://raw.githubusercontent.com/x/y/two.webp",
+    },
+  ];
+}
 
 test("more than 4 inline images is rejected", () => {
   const images = ["a", "b", "c", "d", "e"].map((id) => ({

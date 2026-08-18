@@ -269,11 +269,11 @@ export function validateArticlePackage(
     }
   }
 
-  if (pkg.featured_image && !pkg.featured_image.url) {
-    warnings.push({
-      code: "MEDIA_URL_MISSING",
+  if (!hasPersistentImageUrl(pkg.featured_image?.url)) {
+    errors.push({
+      code: "COVER_URL_MISSING",
       image_id: "featured_image",
-      message: "featured_image.url is null; cover will not render until Phase C",
+      message: "featured_image.url is required. Call generate_and_upload_blog_image with image_id=cover first.",
     });
   }
 
@@ -320,12 +320,22 @@ export function validateArticlePackage(
       });
     }
 
-    if (!image.url) {
-      warnings.push({
-        code: "MEDIA_URL_MISSING",
+    if (!hasPersistentImageUrl(image.url)) {
+      errors.push({
+        code: "INLINE_URL_MISSING",
         image_id: image.id,
-        message: `inline image "${image.id}" has no url`,
+        message: `inline image "${image.id}" url is required. Call generate_and_upload_blog_image first.`,
       });
+    } else {
+      const hasPlaceholder = pkg.content_markdown.includes(`{{IMAGE:${image.id}}}`);
+      const hasHeading = Boolean(image.position?.after_heading_id?.trim());
+      if (!hasPlaceholder && !hasHeading) {
+        errors.push({
+          code: "INLINE_POSITION_MISSING",
+          image_id: image.id,
+          message: `inline image "${image.id}" must appear via {{IMAGE:${image.id}}} or after_heading_id`,
+        });
+      }
     }
 
     if (!image.caption?.trim()) {
@@ -336,7 +346,25 @@ export function validateArticlePackage(
     }
   }
 
+  const readyInline = pkg.inline_images.filter((image) => hasPersistentImageUrl(image.url));
+  if (readyInline.length < 2) {
+    errors.push({
+      code: "INLINE_IMAGE_MIN",
+      message: "At least 2 inline images with persistent URLs are required in the article body",
+    });
+  }
+
   return { errors, warnings };
+}
+
+function hasPersistentImageUrl(url?: string | null): boolean {
+  if (!url || !url.trim()) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 export function buildArticlePackageSnapshot(
