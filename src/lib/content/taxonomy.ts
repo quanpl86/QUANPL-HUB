@@ -1,5 +1,20 @@
 import type { PackageIssue } from "./article-package";
 
+export type FieldRow = {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+};
+
+export type SubjectRow = {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  field_id?: number | null;
+};
+
 export type CategoryRow = {
   id: number;
   name: string;
@@ -201,15 +216,15 @@ export async function loadTaxonomyCatalog(supabase: { from: (table: string) => a
   if (subjectsRes.error) throw new Error(`DATABASE_ERROR: ${subjectsRes.error.message}`);
   if (categoriesRes.error) throw new Error(`DATABASE_ERROR: ${categoriesRes.error.message}`);
 
-  const fields = fieldsRes.data || [];
-  const subjects = subjectsRes.data || [];
+  const fields = (fieldsRes.data || []) as FieldRow[];
+  const subjects = (subjectsRes.data || []) as SubjectRow[];
   const categories = (categoriesRes.data || []) as CategoryRow[];
-  const fieldById = new Map(fields.map((item: any) => [item.id, item]));
-  const subjectById = new Map(subjects.map((item: any) => [item.id, item]));
+  const fieldById = new Map<number, FieldRow>(fields.map((item) => [item.id, item]));
+  const subjectById = new Map<number, SubjectRow>(subjects.map((item) => [item.id, item]));
 
   const hydrated = categories.map((category) => {
-    const subject = category.subject_id ? subjectById.get(category.subject_id) : null;
-    const field = subject?.field_id ? fieldById.get(subject.field_id) : null;
+    const subject = category.subject_id != null ? subjectById.get(category.subject_id) ?? null : null;
+    const field = subject?.field_id != null ? fieldById.get(subject.field_id) ?? null : null;
     return {
       ...category,
       subject: subject ? { id: subject.id, name: subject.name, slug: subject.slug, field_id: subject.field_id } : null,
@@ -217,14 +232,14 @@ export async function loadTaxonomyCatalog(supabase: { from: (table: string) => a
     };
   });
 
-  const tree = fields.map((field: any) => ({
+  const tree = fields.map((field) => ({
     ...field,
-    type: "field",
+    type: "field" as const,
     subjects: subjects
-      .filter((subject: any) => subject.field_id === field.id)
-      .map((subject: any) => ({
+      .filter((subject) => subject.field_id === field.id)
+      .map((subject) => ({
         ...subject,
-        type: "subject",
+        type: "subject" as const,
         categories: hydrated
           .filter((category) => category.subject_id === subject.id)
           .map((category) => ({
@@ -232,7 +247,7 @@ export async function loadTaxonomyCatalog(supabase: { from: (table: string) => a
             name: category.name,
             slug: category.slug,
             description: category.description,
-            type: "category",
+            type: "category" as const,
             suggested_tags: CATEGORY_TAG_HINTS[category.slug] || [],
           })),
       })),
