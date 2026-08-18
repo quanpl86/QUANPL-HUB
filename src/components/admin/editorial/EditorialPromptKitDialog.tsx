@@ -75,7 +75,7 @@ export function EditorialPromptKitDialog({
                     <button
                       type="button"
                       onClick={() => copy(item.text)}
-                      className="px-3 py-1 border border-brand-orange text-brand-orange text-xs uppercase shrink-0"
+                      className="px-3 py-1 border border-brand-orange text-brand-orange bg-white dark:bg-transparent text-xs uppercase shrink-0 cursor-pointer transition-colors hover:bg-brand-orange hover:text-white"
                     >
                       Copy
                     </button>

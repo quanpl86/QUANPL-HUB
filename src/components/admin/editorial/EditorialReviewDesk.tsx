@@ -138,6 +138,15 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-xs text-muted mb-1">{children}</p>;
 }
 
+const BTN_PRIMARY =
+  'px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase cursor-pointer transition-colors hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed';
+const BTN_SECONDARY =
+  'px-3 py-2 border border-brand-orange text-brand-orange bg-white dark:bg-transparent font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-brand-orange hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
+const BTN_GHOST =
+  'px-3 py-2 border border-brand-orange/50 text-foreground bg-white dark:bg-transparent font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:border-brand-orange hover:bg-brand-orange/10 disabled:opacity-50 disabled:cursor-not-allowed';
+const BTN_DANGER =
+  'px-3 py-2 border border-red-400 text-red-500 bg-white dark:bg-transparent font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
+
 export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialWeek[] }) {
   const [weeks, setWeeks] = useState(initialWeeks);
   const [selectedId, setSelectedId] = useState(initialWeeks[0]?.id || '');
@@ -200,7 +209,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
         <button
           type="button"
           onClick={() => setPromptOpen(true)}
-          className="px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase shrink-0"
+          className={`${BTN_PRIMARY} shrink-0`}
         >
           Prompt AI
         </button>
@@ -251,8 +260,10 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
           <button
             key={item.key}
             onClick={() => setFilter(item.key)}
-            className={`px-3 py-1 text-[12px] border ${
-              filter === item.key ? 'border-brand-orange bg-brand-orange text-white' : 'border-brand-orange/30'
+            className={`px-3 py-1 text-[12px] border cursor-pointer transition-colors ${
+              filter === item.key
+                ? 'border-brand-orange bg-brand-orange text-white'
+                : 'border-brand-orange/30 hover:border-brand-orange hover:bg-brand-orange/10'
             }`}
           >
             {item.label}
@@ -293,10 +304,10 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
               <button
                 key={week.id}
                 onClick={() => setSelectedId(week.id)}
-                className={`w-full text-left border p-4 ${
+                className={`w-full text-left border p-4 cursor-pointer transition-colors ${
                   selected?.id === week.id
                     ? 'border-brand-orange bg-brand-orange/10'
-                    : 'border-brand-orange/20 bg-cyber-black/5'
+                    : 'border-brand-orange/20 bg-white dark:bg-white/5 hover:border-brand-orange/60'
                 }`}
               >
                 <p className="font-orbitron text-sm font-bold">{week.title || `Tuần ${week.week_start}`}</p>
@@ -389,7 +400,7 @@ function WeekWorkspace({
   };
 
   return (
-    <section className="border border-brand-orange/20 p-5 bg-cyber-black/5 space-y-6">
+    <section className="border border-brand-orange/20 p-5 bg-white dark:bg-white/5 space-y-6">
       <div className="space-y-3">
         <input
           value={title}
@@ -500,7 +511,7 @@ function WeekWorkspace({
                   toast.error(humanError(error.message));
                 }
               })}
-              className="px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase"
+              className={BTN_PRIMARY}
             >
               Duyệt cả tuần
             </button>
@@ -521,7 +532,7 @@ function WeekWorkspace({
                   toast.error(humanError(error.message));
                 }
               })}
-              className="px-4 py-2 border border-brand-orange text-brand-orange font-orbitron text-xs uppercase"
+              className={BTN_SECONDARY}
             >
               Gửi yêu cầu sửa
             </button>
@@ -535,7 +546,7 @@ function WeekWorkspace({
                   toast.error(humanError(error.message));
                 }
               })}
-              className="px-4 py-2 text-red-500 font-orbitron text-xs uppercase"
+              className={BTN_DANGER}
             >
               Hủy tuần
             </button>
@@ -665,7 +676,7 @@ function SlotEditor({
   };
 
   return (
-    <article className="border border-brand-orange/15 p-4 bg-black/10 space-y-3">
+    <article className="border border-brand-orange/20 p-4 bg-white dark:bg-white/5 space-y-3">
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -800,7 +811,7 @@ function SlotEditor({
             <button
               disabled={pending}
               onClick={save}
-              className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
+              className={BTN_SECONDARY}
             >
               Lưu đề xuất bài
             </button>
@@ -838,7 +849,7 @@ function SlotEditor({
                     toast.error(humanError(error.message));
                   }
                 })}
-                className="px-3 py-2 bg-brand-orange text-white font-orbitron text-[11px] uppercase"
+                className={BTN_PRIMARY}
               >
                 Duyệt bài
               </button>
@@ -859,7 +870,7 @@ function SlotEditor({
                     toast.error(humanError(error.message));
                   }
                 })}
-                className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
+                className={BTN_SECONDARY}
               >
                 Gửi ChatGPT sửa bài
               </button>
@@ -873,7 +884,7 @@ function SlotEditor({
                     toast.error(humanError(error.message));
                   }
                 })}
-                className="px-3 py-2 text-red-500 font-orbitron text-[11px] uppercase"
+                className={BTN_DANGER}
               >
                 Hủy
               </button>
@@ -896,7 +907,7 @@ function SlotEditor({
                     toast.error(humanError(error.message));
                   }
                 })}
-                className="px-3 py-2 border border-brand-orange/40 font-orbitron text-[11px] uppercase"
+                className={BTN_GHOST}
               >
                 Hoàn về chờ duyệt
               </button>
@@ -924,7 +935,7 @@ function SlotEditor({
                       toast.error(humanError(error.message));
                     }
                   })}
-                  className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
+                  className={BTN_SECONDARY}
                 >
                   Trả bài cho ChatGPT
                 </button>
@@ -947,7 +958,7 @@ function SlotEditor({
                   toast.error(humanError(error.message));
                 }
               })}
-              className="px-3 py-2 border border-brand-orange text-brand-orange font-orbitron text-[11px] uppercase"
+              className={BTN_SECONDARY}
             >
               Cho viết ngay
             </button>
@@ -995,7 +1006,7 @@ function CommentThread({
             setBody('');
             onSubmit(next);
           }}
-          className="px-3 py-2 border border-brand-orange/40 font-orbitron text-[11px] uppercase"
+          className={BTN_GHOST}
         >
           Thêm ghi chú
         </button>
