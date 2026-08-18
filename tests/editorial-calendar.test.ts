@@ -21,11 +21,24 @@ import {
   enforceRevisionConstraints,
 } from "../src/lib/content/editorial-plan.ts";
 
-test("short command map covers free write, week check, and due write", () => {
+test("short command map covers plan, check, revise, and both write modes", () => {
   const ids = EDITORIAL_COMMANDS.commands.map((item) => item.id);
-  assert.deepEqual(ids, ["free_write", "check_week_plan", "write_due_from_week", "revise_week_plan"]);
-  assert.match(EDITORIAL_COMMANDS.commands[0].hear.join(" "), /tự do/);
-  assert.match(EDITORIAL_COMMANDS.commands[2].do.join(" "), /calendar_id/);
+  for (const id of [
+    "propose_week",
+    "check_week_plan",
+    "report_week_detail",
+    "check_due_status",
+    "revise_week_plan",
+    "free_write",
+    "write_due_from_week",
+    "write_one_slot",
+    "fix_rejected_draft",
+    "regen_images",
+    "use_existing_taxonomy",
+  ]) {
+    assert.ok(ids.includes(id), `missing command ${id}`);
+  }
+  assert.ok(EDITORIAL_COMMANDS.refuse.some((item) => /publish/i.test(item)));
 });
 
 test("propose rejects an empty calendar", async () => {

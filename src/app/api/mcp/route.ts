@@ -50,7 +50,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.9.0",
+    version: "7.10.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -118,7 +118,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Contract canary + short Vietnamese command map. Call first in every session. If the user speaks briefly (viết tự do / kiểm tra lịch tuần / viết bài đến hạn), follow short_commands in this payload or get_editorial_commands.",
+      description: "Contract canary + full Vietnamese short-command map. Call first every session. Follow short_commands / get_editorial_commands for: đề xuất lịch, check lịch, báo chi tiết, check hạn, sửa lịch, viết tự do, viết đến hạn, sửa bài bị trả.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -126,7 +126,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.9.0",
+          mcp_version: "7.10.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -182,7 +182,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_editorial_commands",
     {
-      description: "Map câu ngắn tiếng Việt sang đúng việc MCP. Gọi khi user nói: viết bài tự do, kiểm tra lịch tuần, tuần đã duyệt chưa, viết bài đến hạn/trễ hạn, sửa kế hoạch. Không đoán mode.",
+      description: "Map câu ngắn tiếng Việt sang đúng việc MCP. Gọi khi user nói ngắn về lịch tuần, trạng thái, đến hạn, sửa plan, viết tự do, viết theo tuần, sửa bài bị trả, tạo lại ảnh. Không đoán mode. Không publish.",
       inputSchema: z.object({}),
     },
     async () => ({
