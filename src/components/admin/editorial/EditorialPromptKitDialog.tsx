@@ -36,9 +36,9 @@ export function EditorialPromptKitDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 md:p-8" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 md:p-8" onClick={onClose}>
       <div
-        className="relative w-full max-w-3xl border border-brand-orange/30 bg-background p-5 md:p-8 my-6"
+        className="relative w-full max-w-3xl border border-brand-orange/40 bg-white dark:bg-[#171717] p-5 md:p-8 my-6 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-labelledby="prompt-kit-title"
@@ -67,7 +67,7 @@ export function EditorialPromptKitDialog({
               <h3 className="font-semibold mb-2">{section.title}</h3>
               <div className="space-y-2">
                 {section.items.map((item) => (
-                  <div key={item.text} className="border border-brand-orange/20 p-3 flex flex-col md:flex-row gap-2 md:items-start">
+                  <div key={item.text} className="border border-brand-orange/20 bg-slate-50 dark:bg-black/40 p-3 flex flex-col md:flex-row gap-2 md:items-start">
                     <div className="flex-1">
                       <p className="text-sm">{item.text}</p>
                       {item.note && <p className="text-xs text-muted mt-1">{item.note}</p>}
