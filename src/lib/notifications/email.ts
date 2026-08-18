@@ -12,7 +12,7 @@ export async function sendDraftEmailNotification(topic: string, draftId: string)
   try {
     // Determine the dashboard URL (fallback to production domain if missing)
     const dashboardUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kingdragonhub.com';
-    const reviewUrl = `${dashboardUrl}/admin/posts/preview?id=${draftId}`;
+    const reviewUrl = `${dashboardUrl.replace(/\/$/, "")}/admin/posts/edit/${draftId}`;
 
     const transporter = nodemailer.createTransport({ 
       service: 'gmail', 

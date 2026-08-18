@@ -218,7 +218,7 @@ export class PostsRepository {
           draft: {
             id: existingPost.id,
             slug: existingPost.slug,
-            review_url: `https://kingdragonhub.com/admin/posts/preview?id=${existingPost.id}`
+            review_url: `https://kingdragonhub.com/admin/posts/edit/${existingPost.id}`
           }
         };
       }
