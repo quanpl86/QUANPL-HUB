@@ -52,7 +52,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.12.0",
+    version: "7.12.1",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -128,7 +128,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.12.0",
+          mcp_version: "7.12.1",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -533,7 +533,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Generate → QA → versioned GitHub RAW URL. Cover/case_study/concept_diagram: Flux illustration (no readable text). workflow/comparison/explainer: REQUIRED required_labels + layout_spec; server renders SVG with exact Vietnamese text (do not ask Flux to draw letters). Each call creates a NEW url (no overwrite). QA rejects tiny/blurry files. Preschool scenes illustration-only.",
+        description: "Generate → QA → versioned GitHub RAW URL. Cover/case_study/concept_diagram: OpenAI Images (gpt-image-1) when OPENAI_API_KEY is set, else Flux. workflow/comparison/explainer: REQUIRED required_labels + layout_spec; server renders SVG with exact Vietnamese text — do not draw letters in an image model. Each call creates a NEW url. 429 retries then fails clearly. Preschool scenes illustration-only.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           image_id: z.string().describe("cover or an inline id such as img-01"),

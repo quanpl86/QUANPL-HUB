@@ -4,6 +4,7 @@ import {
   assertSafeImagePrompt,
   buildIdempotentAssetPath,
   buildVersionedAssetPath,
+  openaiImageSize,
   slugAssetPart,
 } from "../src/lib/content/blog-image.ts";
 import {
@@ -35,6 +36,12 @@ test("idempotent path is stable for the same keys", () => {
 
 test("slug strips vietnamese diacritics", () => {
   assert.equal(slugAssetPart("Ảnh bìa mầm non"), "anh-bia-mam-non");
+});
+
+test("OpenAI image size maps Hub aspects", () => {
+  assert.equal(openaiImageSize("16:9"), "1536x1024");
+  assert.equal(openaiImageSize("4:3"), "1536x1024");
+  assert.equal(openaiImageSize("1:1"), "1024x1024");
 });
 
 test("versioned asset paths do not overwrite", () => {

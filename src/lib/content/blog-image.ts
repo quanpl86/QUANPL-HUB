@@ -67,28 +67,119 @@ function withEditorialSuffix(prompt: string, purpose: string): string {
   return `${base}, sharp high-resolution educational editorial illustration, crisp detail, no photorealistic children, no watermark, no gibberish fake text`;
 }
 
-async function fetchGeneratedImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
+export function openaiImageSize(aspect?: string): "1536x1024" | "1024x1024" | "1024x1536" {
+  if (aspect === "1:1") return "1024x1024";
+  if (aspect === "9:16") return "1024x1536";
+  return "1536x1024";
+}
+
+export function preferredImageGenerator(): "openai" | "flux" {
+  const forced = (process.env.BLOG_IMAGE_PROVIDER || "auto").toLowerCase();
+  if (forced === "flux") return "flux";
+  if (forced === "openai") return "openai";
+  return process.env.OPENAI_API_KEY ? "openai" : "flux";
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchOpenAiImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("IMAGE_GENERATE_FAILED: missing OPENAI_API_KEY");
+  const model = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
+  const body = {
+    model,
+    prompt: withEditorialSuffix(prompt, purpose),
+    n: 1,
+    size: openaiImageSize(aspect),
+    quality: "high",
+    output_format: "png",
+  };
+  let lastError = "IMAGE_GENERATE_FAILED: openai";
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(90000),
+    });
+    if (response.status === 429) {
+      const wait = Number(response.headers.get("retry-after") || 2 + attempt * 3) * 1000;
+      lastError = "IMAGE_GENERATE_FAILED: 429 openai rate limit";
+      await sleep(Math.min(wait, 15000));
+      continue;
+    }
+    const json = await response.json() as {
+      error?: { message?: string };
+      data?: Array<{ b64_json?: string; url?: string }>;
+    };
+    if (!response.ok) {
+      throw new Error(`IMAGE_GENERATE_FAILED: openai ${response.status} ${json.error?.message || ""}`.trim());
+    }
+    const item = json.data?.[0];
+    if (item?.b64_json) {
+      const bytes = Buffer.from(item.b64_json, "base64");
+      return { bytes, mimeType: "image/png" };
+    }
+    if (item?.url) {
+      const download = await fetch(item.url, { signal: AbortSignal.timeout(30000) });
+      if (!download.ok) throw new Error(`IMAGE_GENERATE_FAILED: openai image download ${download.status}`);
+      return { bytes: Buffer.from(await download.arrayBuffer()), mimeType: download.headers.get("content-type") || "image/png" };
+    }
+    throw new Error("IMAGE_GENERATE_FAILED: openai returned no image");
+  }
+  throw new Error(lastError);
+}
+
+async function fetchFluxImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
   const size = ASPECT_SIZE[aspect] || ASPECT_SIZE["16:9"];
   const url =
     `https://image.pollinations.ai/prompt/${encodeURIComponent(withEditorialSuffix(prompt, purpose))}` +
     `?width=${size.width}&height=${size.height}&model=flux&nologo=true&enhance=true`;
+  let lastStatus = 0;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await fetch(url, {
+      headers: { Accept: "image/*" },
+      signal: AbortSignal.timeout(20000),
+    });
+    lastStatus = response.status;
+    if (response.status === 429) {
+      await sleep(2000 * (attempt + 1));
+      continue;
+    }
+    if (!response.ok) {
+      throw new Error(`IMAGE_GENERATE_FAILED: flux ${response.status}`);
+    }
+    const mimeType = response.headers.get("content-type") || "image/png";
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (bytes.length < 1000) throw new Error("IMAGE_GENERATE_FAILED: empty or invalid image bytes");
+    if (bytes.length > 10 * 1024 * 1024) throw new Error("IMAGE_GENERATE_FAILED: image exceeds 10MB");
+    return { bytes, mimeType };
+  }
+  throw new Error(`IMAGE_GENERATE_FAILED: flux ${lastStatus || 429} rate limit`);
+}
 
-  const response = await fetch(url, {
-    headers: { Accept: "image/*" },
-    signal: AbortSignal.timeout(20000),
-  });
-  if (!response.ok) {
-    throw new Error(`IMAGE_GENERATE_FAILED: ${response.status}`);
+async function fetchGeneratedImage(
+  prompt: string,
+  aspect: string,
+  purpose: string
+): Promise<{ bytes: Buffer; generator: "openai" | "flux" }> {
+  const preferred = preferredImageGenerator();
+  if (preferred === "openai") {
+    try {
+      const openai = await fetchOpenAiImage(prompt, aspect, purpose);
+      return { bytes: openai.bytes, generator: "openai" };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("[blog-image] OpenAI generate failed, falling back to flux:", message);
+    }
   }
-  const mimeType = response.headers.get("content-type") || "image/png";
-  const bytes = Buffer.from(await response.arrayBuffer());
-  if (bytes.length < 1000) {
-    throw new Error("IMAGE_GENERATE_FAILED: empty or invalid image bytes");
-  }
-  if (bytes.length > 10 * 1024 * 1024) {
-    throw new Error("IMAGE_GENERATE_FAILED: image exceeds 10MB");
-  }
-  return { bytes, mimeType };
+  const flux = await fetchFluxImage(prompt, aspect, purpose);
+  return { bytes: flux.bytes, generator: "flux" };
 }
 
 async function upsertGithubFile(
@@ -170,7 +261,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   const kind = infographic ? "infographic" : input.purpose === "article_cover" ? "cover" : "inline";
 
   let bytes: Buffer;
-  let renderer: "svg" | "flux" = "flux";
+  let renderer: "svg" | "openai" | "flux" = "flux";
   if (infographic) {
     bytes = renderInfographicSvg({
       visual_goal: input.visual_goal || input.alt,
@@ -183,15 +274,17 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   } else {
     const generated = await fetchGeneratedImage(input.prompt, aspect, input.purpose);
     bytes = generated.bytes;
+    renderer = generated.generator;
   }
 
   let sniff = sniffImage(bytes);
   try {
     assertImageQa(bytes, sniff, kind);
   } catch (error) {
-    if (renderer !== "flux") throw error;
+    if (renderer === "svg") throw error;
     const retry = await fetchGeneratedImage(`${input.prompt}, ultra sharp, high definition`, aspect, input.purpose);
     bytes = retry.bytes;
+    renderer = retry.generator;
     sniff = sniffImage(bytes);
     assertImageQa(bytes, sniff, kind);
   }
@@ -219,6 +312,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     path: uploaded.path,
     provider: uploaded.provider,
     renderer,
+    generator: renderer,
     qa_gates: gates,
   };
 }
