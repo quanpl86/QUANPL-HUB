@@ -116,8 +116,9 @@ export function imageGeneratorChain(env: NodeJS.ProcessEnv = process.env): Scene
   const available: SceneGenerator[] = [];
   if (env.OPENAI_API_KEY) available.push("openai");
   if (env.GEMINI_API_KEY || env.GOOGLE_API_KEY) available.push("gemini");
-  available.push("flux");
   if (env.STABILITY_API_KEY) available.push("stability");
+  // Pollinations Flux caps ~1024×576 for 16:9 — below cover/inline QA. Opt-in only.
+  if (env.BLOG_IMAGE_ALLOW_FLUX === "true" || forced === "flux") available.push("flux");
   if (forced === "openai" || forced === "gemini" || forced === "flux" || forced === "stability") {
     return [forced, ...available.filter((item) => item !== forced)];
   }
@@ -299,6 +300,11 @@ async function fetchGeneratedImage(
   purpose: string
 ): Promise<{ bytes: Buffer; generator: SceneGenerator; attempts: ProviderAttempt[] }> {
   const chain = imageGeneratorChain();
+  if (!chain.length) {
+    throw new Error(
+      "IMAGE_GENERATE_FAILED: NO_HQ_PROVIDER. Hub has no OpenAI/Gemini/Stability key, and Flux cannot meet ≥1536×864. Create the image with ChatGPT Images in this chat (one at a time), then start_image_upload and POST the original PNG to put_url. Do not upscale Flux 1024×576."
+    );
+  }
   const attempts: ProviderAttempt[] = [];
   for (const generator of chain) {
     try {

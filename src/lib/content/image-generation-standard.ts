@@ -15,7 +15,7 @@ export const IMAGE_GENERATION_STANDARD = {
   },
   lanes: {
     chat_direct: "PRIMARY for cover/illustration: create with ChatGPT Images in this chat (Plus, no API key). Then start_image_upload and HTTP POST original bytes to put_url. Never image_base64 through MCP — the connector truncates it.",
-    hub_post: "Only if the user insists Hub generate without an in-chat image, OR if original pixels cannot be sent without compressing: generate_and_upload_blog_image. Engine OpenAI API→Gemini→Flux→Stability (API billed, not Plus). Do not pick FLUX yourself.",
+    hub_post: "Only if Hub has OPENAI_API_KEY or GEMINI_API_KEY. Flux is NOT used for covers/scenes — it returns ~1024×576 and fails QA. Default is ChatGPT Images in chat + start_image_upload.",
   },
   primary: {
     scene: "chatgpt_images_then_upload_blog_image",
@@ -52,9 +52,10 @@ export const IMAGE_GENERATION_STANDARD = {
   when_writing_article: {
     automatic: true,
     steps: [
-      "Create cover with ChatGPT Images in this chat (16:9, no text).",
-      "Create at least 3 distinct body illustrations with ChatGPT Images.",
-      "For each raster image: start_image_upload then HTTP POST original PNG bytes to put_url. Hub stores on GitHub.",
+      "Create images with ChatGPT Images ONE AT A TIME (parallel Images calls → ExceptionGroup/UNKNOWN).",
+      "Cover first: 16:9, no text. Immediately start_image_upload and POST put_url.",
+      "Then at least 3 distinct body illustrations, same upload path after each image.",
+      "Do not call generate_and_upload_blog_image for covers/scenes unless Hub has OpenAI/Gemini. Flux is 1024×576 and will fail QA.",
       "Workflow/rubric/table: generate_and_upload_blog_image SVG with Vietnamese required_labels.",
       "create_blog_draft only after cover URL + ≥3 inline GitHub RAW URLs exist.",
     ],

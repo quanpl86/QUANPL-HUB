@@ -3,7 +3,7 @@ export const EDITORIAL_COMMANDS = {
   rule: "Người dùng nói ngắn. Map đúng một việc mỗi tin. Không gộp viết tự do với viết theo tuần. Không publish, không duyệt tuần, không xóa bài. Mỗi bài viết: cover ChatGPT Images + tối thiểu 3 ảnh body, POST put_url lên GitHub, rồi mới create_blog_draft.",
   when_writing: {
     automatic: true,
-    cover: "Tạo bằng ChatGPT Images trong chat này (16:9, ≥1536×864, không chữ). start_image_upload rồi HTTP POST PNG gốc tới put_url. Gắn RAW GitHub vào featured_image.url.",
+    cover: "Tạo bằng ChatGPT Images trong chat này, từng ảnh một (16:9, ≥1536×864, không chữ). start_image_upload rồi HTTP POST PNG gốc tới put_url ngay sau mỗi ảnh. Không gọi 3 Images song song (ExceptionGroup). Không generate_and_upload cover nếu không có OpenAI/Gemini key.",
     body_min: 3,
     body_max: 4,
     body: "Tối thiểu 3 ảnh body khác nhau từ ChatGPT Images (cùng cách POST put_url). {{IMAGE:img-01}} … {{IMAGE:img-03}} trong markdown.",

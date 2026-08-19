@@ -49,18 +49,18 @@ test("text policy is no_text for covers and exact_text for workflow labels", () 
   assert.equal(resolveTextPolicy({ purpose: "editorial_illustration", text_policy: "no_text" }), "no_text");
 });
 
-test("image generator chain is OpenAI then Gemini then Flux then Stability", () => {
+test("image generator chain is OpenAI then Gemini then Stability", () => {
   const chain = imageGeneratorChain({
     OPENAI_API_KEY: "sk-test",
     GEMINI_API_KEY: "gem-test",
     STABILITY_API_KEY: "sk-stab",
   } as unknown as NodeJS.ProcessEnv);
-  assert.deepEqual(chain, ["openai", "gemini", "flux", "stability"]);
+  assert.deepEqual(chain, ["openai", "gemini", "stability"]);
 });
 
-test("image generator chain without paid keys still has flux", () => {
+test("image generator chain without paid keys does not use Flux", () => {
   const chain = imageGeneratorChain({} as unknown as NodeJS.ProcessEnv);
-  assert.deepEqual(chain, ["flux"]);
+  assert.deepEqual(chain, []);
 });
 
 test("decodeImageBase64 accepts a data URL", () => {
