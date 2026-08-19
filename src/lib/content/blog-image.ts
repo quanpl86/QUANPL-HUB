@@ -279,7 +279,7 @@ async function fetchGeneratedImage(
 export function decodeImageBase64(raw: string): Buffer {
   const trimmed = raw.trim();
   if (!trimmed) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 is empty");
-  const dataUrl = /^data:image\/[a-zA-Z0-9.+-]+;base64,(.+)$/s.exec(trimmed);
+  const dataUrl = /^data:image\/[a-zA-Z0-9.+-]+;base64,([\s\S]+)$/.exec(trimmed);
   const b64 = (dataUrl ? dataUrl[1] : trimmed).replace(/\s/g, "");
   const bytes = Buffer.from(b64, "base64");
   if (bytes.length < 32) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 is invalid");
