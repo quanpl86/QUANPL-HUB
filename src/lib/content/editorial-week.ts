@@ -9,9 +9,11 @@ import { EditorialCommentRepository, type EditorialComment } from "./editorial-c
 import {
   DEFAULT_REVISION_CONSTRAINTS,
   EditorialPlanAudit,
+  activityForSlot,
   applySlotAliases,
   assertPlanUnlocked,
   assertRevisionBase,
+  changedSlotIdsFromDiff,
   diffSnapshots,
   enforceRevisionConstraints,
   parseConstraints,
@@ -100,14 +102,19 @@ async function hydrate(supabase: any, weeks: EditorialWeek[]): Promise<Editorial
   const result: EditorialWeek[] = [];
   for (const week of withComments) {
     const revisions = await EditorialPlanAudit.listRevisions(supabase, week.id);
-    const activity = await EditorialPlanAudit.listActivity(supabase, week.id, 20);
+    const activity = await EditorialPlanAudit.listActivity(supabase, week.id, 80);
     const latest = revisions[0] || null;
     const previous = revisions[1] || null;
+    const diff = diffSnapshots(previous?.snapshot, latest?.snapshot);
     result.push({
       ...week,
       latest_revision: latest,
       activity,
-      diff: diffSnapshots(previous?.snapshot, latest?.snapshot),
+      diff,
+      slots: week.slots.map((slot) => ({
+        ...slot,
+        activity: activityForSlot(slot.id, activity, diff),
+      })),
     });
   }
   return result;
@@ -145,6 +152,23 @@ async function persistSnapshot(
     actor: author === "chatgpt" ? "chatgpt" : "admin",
     payload: { revision_number: week.revision_number, note: note || null },
   });
+}
+
+async function logChatGptSlotEdits(
+  supabase: any,
+  weekId: string,
+  slotIds: string[],
+  revisionNumber: number
+) {
+  for (const slotId of slotIds) {
+    await EditorialPlanAudit.log(supabase, {
+      week_id: weekId,
+      slot_id: slotId,
+      event: "slot_revised",
+      actor: "chatgpt",
+      payload: { revision_number: revisionNumber },
+    });
+  }
 }
 
 export class EditorialWeekRepository {
@@ -267,6 +291,12 @@ export class EditorialWeekRepository {
     if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
     const week = await this.get(supabase, id);
     await persistSnapshot(supabase, week, "chatgpt", "revised");
+    await logChatGptSlotEdits(
+      supabase,
+      week.id,
+      changedSlotIdsFromDiff(diffSnapshots(weekSnapshot(current), weekSnapshot(week))),
+      week.revision_number
+    );
     await sendEditorialWeekReviewEmail(week, "revised");
     return this.get(supabase, id);
   }
@@ -290,6 +320,7 @@ export class EditorialWeekRepository {
     if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
     const week = await this.get(supabase, weekId);
     await persistSnapshot(supabase, week, "chatgpt", allReturnedFixed ? "revised" : "slot_revised");
+    await logChatGptSlotEdits(supabase, week.id, [slotId], week.revision_number);
     if (allReturnedFixed) {
       await sendEditorialWeekReviewEmail(week, "revised");
     }

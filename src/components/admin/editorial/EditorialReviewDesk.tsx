@@ -38,7 +38,7 @@ import {
 } from '@/app/actions/editorial-calendar';
 import { isSlotDue, type EditorialSlot } from '@/lib/content/editorial-calendar';
 import type { EditorialComment } from '@/lib/content/editorial-comments';
-import { DEFAULT_REVISION_CONSTRAINTS, computeEditorialPerformance, isoWeekLabel, type RevisionConstraints } from '@/lib/content/editorial-plan';
+import { DEFAULT_REVISION_CONSTRAINTS, computeEditorialPerformance, isoWeekLabel, type EditorialActivity, type RevisionConstraints } from '@/lib/content/editorial-plan';
 import type { EditorialWeek } from '@/lib/content/editorial-week';
 import { EditorialPromptKitDialog } from '@/components/admin/editorial/EditorialPromptKitDialog';
 
@@ -605,24 +605,11 @@ function WeekWorkspace({
         </div>
       )}
 
-      <div className="border border-brand-orange/20 p-4 space-y-2">
-        <p className="text-sm font-semibold">Nhật ký</p>
-        {week.activity?.length > 0 ? (
-          week.activity.map((item) => (
-            <p key={item.id} className="text-sm">
-              <span className="text-[11px] text-muted">
-                {new Date(item.created_at).toLocaleString('vi-VN')} · {ACTOR_LABELS[item.actor] || item.actor}
-              </span>
-              <br />
-              {EVENT_LABELS[item.event] || item.event}
-            </p>
-          ))
-        ) : (
-          <p className="text-sm text-muted">
-            Chưa có hành động nào ghi vào Hub. Nếu ChatGPT báo đã sửa trên chat nhưng không có dòng ở đây thì tool chưa ghi thành công — bấm Tải lại, rồi bảo nó gọi lại <code>revise_editorial_week</code> với <code>based_on_revision</code>.
-          </p>
-        )}
-      </div>
+      <ActivityLog
+        title="Nhật ký tuần"
+        items={(week.activity || []).filter((item) => !item.slot_id)}
+        empty="Chưa có hành động nào ghi vào Hub. Nếu ChatGPT báo đã sửa trên chat nhưng không có dòng ở đây thì tool chưa ghi thành công — bấm Tải lại."
+      />
 
       <div>
         <p className="tech-mono text-[11px] text-muted uppercase mb-3">
@@ -869,6 +856,12 @@ function SlotEditor({
             </button>
           )}
 
+          <ActivityLog
+            title="Nhật ký bài"
+            items={slot.activity || []}
+            empty="Chưa có nhật ký trên bài này. Khi ChatGPT sửa đúng bài này, dòng ChatGPT sẽ hiện ở đây."
+          />
+
           <CommentThread
             comments={slot.comments}
             pending={pending}
@@ -1024,6 +1017,35 @@ function SlotEditor({
         </div>
       </div>
     </article>
+  );
+}
+
+function ActivityLog({
+  title,
+  items,
+  empty,
+}: {
+  title: string;
+  items: EditorialActivity[];
+  empty: string;
+}) {
+  return (
+    <div className="border border-brand-orange/20 p-3 space-y-2">
+      <p className="text-sm font-semibold">{title}</p>
+      {items.length > 0 ? (
+        items.map((item) => (
+          <p key={item.id} className="text-sm">
+            <span className="text-[11px] text-muted">
+              {new Date(item.created_at).toLocaleString('vi-VN')} · {ACTOR_LABELS[item.actor] || item.actor}
+            </span>
+            <br />
+            {EVENT_LABELS[item.event] || item.event}
+          </p>
+        ))
+      ) : (
+        <p className="text-sm text-muted">{empty}</p>
+      )}
+    </div>
   );
 }
 

@@ -233,6 +233,37 @@ export function snapshotSlots(slots: SlotLike[]) {
   }));
 }
 
+export function changedSlotIdsFromDiff(diffs: FieldDiff[]): string[] {
+  const ids = new Set<string>();
+  for (const item of diffs) {
+    const match = /^slot\.([^.]+)(?:\.|$)/.exec(item.path);
+    if (match) ids.add(match[1]);
+  }
+  return [...ids];
+}
+
+export function activityForSlot(
+  slotId: string,
+  activity: EditorialActivity[],
+  diff: FieldDiff[] = []
+): EditorialActivity[] {
+  const own = activity.filter((item) => item.slot_id === slotId);
+  const weekRevise = activity.find((item) => item.event === "revised" && item.actor === "chatgpt" && !item.slot_id);
+  const alreadyLogged = own.some((item) => item.event === "revised" || item.event === "slot_revised");
+  const inferred =
+    weekRevise && !alreadyLogged && changedSlotIdsFromDiff(diff).includes(slotId)
+      ? [{
+          ...weekRevise,
+          id: `${weekRevise.id}:${slotId}`,
+          slot_id: slotId,
+          event: "slot_revised",
+        }]
+      : [];
+  return [...inferred, ...own].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+}
+
 export function diffSnapshots(
   before: Record<string, unknown> | null | undefined,
   after: Record<string, unknown> | null | undefined

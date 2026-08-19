@@ -51,6 +51,12 @@ export async function updateEditorialSlot(id: string, patch: Partial<EditorialSl
   const updated = await EditorialCalendarRepository.adminUpdate(supabase, id, patch);
   if (current.week_id) {
     await EditorialWeekRepository.bumpAfterAdminEdit(supabase, current.week_id, 'brief_edited');
+    await EditorialPlanAudit.log(supabase, {
+      week_id: current.week_id,
+      slot_id: id,
+      event: 'brief_edited',
+      actor: 'admin',
+    });
   }
   revalidateDesk();
   return updated;
@@ -170,6 +176,12 @@ export async function requestEditorialRevision(
     'revision_requested',
     note || current?.comments.at(-1)?.body || ''
   );
+  await EditorialPlanAudit.log(supabase, {
+    week_id: slot.week_id,
+    slot_id: id,
+    event: 'revision_requested',
+    actor: 'admin',
+  });
   if (week.status === 'proposed' || week.status === 'revision_ready') {
     await EditorialWeekRepository.requestRevision(
       supabase,

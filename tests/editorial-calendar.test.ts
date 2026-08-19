@@ -21,6 +21,8 @@ import {
   computeEditorialPerformance,
   enforceRevisionConstraints,
   shouldMarkWeekRevisionReady,
+  activityForSlot,
+  changedSlotIdsFromDiff,
 } from "../src/lib/content/editorial-plan.ts";
 
 test("short command map covers plan, check, revise, and both write modes", () => {
@@ -146,6 +148,36 @@ test("keep_keyword blocks primary_keyword change without writing", () => {
     ),
     /CONSTRAINT_VIOLATION: primary_keyword/
   );
+});
+
+test("changedSlotIdsFromDiff collects unique slot ids", () => {
+  const ids = changedSlotIdsFromDiff([
+    { path: "summary", before: "a", after: "b" },
+    { path: "slot.aaa.title", before: "old", after: "new" },
+    { path: "slot.aaa.outline", before: "x", after: "y" },
+    { path: "slot.bbb.primary_keyword", before: "k", after: "k2" },
+  ]);
+  assert.deepEqual(ids.sort(), ["aaa", "bbb"]);
+});
+
+test("activityForSlot infers ChatGPT revise from week event + diff when slot_id is missing", () => {
+  const items = activityForSlot(
+    "aaa",
+    [{
+      id: "act-1",
+      week_id: "w1",
+      slot_id: null,
+      event: "revised",
+      actor: "chatgpt",
+      payload: {},
+      created_at: "2026-08-19T08:49:00.000Z",
+    }],
+    [{ path: "slot.aaa.title", before: "100", after: "120" }]
+  );
+  assert.equal(items.length, 1);
+  assert.equal(items[0].event, "slot_revised");
+  assert.equal(items[0].slot_id, "aaa");
+  assert.equal(items[0].actor, "chatgpt");
 });
 
 test("week becomes revision_ready only after the last returned slot is revised", () => {

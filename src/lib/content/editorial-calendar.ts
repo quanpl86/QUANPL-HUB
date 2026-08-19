@@ -53,6 +53,7 @@ export type EditorialSlot = {
   last_seo_score: number | null;
   last_due_reminder_at: string | null;
   comments: import("./editorial-comments").EditorialComment[];
+  activity: import("./editorial-plan").EditorialActivity[];
   created_at: string;
   updated_at: string;
 };
@@ -217,6 +218,7 @@ export function toSlot(row: any): EditorialSlot {
     last_seo_score: row.last_seo_score == null ? null : Number(row.last_seo_score),
     last_due_reminder_at: row.last_due_reminder_at || null,
     comments: [],
+    activity: [],
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
