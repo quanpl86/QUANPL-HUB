@@ -298,8 +298,9 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
         ))}
       </div>
       <p className="text-xs text-muted">
-        Các nút lọc theo <strong>cả tuần</strong>, không theo từng bài.
-        Bấm “Duyệt bài” riêng thì tuần vẫn ở “Chờ duyệt” — mở tab Tất cả để thấy bài đó.
+        Các nút lọc theo <strong>cả tuần</strong>.
+        “Gửi ChatGPT sửa bài” trong một bài cũng đưa cả tuần sang tab <strong>Đang chờ sửa</strong>.
+        “Duyệt bài” riêng thì tuần vẫn ở “Chờ duyệt” — mở tab Tất cả để thấy bài đó.
       </p>
       {filter === 'approved' && visibleWeeks.length === 0 && (
         <p className="text-sm">
@@ -353,6 +354,10 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
               startTransition={startTransition}
               onWeek={replaceWeek}
               onSlot={patchSlot}
+              onRevisionRequested={(weekId) => {
+                setSelectedId(weekId);
+                setFilter('revision_requested');
+              }}
             />
           )}
         </div>
@@ -367,12 +372,14 @@ function WeekWorkspace({
   startTransition,
   onWeek,
   onSlot,
+  onRevisionRequested,
 }: {
   week: EditorialWeek;
   pending: boolean;
   startTransition: (action: () => void | Promise<void>) => void;
   onWeek: (week: EditorialWeek) => void;
   onSlot: (slot: EditorialSlot) => void;
+  onRevisionRequested: (weekId: string) => void;
 }) {
   const [title, setTitle] = useState(week.title || '');
   const [summary, setSummary] = useState(week.summary || '');
@@ -552,8 +559,10 @@ function WeekWorkspace({
               disabled={pending}
               onClick={() => startTransition(async () => {
                 try {
-                  onWeek(await requestEditorialWeekRevision(week.id, weekNote, constraints));
+                  const updated = await requestEditorialWeekRevision(week.id, weekNote, constraints);
                   setWeekNote('');
+                  onWeek(updated);
+                  onRevisionRequested(updated.id);
                   toast.success('Đã gửi yêu cầu sửa. Hãy bảo ChatGPT: sửa.');
                 } catch (error: any) {
                   toast.error(humanError(error.message));
@@ -632,6 +641,9 @@ function WeekWorkspace({
                   weekApproved={week.status === 'approved'}
                   startTransition={startTransition}
                   onSlot={onSlot}
+                  onWeek={onWeek}
+                  onRevisionRequested={onRevisionRequested}
+                  constraints={constraints}
                 />
               ))}
             </div>
@@ -650,6 +662,9 @@ function SortableSlotCard(props: {
   weekApproved: boolean;
   startTransition: (action: () => void | Promise<void>) => void;
   onSlot: (slot: EditorialSlot) => void;
+  onWeek: (week: EditorialWeek) => void;
+  onRevisionRequested: (weekId: string) => void;
+  constraints: RevisionConstraints;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.slot.id });
   return (
@@ -667,6 +682,9 @@ function SlotEditor({
   weekApproved,
   startTransition,
   onSlot,
+  onWeek,
+  onRevisionRequested,
+  constraints,
   dragHandle,
 }: {
   slot: EditorialSlot;
@@ -676,6 +694,9 @@ function SlotEditor({
   weekApproved?: boolean;
   startTransition: (action: () => void | Promise<void>) => void;
   onSlot: (slot: EditorialSlot) => void;
+  onWeek?: (week: EditorialWeek) => void;
+  onRevisionRequested?: (weekId: string) => void;
+  constraints?: RevisionConstraints;
   dragHandle: { attributes: any; listeners: any };
 }) {
   const [draft, setDraft] = useState(toDraft(slot));
@@ -894,9 +915,15 @@ function SlotEditor({
                 disabled={pending}
                 onClick={() => startTransition(async () => {
                   try {
-                    onSlot({ ...(await requestEditorialRevision(slot.id, note)), comments: slot.comments });
+                    const result = await requestEditorialRevision(slot.id, note, constraints);
                     setNote('');
-                    toast.success('Đã gửi ChatGPT sửa bài này.');
+                    if (result.week && onWeek) {
+                      onWeek(result.week);
+                      onRevisionRequested?.(result.week.id);
+                    } else {
+                      onSlot({ ...result.slot, comments: slot.comments });
+                    }
+                    toast.success('Đã gửi ChatGPT sửa bài này. Cả tuần đang ở tab Đang chờ sửa.');
                   } catch (error: any) {
                     toast.error(humanError(error.message));
                   }

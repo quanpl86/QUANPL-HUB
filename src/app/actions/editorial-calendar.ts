@@ -137,7 +137,11 @@ export async function approveEditorialSlot(id: string) {
   return updated;
 }
 
-export async function requestEditorialRevision(id: string, feedback: string) {
+export async function requestEditorialRevision(
+  id: string,
+  feedback: string,
+  constraints?: Partial<RevisionConstraints>
+) {
   const supabase = await requireAdmin();
   const slot = await EditorialCalendarRepository.get(supabase, id);
   const note = feedback.trim();
@@ -145,7 +149,7 @@ export async function requestEditorialRevision(id: string, feedback: string) {
     if (!note) throw new Error('Cần ghi rõ yêu cầu hiệu chỉnh');
     const updated = await EditorialCalendarRepository.setStatus(supabase, id, 'revision_requested', note);
     revalidateDesk();
-    return updated;
+    return { slot: updated, week: null };
   }
   if (note) {
     await EditorialCommentRepository.add(supabase, {
@@ -171,11 +175,14 @@ export async function requestEditorialRevision(id: string, feedback: string) {
       supabase,
       slot.week_id,
       note || current?.comments.at(-1)?.body || 'Xem ghi chú trên từng bài',
-      week.revision_constraints
+      constraints || week.revision_constraints
     );
   }
   revalidateDesk();
-  return updated;
+  return {
+    slot: updated,
+    week: await EditorialWeekRepository.get(supabase, slot.week_id),
+  };
 }
 
 export async function reopenEditorialSlot(id: string) {
