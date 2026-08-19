@@ -54,10 +54,15 @@ function errorMessage(error: unknown): string {
 }
 
 function createKingDragonHubMcpServer() {
-  const server = new McpServer({
-    name: "KingDragonHub-MCP",
-    version: "7.29.0",
-  });
+  const server = new McpServer(
+    {
+      name: "KingDragonHub-MCP",
+      version: "7.30.0",
+    },
+    {
+      instructions: ARTICLE_ASSET_HARD_RULE.text,
+    }
+  );
 
   // [Tool 1]: get_blog_inventory
   server.registerTool(
@@ -132,7 +137,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.29.0",
+          mcp_version: "7.30.0",
           asset_policy: ARTICLE_ASSET_HARD_RULE.asset_policy,
           article_asset_hard_rule: ARTICLE_ASSET_HARD_RULE.text,
           image_pipeline: {
@@ -561,10 +566,15 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "upload_generated_image_file",
       {
-        description: "PRIMARY Lane A upload. After each native ChatGPT Image, pass that generated PNG as `file` (or file_url). Hub QAs and stores original bytes on GitHub. Returns raw_url, width, height, sha256. Do NOT send huge image_base64 through other MCP tools. Retry the SAME image_id on failure. Sequence: cover, img-01, img-02, img-03.",
+        title: "Upload ChatGPT Image",
+        description: "Call immediately after each native ChatGPT Image in this chat. Pass that generated image as `file` (ChatGPT fills download_url + file_id). Hub fetches original bytes, QAs, stores on GitHub. Returns raw_url. Sequence: cover, img-01, img-02, img-03. Retry the SAME image_id on failure. Never skip to the next image. Never create_blog_draft until four RAW URLs exist.",
         inputSchema: z.object({
-          file: z.string().optional().describe("The PNG just created by ChatGPT Images: data URL, raw base64, or the file the client attaches."),
-          file_url: z.string().optional().describe("HTTPS URL of the original generated file if the client exposes one."),
+          file: z.object({
+            download_url: z.string(),
+            file_id: z.string(),
+            mime_type: z.string().optional(),
+            file_name: z.string().optional(),
+          }).describe("The ChatGPT Images file just generated in this chat."),
           idempotency_key: z.string(),
           article_key: z.string().optional(),
           image_id: z.string().describe("cover, img-01, img-02, or img-03"),
@@ -582,6 +592,16 @@ function createKingDragonHubMcpServer() {
           filename: z.string().optional(),
           prompt: z.string().optional(),
         }),
+        annotations: {
+          readOnlyHint: false,
+          destructiveHint: false,
+          openWorldHint: true,
+        },
+        _meta: {
+          "openai/fileParams": ["file"],
+          "openai/toolInvocation/invoking": "Uploading image to Hub…",
+          "openai/toolInvocation/invoked": "Image stored on GitHub",
+        },
       },
       async (input) => {
         try {

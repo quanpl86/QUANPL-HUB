@@ -571,12 +571,26 @@ export async function uploadBlogImage(input: BlogImageGenerateInput) {
   });
 }
 
-export async function uploadGeneratedImageFile(input: BlogImageGenerateInput & { file?: string; file_url?: string }) {
-  const fromFile = input.file?.trim() ? decodeImageBase64(input.file) : undefined;
+export type ChatGptFileParam = {
+  download_url: string;
+  file_id: string;
+  mime_type?: string;
+  file_name?: string;
+};
+
+export async function uploadGeneratedImageFile(
+  input: BlogImageGenerateInput & {
+    file?: string | ChatGptFileParam;
+    file_url?: string;
+  }
+) {
+  const attached = input.file;
+  const fromString = typeof attached === "string" && attached.trim() ? decodeImageBase64(attached) : undefined;
+  const fromChatGptUrl = attached && typeof attached === "object" ? attached.download_url : undefined;
   return uploadBlogImage({
     ...input,
-    image_bytes: input.image_bytes || fromFile,
-    source_url: input.file_url || input.source_url,
+    image_bytes: input.image_bytes || fromString,
+    source_url: fromChatGptUrl || input.file_url || input.source_url,
     prompt: input.prompt || "Uploaded from ChatGPT Images",
   });
 }
