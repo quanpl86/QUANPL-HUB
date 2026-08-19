@@ -460,9 +460,9 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   const uploadedFromChat = Boolean(input.source_url || input.image_base64 || input.image_bytes);
   const infographic = !uploadedFromChat && (textPolicy === "exact_text" || shouldRenderInfographic({ ...input, text_policy: textPolicy }));
   const generatePrompt = input.prompt?.trim() ?? "";
-  if (!uploadedFromChat && !infographic && !generatePrompt) {
+  if (!uploadedFromChat && !infographic) {
     throw new Error(
-      "IMAGE_GENERATE_FAILED: pass image_base64 from ChatGPT Images, or source_url, or a prompt, or required_labels for SVG"
+      "IMAGE_GENERATE_FAILED: SCENE_MUST_BE_CHATGPT_IMAGES. Hub does not generate covers/scenes (no Plus Images API; Flux is 1024×576). Create ONE image in this chat with ChatGPT Images, then start_image_upload and POST the original PNG to put_url. Do not retry generate_and_upload_blog_image for article_cover."
     );
   }
   const kind = infographic ? "infographic" : input.purpose === "article_cover" ? "cover" : "inline";

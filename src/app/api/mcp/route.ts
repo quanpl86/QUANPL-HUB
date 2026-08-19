@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.22.0",
+    version: "7.23.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -131,12 +131,21 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.22.0",
+          mcp_version: "7.23.0",
+          image_pipeline: {
+            scenes: "ChatGPT Images IN THIS CHAT, one at a time. Then start_image_upload and HTTP POST original PNG to put_url. Never generate_and_upload for cover/scene. Never Hub OpenAI API. Never image_base64.",
+            svg: "generate_and_upload_blog_image only for workflow/rubric/timeline/table/comparison with required_labels.",
+            body_min: ARTICLE_INLINE_IMAGE_MIN,
+            cover_min: "1536x864",
+          },
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
           media_tool: "start_image_upload",
           media_tools: ["start_image_upload", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
           permissions: CHATGPT_MCP_PERMISSIONS,
           taxonomy_tool: "get_blog_categories",
+          command_tool: "get_editorial_commands",
+          short_commands: "call get_editorial_commands",
+          image_generation_standard: IMAGE_GENERATION_STANDARD,
           calendar_tools: [
             "get_editorial_commands",
             "propose_editorial_week",
@@ -154,9 +163,6 @@ function createKingDragonHubMcpServer() {
             "update_blog_draft",
           ],
           review_desk: "/admin/editorial",
-          command_tool: "get_editorial_commands",
-          short_commands: EDITORIAL_COMMANDS,
-          image_generation_standard: IMAGE_GENERATION_STANDARD,
           calendar_workflow: {
             "1": "propose_editorial_week — send the weekly article list for review. Do NOT write articles yet.",
             "2": "Admin reviews at /admin/editorial: reorder (item_order), edit briefs, and leave detailed comments.",
