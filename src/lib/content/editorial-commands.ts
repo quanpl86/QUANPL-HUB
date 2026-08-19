@@ -180,9 +180,9 @@ export const EDITORIAL_COMMANDS = {
         "tạo trực tiếp",
       ],
       do: [
-        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này (Plus, không API key), rồi upload_github_image hoặc upload_blog_image với PNG gốc. Cover ≥1536×864, inline ≥1280×720",
-        "ĐƯỢC upload lên GitHub quanpl86/imgBlog qua tool Hub (token Hub). Có GitHub connector thì cũng được; rồi source_url RAW",
-        "Ưu tiên source_url file gốc. image_base64 chỉ khi PNG không bị cắt. KHÔNG nén WebP, KHÔNG resize 800×450",
+        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này, rồi start_image_upload và HTTP POST bytes PNG gốc tới put_url. KHÔNG nhét image_base64 vào MCP (connector cắt)",
+        "ĐƯỢC upload lên GitHub quanpl86/imgBlog (token Hub). Cover ≥1536×864",
+        "KHÔNG nén WebP, KHÔNG resize 800×450, KHÔNG dùng FLUX 1024×576 làm cover",
         "Nếu base64 quá lớn: generate_and_upload_blog_image để Hub tạo PNG — không được nén cho vừa tool",
         "Rubric/workflow/timeline/bảng: generate_and_upload_blog_image + required_labels, SVG",
         "Chỉ khi user bắt Hub tự gen (không ảnh trong chat): generate_and_upload_blog_image không base64 — server fallback, có thể 429",

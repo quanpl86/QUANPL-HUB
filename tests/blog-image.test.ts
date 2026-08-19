@@ -16,7 +16,7 @@ import {
   renderInfographicSvg,
   shouldRenderInfographic,
 } from "../src/lib/content/blog-infographic.ts";
-import { assertImageQa, minRasterBytes, sniffImage } from "../src/lib/content/image-qa.ts";
+import { assertCompleteRaster, assertImageQa, minRasterBytes, sniffImage } from "../src/lib/content/image-qa.ts";
 import { IMAGE_GENERATION_STANDARD, resolveTextPolicy } from "../src/lib/content/image-generation-standard.ts";
 
 test("rejects photorealistic child prompts", () => {
@@ -70,6 +70,14 @@ test("decodeImageBase64 accepts a data URL", () => {
   const fromData = decodeImageBase64(`data:image/png;base64,${png}`);
   assert.equal(fromRaw.length, fromData.length);
   assert.ok(fromRaw.length > 32);
+  assertCompleteRaster(fromRaw);
+});
+
+test("rejects truncated PNG base64 the way the ChatGPT connector cuts it", () => {
+  const png =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  const cut = png.slice(0, 40);
+  assert.throws(() => decodeImageBase64(cut), /BASE64_TRUNCATED/);
 });
 
 test("OpenAI image size maps Hub aspects", () => {

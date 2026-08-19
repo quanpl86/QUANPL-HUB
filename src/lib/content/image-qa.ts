@@ -39,6 +39,26 @@ export function sniffImage(bytes: Buffer): ImageSniff {
   throw new Error("IMAGE_QA_FAILED: IMAGE_FORMAT_UNKNOWN");
 }
 
+const PNG_IEND = Buffer.from([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82]);
+const TRUNCATED_HINT =
+  "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Call start_image_upload then HTTP POST original PNG bytes to put_url.";
+
+export function assertCompleteRaster(bytes: Buffer): void {
+  if (bytes.length < 32) throw new Error(TRUNCATED_HINT);
+  const sniff = sniffImage(bytes);
+  if (sniff.ext === "svg") return;
+  if (sniff.ext === "png" && (bytes.length < 67 || !bytes.subarray(-12).equals(PNG_IEND))) {
+    throw new Error(TRUNCATED_HINT);
+  }
+  if (sniff.ext === "jpg" && (bytes[bytes.length - 2] !== 0xff || bytes[bytes.length - 1] !== 0xd9)) {
+    throw new Error(TRUNCATED_HINT);
+  }
+  if (sniff.ext === "webp") {
+    const declared = bytes.readUInt32LE(4);
+    if (declared + 8 > bytes.length) throw new Error(TRUNCATED_HINT);
+  }
+}
+
 function jpegSize(bytes: Buffer): { width: number; height: number } | null {
   let offset = 2;
   while (offset + 8 < bytes.length) {

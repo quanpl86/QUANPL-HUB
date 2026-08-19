@@ -5,8 +5,19 @@ import {
   shouldRenderInfographic,
   type InfographicLayout,
 } from "./blog-infographic.ts";
-import { assertImageQa, sniffImage } from "./image-qa.ts";
+import { assertCompleteRaster, assertImageQa, sniffImage } from "./image-qa.ts";
 import { isRateLimitImageError, isTransientImageError, resolveTextPolicy } from "./image-generation-standard.ts";
+
+export function flattenImageError(error: unknown): string {
+  if (error instanceof Error) {
+    const grouped = (error as Error & { errors?: unknown[] }).errors;
+    if (Array.isArray(grouped) && grouped.length) {
+      return `${error.name}: ${grouped.map((item) => (item instanceof Error ? item.message : String(item))).join(" | ")}`;
+    }
+    return error.message;
+  }
+  return String(error);
+}
 
 export const UNSAFE_IMAGE_PROMPT_PATTERNS = [
   /(?<!no )(?<!not )photorealistic (child|children|kid|kids|toddler|preschooler|minor)/i,
@@ -193,7 +204,9 @@ async function fetchGeminiImage(prompt: string, aspect: string, purpose: string)
   const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!key) throw new Error("IMAGE_GENERATE_FAILED: missing GEMINI_API_KEY");
   const model = process.env.GEMINI_IMAGE_MODEL || "imagen-4.0-generate-001";
-  const response = await fetch(
+  let response: Response;
+  try {
+    response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${encodeURIComponent(key)}`,
     {
       method: "POST",
@@ -205,6 +218,9 @@ async function fetchGeminiImage(prompt: string, aspect: string, purpose: string)
       signal: AbortSignal.timeout(90000),
     }
   );
+  } catch (error) {
+    throw new Error(`IMAGE_GENERATE_FAILED: gemini ${flattenImageError(error)}`);
+  }
   const json = await response.json() as {
     error?: { message?: string };
     predictions?: Array<{ bytesBase64Encoded?: string; mimeType?: string }>;
@@ -243,13 +259,16 @@ async function fetchStabilityImage(prompt: string, aspect: string, purpose: stri
 
 async function fetchFluxImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
   const size = ASPECT_SIZE[aspect] || ASPECT_SIZE["16:9"];
-  const url =
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(withEditorialSuffix(prompt, purpose))}` +
-    `?width=${size.width}&height=${size.height}&model=flux&nologo=true&enhance=true`;
-  const run = async () => {
+  const encoded = encodeURIComponent(withEditorialSuffix(prompt, purpose));
+  const query = `width=${size.width}&height=${size.height}&model=flux&nologo=true`;
+  const urls = [
+    `https://image.pollinations.ai/prompt/${encoded}?${query}`,
+    `https://gen.pollinations.ai/image/${encoded}?${query}`,
+  ];
+  const run = async (url: string) => {
     const response = await fetch(url, {
       headers: { Accept: "image/*" },
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(45000),
     });
     if (response.status === 429) throw new Error("IMAGE_GENERATE_FAILED: 429 flux rate limit");
     if (!response.ok) throw new Error(`IMAGE_GENERATE_FAILED: flux ${response.status}`);
@@ -259,13 +278,17 @@ async function fetchFluxImage(prompt: string, aspect: string, purpose: string): 
     if (bytes.length > 10 * 1024 * 1024) throw new Error("IMAGE_GENERATE_FAILED: image exceeds 10MB");
     return { bytes, mimeType };
   };
-  try {
-    return await run();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (isRateLimitImageError(message) || !isTransientImageError(message)) throw error;
-    return run();
+  let lastError = "IMAGE_GENERATE_FAILED: flux";
+  for (const url of urls) {
+    try {
+      return await run(url);
+    } catch (error) {
+      const message = flattenImageError(error);
+      lastError = message.startsWith("IMAGE_GENERATE_FAILED") ? message : `IMAGE_GENERATE_FAILED: flux ${message}`;
+      if (isRateLimitImageError(message)) throw new Error(lastError);
+    }
   }
+  throw new Error(lastError);
 }
 
 export type ProviderAttempt = { provider: string; result: string };
@@ -287,7 +310,7 @@ async function fetchGeneratedImage(
       attempts.push({ provider: generator, result: "success" });
       return { bytes, generator, attempts };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = flattenImageError(error);
       const result = isRateLimitImageError(message) ? "429" : message.replace(/^IMAGE_GENERATE_FAILED:\s*/, "").slice(0, 80);
       attempts.push({ provider: generator, result });
       console.error(`[blog-image] ${generator} failed, trying next:`, message);
@@ -302,18 +325,45 @@ export function decodeImageBase64(raw: string): Buffer {
   const dataUrl = /^data:image\/[a-zA-Z0-9.+-]+;base64,([\s\S]+)$/.exec(trimmed);
   const b64 = (dataUrl ? dataUrl[1] : trimmed).replace(/\s/g, "");
   const bytes = Buffer.from(b64, "base64");
-  if (bytes.length < 32) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 is invalid");
+  if (bytes.length < 32) {
+    throw new Error(
+      "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Call start_image_upload then HTTP POST original PNG bytes to put_url."
+    );
+  }
   if (bytes.length > 10 * 1024 * 1024) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 exceeds 10MB");
+  try {
+    assertCompleteRaster(bytes);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("BASE64_TRUNCATED") || message.includes("IMAGE_FORMAT_UNKNOWN")) {
+      throw new Error(
+        "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Call start_image_upload then HTTP POST original PNG bytes to put_url."
+      );
+    }
+    throw error;
+  }
   return bytes;
 }
 
 async function fetchSourceImage(url: string): Promise<{ bytes: Buffer; generator: "upload" }> {
   if (!/^https:\/\//i.test(url)) throw new Error("IMAGE_UPLOAD_FAILED: source_url must be https");
-  const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
-  if (!response.ok) throw new Error(`IMAGE_UPLOAD_FAILED: source_url ${response.status}`);
+  const response = await fetch(url, {
+    headers: {
+      Accept: "image/*,*/*",
+      "User-Agent": "Mozilla/5.0 KingDragonHub-MCP",
+      Referer: "https://chatgpt.com/",
+    },
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `IMAGE_UPLOAD_FAILED: source_url ${response.status}. If this is a ChatGPT file URL, call start_image_upload and POST the original PNG bytes instead.`
+    );
+  }
   const bytes = Buffer.from(await response.arrayBuffer());
   if (bytes.length < 1000) throw new Error("IMAGE_UPLOAD_FAILED: source_url empty");
   if (bytes.length > 10 * 1024 * 1024) throw new Error("IMAGE_UPLOAD_FAILED: source_url exceeds 10MB");
+  assertCompleteRaster(bytes);
   return { bytes, generator: "upload" };
 }
 
@@ -383,6 +433,7 @@ export type BlogImageGenerateInput = {
   visual_style?: string;
   source_url?: string;
   image_base64?: string;
+  image_bytes?: Buffer;
   article_key?: string;
   text_policy?: "no_text" | "exact_text" | "optional_text";
   provider?: "auto" | SceneGenerator;
@@ -395,12 +446,12 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     throw new Error("QUALITY_GATE_FAILED: COVER_ALT_MISSING");
   }
   if (input.prompt) assertSafeImagePrompt(input.prompt);
-  if (!input.source_url && !input.image_base64) assertInfographicContract(input);
+  if (!input.source_url && !input.image_base64 && !input.image_bytes) assertInfographicContract(input);
 
   const aspect = input.aspect || (input.purpose === "article_cover" ? "16:9" : "4:3");
   const requested = ASPECT_SIZE[aspect] || ASPECT_SIZE["16:9"];
   const textPolicy = resolveTextPolicy(input);
-  const uploadedFromChat = Boolean(input.source_url || input.image_base64);
+  const uploadedFromChat = Boolean(input.source_url || input.image_base64 || input.image_bytes);
   const infographic = !uploadedFromChat && (textPolicy === "exact_text" || shouldRenderInfographic({ ...input, text_policy: textPolicy }));
   const generatePrompt = input.prompt?.trim() ?? "";
   if (!uploadedFromChat && !infographic && !generatePrompt) {
@@ -415,7 +466,12 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   let bytes: Buffer;
   let renderer: "svg" | SceneGenerator | "upload" = "flux";
   let attempts: ProviderAttempt[] = [];
-  if (input.image_base64) {
+  if (input.image_bytes) {
+    assertCompleteRaster(input.image_bytes);
+    bytes = input.image_bytes;
+    renderer = "upload";
+    attempts = [{ provider: "chatgpt_images", result: "success" }];
+  } else if (input.image_base64) {
     bytes = decodeImageBase64(input.image_base64);
     renderer = "upload";
     attempts = [{ provider: "chatgpt_images", result: "success" }];
@@ -498,8 +554,8 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
 }
 
 export async function uploadBlogImage(input: BlogImageGenerateInput) {
-  if (!input.image_base64 && !input.source_url) {
-    throw new Error("IMAGE_UPLOAD_FAILED: image_base64 or source_url is required. Create the image in ChatGPT first, then upload.");
+  if (!input.image_base64 && !input.source_url && !input.image_bytes) {
+    throw new Error("IMAGE_UPLOAD_FAILED: image_base64, image_bytes, or source_url is required. Create the image in ChatGPT first, then start_image_upload.");
   }
   return generateAndUploadBlogImage({
     ...input,

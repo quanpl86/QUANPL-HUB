@@ -14,7 +14,7 @@ export const IMAGE_GENERATION_STANDARD = {
     github_upload: "ALWAYS ALLOWED via upload_github_image / upload_blog_image. Hub uses GITHUB_ASSET_TOKEN. ChatGPT GitHub connector to imgBlog is also allowed.",
   },
   lanes: {
-    chat_direct: "PRIMARY for cover/illustration: create with ChatGPT Images in this chat (Plus, no API key). Then upload_blog_image with source_url of the original or uncompressed image_base64. MCP does not generate those pixels and does not recompress.",
+    chat_direct: "PRIMARY for cover/illustration: create with ChatGPT Images in this chat (Plus, no API key). Then start_image_upload and HTTP POST original bytes to put_url. Never image_base64 through MCP — the connector truncates it.",
     hub_post: "Only if the user insists Hub generate without an in-chat image, OR if original pixels cannot be sent without compressing: generate_and_upload_blog_image. Engine OpenAI API→Gemini→Flux→Stability (API billed, not Plus). Do not pick FLUX yourself.",
   },
   primary: {
@@ -48,8 +48,8 @@ export const IMAGE_GENERATION_STANDARD = {
     split: ["concept", "practice", "application"],
   },
   agent_must: [
-    "If the user wants the nicest cover/illustration: create with ChatGPT Images in this chat first, then upload the ORIGINAL pixels (source_url preferred). Never WebP 800x450.",
-    "If base64 would be truncated: do not compress. Use source_url of the original, or generate_and_upload_blog_image (Hub PNG).",
+    "If the user wants the nicest cover/illustration: create with ChatGPT Images in this chat first, then start_image_upload and POST original PNG bytes. Never image_base64 on MCP. Never WebP 800x450.",
+    "If MCP base64 is truncated: do not compress and do not use FLUX 1024×576. POST bytes to put_url.",
     "If the user wants Hub to generate for the post: call generate_and_upload_blog_image and let MCP pick OpenAI first. Do not choose FLUX.",
     "Cover: 16:9, no text.",
     "Body illustrations: 2–4 distinct scenes, not 3 similar clipboard shots.",
