@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.23.0",
+    version: "7.24.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -131,9 +131,9 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.23.0",
+          mcp_version: "7.24.0",
           image_pipeline: {
-            scenes: "ChatGPT Images IN THIS CHAT, one at a time. Then start_image_upload and HTTP POST original PNG to put_url. Never generate_and_upload for cover/scene. Never Hub OpenAI API. Never image_base64.",
+            scenes: "ChatGPT Images IN THIS CHAT, one at a time. Then start_image_upload and HTTP POST original PNG to put_url. Never generate_and_upload for cover/scene. Never Hub OpenAI API. Never image_base64. If Images tool is missing: stop, ask the user to enable Image generation on the GPT or to type «Tạo cover 16:9: …» / attach PNG, then upload.",
             svg: "generate_and_upload_blog_image only for workflow/rubric/timeline/table/comparison with required_labels.",
             body_min: ARTICLE_INLINE_IMAGE_MIN,
             cover_min: "1536x864",

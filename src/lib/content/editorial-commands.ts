@@ -9,6 +9,8 @@ export const EDITORIAL_COMMANDS = {
     body: "Tối thiểu 3 ảnh body khác nhau từ ChatGPT Images (cùng cách POST put_url). {{IMAGE:img-01}} … {{IMAGE:img-03}} trong markdown.",
     structured_text: "workflow/rubric/timeline/bảng: generate_and_upload_blog_image SVG + required_labels tiếng Việt — không vẽ chữ bằng model.",
     github: "Hub ghi quanpl86/imgBlog. URL RAW mới mỗi ảnh. Không image_base64 qua MCP (connector cắt).",
+    if_images_tool_missing:
+      "Nếu phiên MCP/GPT không có công cụ ChatGPT Images: DỪNG, không generate_and_upload cover, không tạo draft. Báo user bật Image generation trên GPT KingDragonHub Editorial, hoặc user tự nhắn «Tạo cover 16:9: …» / đính PNG vào chat. Khi ảnh hiện, GPT mới start_image_upload + POST put_url.",
     never: ["nén WebP", "FLUX 1024×576 làm cover", "cover SVG giả cho cảnh", "gửi draft khi còn thiếu URL ảnh"],
   },
   status_vi: {
