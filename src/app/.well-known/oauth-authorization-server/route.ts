@@ -1,4 +1,4 @@
-import { getOAuthIssuer } from '@/lib/oauth-security';
+import { getOAuthIssuer, SUPPORTED_OAUTH_SCOPES } from '@/lib/oauth-security';
 
 export async function GET() {
   const issuer = getOAuthIssuer();
@@ -11,6 +11,6 @@ export async function GET() {
     grant_types_supported: ["authorization_code", "refresh_token"],
     token_endpoint_auth_methods_supported: ["client_secret_post", "client_secret_basic"],
     code_challenge_methods_supported: ["S256"],
-    scopes_supported: ["blog:read", "policy:read", "draft:create", "offline_access"]
+    scopes_supported: [...SUPPORTED_OAUTH_SCOPES],
   });
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getOAuthIssuer, getOAuthResource } from '@/lib/oauth-security';
+import { getOAuthIssuer, getOAuthResource, SUPPORTED_OAUTH_SCOPES } from '@/lib/oauth-security';
 
 export async function GET() {
   return NextResponse.json({
@@ -7,11 +7,6 @@ export async function GET() {
     authorization_servers: [
       getOAuthIssuer()
     ],
-    scopes_supported: [
-      "blog:read",
-      "policy:read",
-      "draft:create",
-      "offline_access"
-    ]
+    scopes_supported: [...SUPPORTED_OAUTH_SCOPES],
   });
 }

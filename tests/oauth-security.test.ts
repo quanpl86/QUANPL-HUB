@@ -3,10 +3,12 @@ import crypto from 'node:crypto';
 import test from 'node:test';
 import {
   generateAuthorizationCode,
+  grantConnectorOAuthScope,
   hashAuthorizationCode,
   isAllowedOAuthRedirectUri,
   isValidPkceRequest,
   normalizeOAuthScope,
+  SUPPORTED_OAUTH_SCOPES,
   verifyOAuthClient,
   verifyPkceChallenge,
 } from '../src/lib/oauth-security.ts';
@@ -23,6 +25,16 @@ test('authorization codes are short, opaque, and random', () => {
 test('scope normalization rejects unadvertised scopes', () => {
   assert.equal(normalizeOAuthScope('blog:read blog:read policy:read'), 'blog:read policy:read');
   assert.equal(normalizeOAuthScope('admin:all'), null);
+  assert.match(normalizeOAuthScope('media:write') || '', /media:write/);
+});
+
+test('ChatGPT connector grant always includes GitHub media:write and other write scopes', () => {
+  const granted = grantConnectorOAuthScope('blog:read');
+  assert.ok(granted);
+  assert.match(granted, /media:write/);
+  assert.match(granted, /draft:create/);
+  assert.equal(granted, [...SUPPORTED_OAUTH_SCOPES].join(' '));
+  assert.equal(grantConnectorOAuthScope('admin:all'), null);
 });
 
 test('default redirect policy only accepts ChatGPT OAuth callback paths', () => {

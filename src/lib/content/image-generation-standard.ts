@@ -10,7 +10,8 @@ export const IMAGE_GENERATION_STANDARD = {
       "convert to small WebP/JPEG as a payload trick",
       "upscale a tiny compressed file to pass resolution",
     ],
-    if_base64_too_large: "pass source_url of the ORIGINAL full-resolution HTTPS file, or call generate_and_upload_blog_image so Hub creates a PNG. Do not compress.",
+    if_base64_too_large: "upload_github_image is ALLOWED (Hub writes quanpl86/imgBlog). Or pass source_url of the original, or generate_and_upload_blog_image. Do not compress.",
+    github_upload: "ALWAYS ALLOWED via upload_github_image / upload_blog_image. Hub uses GITHUB_ASSET_TOKEN. ChatGPT GitHub connector to imgBlog is also allowed.",
   },
   lanes: {
     chat_direct: "PRIMARY for cover/illustration: create with ChatGPT Images in this chat (Plus, no API key). Then upload_blog_image with source_url of the original or uncompressed image_base64. MCP does not generate those pixels and does not recompress.",

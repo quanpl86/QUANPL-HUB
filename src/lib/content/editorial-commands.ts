@@ -1,6 +1,6 @@
 export const EDITORIAL_COMMANDS = {
   language: "vi-VN",
-  rule: "Người dùng nói ngắn. Map đúng một việc mỗi tin. Không gộp viết tự do với viết theo tuần. Không publish, không duyệt tuần, không xóa bài.",
+  rule: "Người dùng nói ngắn. Map đúng một việc mỗi tin. Không gộp viết tự do với viết theo tuần. Không publish, không duyệt tuần, không xóa bài. ĐƯỢC upload ảnh gốc lên GitHub imgBlog (upload_github_image) và các quyền viết nháp/lịch tuần.",
   status_vi: {
     proposed: "chờ duyệt",
     revision_requested: "đang chờ sửa / bài bị trả",
@@ -180,7 +180,8 @@ export const EDITORIAL_COMMANDS = {
         "tạo trực tiếp",
       ],
       do: [
-        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này (Plus, không API key), rồi upload_blog_image với PNG gốc. Cover ≥1536×864, inline ≥1280×720",
+        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này (Plus, không API key), rồi upload_github_image hoặc upload_blog_image với PNG gốc. Cover ≥1536×864, inline ≥1280×720",
+        "ĐƯỢC upload lên GitHub quanpl86/imgBlog qua tool Hub (token Hub). Có GitHub connector thì cũng được; rồi source_url RAW",
         "Ưu tiên source_url file gốc. image_base64 chỉ khi PNG không bị cắt. KHÔNG nén WebP, KHÔNG resize 800×450",
         "Nếu base64 quá lớn: generate_and_upload_blog_image để Hub tạo PNG — không được nén cho vừa tool",
         "Rubric/workflow/timeline/bảng: generate_and_upload_blog_image + required_labels, SVG",

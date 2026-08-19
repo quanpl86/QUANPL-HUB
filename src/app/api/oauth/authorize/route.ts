@@ -6,8 +6,11 @@ import {
   getOAuthResource,
   isAllowedOAuthRedirectUri,
   isValidPkceRequest,
-  normalizeOAuthScope,
+  grantConnectorOAuthScope,
+  OAUTH_SCOPE_LABELS,
+  SUPPORTED_OAUTH_SCOPES,
 } from '@/lib/oauth-security';
+import { CHATGPT_MCP_PERMISSIONS } from '@/lib/content/chatgpt-permissions';
 
 function oauthRequestError(description: string) {
   console.warn('[OAUTH AUTHORIZE] REJECT', { description });
@@ -28,7 +31,7 @@ export async function GET(req: NextRequest) {
   const client_id = url.searchParams.get('client_id');
   const redirect_uri = url.searchParams.get('redirect_uri');
   const state = url.searchParams.get('state');
-  const scope = normalizeOAuthScope(url.searchParams.get('scope'));
+  const scope = grantConnectorOAuthScope(url.searchParams.get('scope'));
   const response_type = url.searchParams.get('response_type');
   const code_challenge = url.searchParams.get('code_challenge');
   const code_challenge_method = url.searchParams.get('code_challenge_method');
@@ -80,17 +83,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } });
   }
 
-  // Parse scopes to display friendly names
-  const scopes = scope.split(' ');
-  const scopeDescriptions = scopes.map(s => {
-    switch(s) {
-      case 'blog:read': return '✓ Đọc inventory và related posts';
-      case 'policy:read': return '✓ Đọc editorial policy';
-      case 'draft:create': return '✓ Tạo bài viết DRAFT mới';
-      case 'offline_access': return '✓ Truy cập nền (Scheduled Tasks)';
-      default: return `✓ ${s}`;
-    }
-  });
+  const scopeDescriptions = SUPPORTED_OAUTH_SCOPES.map((item) => `✓ ${OAUTH_SCOPE_LABELS[item]}`);
 
   const html = `
     <!DOCTYPE html>
@@ -100,8 +93,8 @@ export async function GET(req: NextRequest) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Cấp quyền ChatGPT</title>
       <style>
-        body { font-family: monospace; background: #0a0a0a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #111; padding: 2rem; border: 1px solid #ff4500; border-radius: 8px; text-align: left; max-width: 450px; width: 100%; }
+        body { font-family: monospace; background: #0a0a0a; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
+        .container { background: #111; padding: 2rem; border: 1px solid #ff4500; border-radius: 8px; text-align: left; max-width: 520px; width: 100%; max-height: 92vh; overflow: auto; }
         h1 { color: #ff4500; font-size: 1.5rem; margin-bottom: 1rem; text-align: center;}
         p { color: #ccc; font-size: 0.9rem; margin-bottom: 1rem; }
         ul { list-style: none; padding: 0; margin-bottom: 2rem; }
@@ -115,11 +108,10 @@ export async function GET(req: NextRequest) {
       <div class="container">
         <h1>Authorize KingDragonHub</h1>
         <p>Ứng dụng <strong>ChatGPT Plugin</strong> muốn truy cập hệ thống KingDragonHub của bạn bằng quyền Admin.</p>
-        <p>Ứng dụng có thể thực hiện:</p>
+        <p>ChatGPT <strong>được phép</strong>:</p>
         <ul>
           ${scopeDescriptions.map(d => `<li>${d}</li>`).join('')}
-          <li class="danger">✗ KHÔNG PUBLISH BÀI</li>
-          <li class="danger">✗ KHÔNG XÓA DỮ LIỆU</li>
+          ${CHATGPT_MCP_PERMISSIONS.deny.map((item) => `<li class="danger">✗ ${escapeHtmlAttribute(item)}</li>`).join('')}
         </ul>
         <form method="POST" action="/api/oauth/authorize">
           <input type="hidden" name="response_type" value="code" />
@@ -151,7 +143,7 @@ export async function POST(req: NextRequest) {
   const client_id = formData.get('client_id') as string;
   const redirect_uri = formData.get('redirect_uri') as string;
   const state = formData.get('state') as string;
-  const scope = normalizeOAuthScope(formData.get('scope') as string | null);
+  const scope = grantConnectorOAuthScope(formData.get('scope') as string | null);
   const code_challenge = formData.get('code_challenge') as string | null;
   const code_challenge_method = formData.get('code_challenge_method') as string | null;
   const resource = (formData.get('resource') as string | null) || getOAuthResource();

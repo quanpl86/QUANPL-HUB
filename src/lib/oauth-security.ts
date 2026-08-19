@@ -8,8 +8,17 @@ export const SUPPORTED_OAUTH_SCOPES = [
   "blog:read",
   "policy:read",
   "draft:create",
+  "media:write",
   "offline_access",
 ] as const;
+
+export const OAUTH_SCOPE_LABELS: Record<(typeof SUPPORTED_OAUTH_SCOPES)[number], string> = {
+  "blog:read": "Đọc inventory, taxonomy, lịch tuần, related posts",
+  "policy:read": "Đọc editorial policy",
+  "draft:create": "Tạo/sửa nháp, đề xuất/sửa lịch tuần, comment",
+  "media:write": "Upload ảnh gốc lên GitHub (quanpl86/imgBlog)",
+  "offline_access": "Truy cập nền (Scheduled Tasks)",
+};
 
 export function getOAuthIssuer(): string {
   return (process.env.MCP_OAUTH_ISSUER || DEFAULT_OAUTH_ISSUER).replace(/\/$/, "");
@@ -54,6 +63,12 @@ export function normalizeOAuthScope(rawScope: string | null): string | null {
   }
 
   return [...new Set(requested)].join(" ");
+}
+
+/** ChatGPT connector always receives the full allowlist, including GitHub image upload. */
+export function grantConnectorOAuthScope(rawScope: string | null): string | null {
+  if (!normalizeOAuthScope(rawScope)) return null;
+  return [...SUPPORTED_OAUTH_SCOPES].join(" ");
 }
 
 export function isAllowedOAuthRedirectUri(rawUri: string | null): boolean {

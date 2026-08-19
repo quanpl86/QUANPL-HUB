@@ -48,13 +48,33 @@ export function buildIdempotentAssetPath(
   return `${basePath}/v7/${slugAssetPart(idempotencyKey)}/${name}.png`;
 }
 
+export function githubAssetRepo(): string {
+  return process.env.GITHUB_ASSET_REPO || "quanpl86/imgBlog";
+}
+
+export function githubAssetBasePath(): string {
+  return (process.env.GITHUB_ASSET_PATH || "public/editor-assets").replace(/\/$/, "");
+}
+
+export function assertGithubAssetPath(filePath: string): string {
+  const base = githubAssetBasePath();
+  const cleaned = filePath.replace(/^\/+/, "").replace(/\\/g, "/");
+  if (!cleaned || cleaned.includes("..")) {
+    throw new Error("GITHUB_PATH_DENIED: path traversal is not allowed");
+  }
+  if (cleaned !== base && !cleaned.startsWith(`${base}/`)) {
+    throw new Error(`GITHUB_PATH_DENIED: ChatGPT may only write under ${base}/`);
+  }
+  return cleaned;
+}
+
 export function buildVersionedAssetPath(
   idempotencyKey: string,
   imageId: string,
   ext: string,
   filename?: string
 ): string {
-  const basePath = (process.env.GITHUB_ASSET_PATH || "public/editor-assets").replace(/\/$/, "");
+  const basePath = githubAssetBasePath();
   const name = slugAssetPart(filename || imageId);
   const revision = randomBytes(4).toString("hex");
   return `${basePath}/v7/${slugAssetPart(idempotencyKey)}/${name}-${revision}.${ext}`;
@@ -303,7 +323,7 @@ async function upsertGithubFile(
   message: string
 ): Promise<{ url: string; path: string; provider: "github" }> {
   const token = process.env.GITHUB_ASSET_TOKEN;
-  const repo = process.env.GITHUB_ASSET_REPO || "quanpl86/imgBlog";
+  const repo = githubAssetRepo();
   const branch = process.env.GITHUB_ASSET_BRANCH || "main";
   if (!token) {
     throw new Error("IMAGE_UPLOAD_FAILED: missing GITHUB_ASSET_TOKEN");
@@ -485,4 +505,57 @@ export async function uploadBlogImage(input: BlogImageGenerateInput) {
     ...input,
     prompt: input.prompt || "Uploaded from ChatGPT Images",
   });
+}
+
+export async function uploadGithubImage(input: {
+  image_base64?: string;
+  source_url?: string;
+  filename?: string;
+  idempotency_key?: string;
+  image_id?: string;
+  alt?: string;
+}): Promise<{
+  url: string;
+  path: string;
+  provider: "github";
+  repo: string;
+  width: number | null;
+  height: number | null;
+  mime_type: string;
+  file_bytes: number;
+  stored_as_received: true;
+}> {
+  if (!input.image_base64 && !input.source_url) {
+    throw new Error("GITHUB_UPLOAD_FAILED: image_base64 or source_url is required");
+  }
+  const bytes = input.image_base64
+    ? decodeImageBase64(input.image_base64)
+    : (await fetchSourceImage(input.source_url as string)).bytes;
+  const sniff = sniffImage(bytes);
+  const kind = /cover/i.test(`${input.image_id || ""} ${input.filename || ""}`) ? "cover" : "inline";
+  if (sniff.ext !== "svg") assertImageQa(bytes, sniff, kind);
+  const filePath = assertGithubAssetPath(
+    buildVersionedAssetPath(
+      input.idempotency_key || "chatgpt-github",
+      input.image_id || "asset",
+      sniff.ext,
+      input.filename
+    )
+  );
+  const uploaded = await upsertGithubFile(
+    filePath,
+    bytes,
+    `ChatGPT upload ${input.image_id || input.filename || "image"}`
+  );
+  return {
+    url: uploaded.url,
+    path: uploaded.path,
+    provider: "github",
+    repo: githubAssetRepo(),
+    width: sniff.width,
+    height: sniff.height,
+    mime_type: sniff.mime,
+    file_bytes: bytes.length,
+    stored_as_received: true,
+  };
 }

@@ -5,7 +5,8 @@ import { getOAuthIssuer, getOAuthResource } from "@/lib/oauth-security";
 import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
 import { normalizeArticlePackage } from "@/lib/content/article-package";
-import { generateAndUploadBlogImage, uploadBlogImage } from "@/lib/content/blog-image";
+import { generateAndUploadBlogImage, uploadBlogImage, uploadGithubImage } from "@/lib/content/blog-image";
+import { CHATGPT_MCP_PERMISSIONS } from "@/lib/content/chatgpt-permissions";
 import { EditorialCalendarRepository } from "@/lib/content/editorial-calendar";
 import { EditorialWeekRepository } from "@/lib/content/editorial-week";
 import { EditorialCommentRepository } from "@/lib/content/editorial-comments";
@@ -53,7 +54,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.16.0",
+    version: "7.17.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -129,9 +130,10 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.16.0",
+          mcp_version: "7.17.0",
           media_tool: "upload_blog_image",
-          media_tools: ["upload_blog_image", "generate_and_upload_blog_image"],
+          media_tools: ["upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
+          permissions: CHATGPT_MCP_PERMISSIONS,
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
             "get_editorial_commands",
@@ -144,6 +146,7 @@ function createKingDragonHubMcpServer() {
             "list_editorial_calendar",
             "list_editorial_articles",
             "get_editorial_draft",
+            "upload_github_image",
             "upload_blog_image",
             "update_blog_draft",
           ],
@@ -195,7 +198,7 @@ function createKingDragonHubMcpServer() {
       inputSchema: z.object({}),
     },
     async () => ({
-      content: [{ type: "text", text: JSON.stringify(EDITORIAL_COMMANDS, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify({ ...EDITORIAL_COMMANDS, permissions: CHATGPT_MCP_PERMISSIONS }, null, 2) }],
     })
   );
 
@@ -535,6 +538,32 @@ function createKingDragonHubMcpServer() {
     );
 
     server.registerTool(
+      "upload_github_image",
+      {
+        description: "ALLOWED. Upload an original image to GitHub repo quanpl86/imgBlog (Hub GITHUB_ASSET_TOKEN). ChatGPT is permitted to do this every session — no separate GitHub login. Stores bytes as-is under public/editor-assets/. Cover ≥1536×864, inline ≥1280×720, PNG preferred. NEVER compress/WebP-downscale first. Then put the returned RAW url on the draft, or pass it as source_url to upload_blog_image for editorial QA/versioning.",
+        inputSchema: z.object({
+          image_base64: z.string().optional().describe("Original PNG preferred. Do not compress to fit the call; if truncated, use source_url."),
+          source_url: z.string().optional().describe("Public HTTPS of the ORIGINAL file. ChatGPT may also use a GitHub connector, then pass that RAW URL here."),
+          filename: z.string().optional(),
+          idempotency_key: z.string().optional(),
+          image_id: z.string().optional().describe("cover or img-01. If it contains cover, cover QA applies."),
+          alt: z.string().optional(),
+        }),
+      },
+      async (input) => {
+        try {
+          const result = await uploadGithubImage(input);
+          return { content: [{ type: "text", text: JSON.stringify(result) }] };
+        } catch (err: unknown) {
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    server.registerTool(
       "upload_blog_image",
       {
         description: "PRIMARY for cover/illustration: ChatGPT creates the image in this chat (Plus, no API key), then this tool stores the ORIGINAL pixels on KingDragonHub. Hub does not recompress. Cover ≥1536×864, inline ≥1280×720, PNG preferred. NEVER resize to 800×450, NEVER convert to small WebP/JPEG to fit the tool call. If image_base64 would be truncated, pass source_url of the original full-resolution HTTPS file (or call generate_and_upload_blog_image so Hub generates a PNG). QA rejects over-compressed files. For rubric/workflow/table with exact Vietnamese text use generate_and_upload_blog_image (SVG).",
@@ -776,7 +805,7 @@ export async function POST(req: Request) {
     return new Response("Unauthorized", {
       status: 401,
       headers: {
-        "WWW-Authenticate": `Bearer resource_metadata="${getOAuthIssuer()}/.well-known/oauth-protected-resource", scope="blog:read policy:read draft:create"`,
+        "WWW-Authenticate": `Bearer resource_metadata="${getOAuthIssuer()}/.well-known/oauth-protected-resource", scope="blog:read policy:read draft:create media:write"`,
       },
     });
   }

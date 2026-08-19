@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertGithubAssetPath,
   assertSafeImagePrompt,
   buildIdempotentAssetPath,
   buildVersionedAssetPath,
+  githubAssetBasePath,
   imageGeneratorChain,
   openaiImageSize,
   slugAssetPart,
@@ -180,4 +182,12 @@ test("accepts a full-size PNG cover", () => {
 test("image generation standard forbids compressing to fit the tool call", () => {
   assert.equal(IMAGE_GENERATION_STANDARD.version, "1.2");
   assert.match(IMAGE_GENERATION_STANDARD.quality.if_base64_too_large, /Do not compress/);
+  assert.match(IMAGE_GENERATION_STANDARD.quality.github_upload, /ALWAYS ALLOWED/);
+});
+
+test("GitHub uploads are locked to the asset path", () => {
+  const base = githubAssetBasePath();
+  assert.equal(assertGithubAssetPath(`${base}/v7/key/cover.png`), `${base}/v7/key/cover.png`);
+  assert.throws(() => assertGithubAssetPath("README.md"), /GITHUB_PATH_DENIED/);
+  assert.throws(() => assertGithubAssetPath(`${base}/../secret.txt`), /GITHUB_PATH_DENIED/);
 });
