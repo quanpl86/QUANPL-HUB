@@ -5,7 +5,7 @@ import { getOAuthIssuer, getOAuthResource } from "@/lib/oauth-security";
 import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
 import { normalizeArticlePackage } from "@/lib/content/article-package";
-import { generateAndUploadBlogImage } from "@/lib/content/blog-image";
+import { generateAndUploadBlogImage, uploadBlogImage } from "@/lib/content/blog-image";
 import { EditorialCalendarRepository } from "@/lib/content/editorial-calendar";
 import { EditorialWeekRepository } from "@/lib/content/editorial-week";
 import { EditorialCommentRepository } from "@/lib/content/editorial-comments";
@@ -53,7 +53,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.14.1",
+    version: "7.15.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -129,8 +129,9 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.14.1",
-          media_tool: "generate_and_upload_blog_image",
+          mcp_version: "7.15.0",
+          media_tool: "upload_blog_image",
+          media_tools: ["upload_blog_image", "generate_and_upload_blog_image"],
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
             "get_editorial_commands",
@@ -143,6 +144,7 @@ function createKingDragonHubMcpServer() {
             "list_editorial_calendar",
             "list_editorial_articles",
             "get_editorial_draft",
+            "upload_blog_image",
             "update_blog_draft",
           ],
           review_desk: "/admin/editorial",
@@ -533,6 +535,48 @@ function createKingDragonHubMcpServer() {
     );
 
     server.registerTool(
+      "upload_blog_image",
+      {
+        description: "PRIMARY for cover/illustration: ChatGPT creates the image in this chat (Plus, no API key), then call this tool to store it on KingDragonHub. Pass image_base64 (data URL or raw base64 of the image you just generated) or source_url if you have a public HTTPS URL. QA + versioned GitHub RAW URL. Does not call OpenAI API. For rubric/workflow/table with exact Vietnamese text use generate_and_upload_blog_image (SVG) instead.",
+        inputSchema: z.object({
+          idempotency_key: z.string(),
+          article_key: z.string().optional(),
+          image_id: z.string().describe("cover or img-01"),
+          purpose: z.enum([
+            "article_cover",
+            "editorial_illustration",
+            "concept_diagram",
+            "workflow",
+            "comparison",
+            "case_study",
+            "explainer",
+            "rubric",
+            "timeline",
+            "table",
+            "framework",
+          ]),
+          alt: z.string().describe("Vietnamese alt describing meaning, not keywords."),
+          prompt: z.string().optional(),
+          aspect: z.enum(["16:9", "4:3", "1:1"]).optional(),
+          filename: z.string().optional(),
+          image_base64: z.string().optional().describe("PNG/JPEG/WebP as data URL or raw base64 from the image you created in this chat."),
+          source_url: z.string().optional().describe("Public HTTPS URL only. ChatGPT file URLs often fail; prefer image_base64."),
+        }),
+      },
+      async (input) => {
+        try {
+          const result = await uploadBlogImage(input);
+          return { content: [{ type: "text", text: JSON.stringify(result) }] };
+        } catch (err: unknown) {
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    server.registerTool(
       "generate_and_upload_blog_image",
       {
         description: "Image Generation Standard v1.1. PRIMARY scene engine is OpenAI ChatGPT Images (gpt-image-1.5 then gpt-image-1), then Gemini, Flux, Stability. 429 skips to the next provider. PRIMARY for rubric/workflow/timeline/table is SVG with exact Vietnamese required_labels — never an image model for 100% accurate long text. Best visual quality: create in ChatGPT chat then pass source_url. Always a new URL. Do not choose FLUX yourself.",
@@ -575,6 +619,7 @@ function createKingDragonHubMcpServer() {
           visual_style: z.string().optional(),
           qa_required: z.boolean().optional(),
           source_url: z.string().optional().describe("HTTPS URL of an image already created in ChatGPT. Server fetches, QAs, and uploads a versioned RAW URL. Skip generation."),
+          image_base64: z.string().optional().describe("Prefer upload_blog_image. Data URL or raw base64 of a ChatGPT-created image."),
         }),
       },
       async (input) => {

@@ -2,13 +2,13 @@ export const IMAGE_GENERATION_STANDARD = {
   version: "1.1",
   rule: "ChatGPT decides WHAT image is needed. MCP Image Router decides WHICH engine. QA decides IF it may enter the draft. OpenAI / ChatGPT Images is PRIMARY for scenes. SVG is PRIMARY for exact Vietnamese structured text.",
   lanes: {
-    chat_direct: "Best visual quality: create with ChatGPT Images in this chat (no MCP). After the user picks images, upload via generate_and_upload_blog_image source_url.",
-    hub_post: "User asks to attach images to the KingDragonHub post. Call generate_and_upload_blog_image. Engine: OpenAI Images first, then Gemini, Flux, Stability. Do not pick FLUX yourself.",
+    chat_direct: "PRIMARY for cover/illustration: create with ChatGPT Images in this chat (Plus, no API key). Then upload_blog_image with image_base64. MCP does not generate those pixels.",
+    hub_post: "Only if the user insists Hub generate without an in-chat image: generate_and_upload_blog_image. Engine OpenAI API→Gemini→Flux→Stability (API billed, not Plus). Do not pick FLUX yourself.",
   },
   primary: {
-    scene: "openai",
+    scene: "chatgpt_images_then_upload_blog_image",
     structured_text: "svg",
-    fallback: ["gemini", "flux", "stability"],
+    server_fallback: ["openai", "gemini", "flux", "stability"],
   },
   routing: {
     article_cover: { engine: "ai_router", text_policy: "no_text", aspect: "16:9" },

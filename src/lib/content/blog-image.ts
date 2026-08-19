@@ -276,6 +276,17 @@ async function fetchGeneratedImage(
   throw new Error(`ALL_IMAGE_PROVIDERS_FAILED: ${JSON.stringify(attempts)}`);
 }
 
+export function decodeImageBase64(raw: string): Buffer {
+  const trimmed = raw.trim();
+  if (!trimmed) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 is empty");
+  const dataUrl = /^data:image\/[a-zA-Z0-9.+-]+;base64,(.+)$/s.exec(trimmed);
+  const b64 = (dataUrl ? dataUrl[1] : trimmed).replace(/\s/g, "");
+  const bytes = Buffer.from(b64, "base64");
+  if (bytes.length < 32) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 is invalid");
+  if (bytes.length > 10 * 1024 * 1024) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 exceeds 10MB");
+  return bytes;
+}
+
 async function fetchSourceImage(url: string): Promise<{ bytes: Buffer; generator: "upload" }> {
   if (!/^https:\/\//i.test(url)) throw new Error("IMAGE_UPLOAD_FAILED: source_url must be https");
   const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
@@ -351,6 +362,7 @@ export type BlogImageGenerateInput = {
   text_accuracy_required?: boolean;
   visual_style?: string;
   source_url?: string;
+  image_base64?: string;
   article_key?: string;
   text_policy?: "no_text" | "exact_text" | "optional_text";
   provider?: "auto" | SceneGenerator;
@@ -363,12 +375,18 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     throw new Error("QUALITY_GATE_FAILED: COVER_ALT_MISSING");
   }
   if (input.prompt) assertSafeImagePrompt(input.prompt);
-  if (!input.source_url) assertInfographicContract(input);
+  if (!input.source_url && !input.image_base64) assertInfographicContract(input);
 
   const aspect = input.aspect || (input.purpose === "article_cover" ? "16:9" : "4:3");
   const requested = ASPECT_SIZE[aspect] || ASPECT_SIZE["16:9"];
   const textPolicy = resolveTextPolicy(input);
-  const infographic = !input.source_url && (textPolicy === "exact_text" || shouldRenderInfographic({ ...input, text_policy: textPolicy }));
+  const uploadedFromChat = Boolean(input.source_url || input.image_base64);
+  const infographic = !uploadedFromChat && (textPolicy === "exact_text" || shouldRenderInfographic({ ...input, text_policy: textPolicy }));
+  if (!uploadedFromChat && !infographic && !input.prompt?.trim()) {
+    throw new Error(
+      "IMAGE_GENERATE_FAILED: pass image_base64 from ChatGPT Images, or source_url, or a prompt, or required_labels for SVG"
+    );
+  }
   const kind = infographic ? "infographic" : input.purpose === "article_cover" ? "cover" : "inline";
   const filename = input.filename
     || (input.article_key ? `${slugAssetPart(input.article_key)}-${slugAssetPart(input.purpose)}-${slugAssetPart(input.image_id)}` : undefined);
@@ -376,11 +394,15 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   let bytes: Buffer;
   let renderer: "svg" | SceneGenerator | "upload" = "flux";
   let attempts: ProviderAttempt[] = [];
-  if (input.source_url) {
+  if (input.image_base64) {
+    bytes = decodeImageBase64(input.image_base64);
+    renderer = "upload";
+    attempts = [{ provider: "chatgpt_images", result: "success" }];
+  } else if (input.source_url) {
     const uploadedSource = await fetchSourceImage(input.source_url);
     bytes = uploadedSource.bytes;
     renderer = "upload";
-    attempts = [{ provider: "upload", result: "success" }];
+    attempts = [{ provider: "chatgpt_images", result: "success" }];
   } else if (infographic) {
     const layout = input.layout_spec || (
       input.purpose === "rubric" || input.purpose === "table"
@@ -449,4 +471,14 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     fallback_count: Math.max(0, attempts.filter((item) => item.result !== "success").length),
     qa_gates: gates,
   };
+}
+
+export async function uploadBlogImage(input: BlogImageGenerateInput) {
+  if (!input.image_base64 && !input.source_url) {
+    throw new Error("IMAGE_UPLOAD_FAILED: image_base64 or source_url is required. Create the image in ChatGPT first, then upload.");
+  }
+  return generateAndUploadBlogImage({
+    ...input,
+    prompt: input.prompt || "Uploaded from ChatGPT Images",
+  });
 }

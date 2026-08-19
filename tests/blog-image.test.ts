@@ -7,6 +7,7 @@ import {
   imageGeneratorChain,
   openaiImageSize,
   slugAssetPart,
+  decodeImageBase64,
 } from "../src/lib/content/blog-image.ts";
 import {
   assertInfographicContract,
@@ -58,6 +59,15 @@ test("image generator chain is OpenAI then Gemini then Flux then Stability", () 
 test("image generator chain without paid keys still has flux", () => {
   const chain = imageGeneratorChain({} as NodeJS.ProcessEnv);
   assert.deepEqual(chain, ["flux"]);
+});
+
+test("decodeImageBase64 accepts a data URL", () => {
+  const png =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  const fromRaw = decodeImageBase64(png);
+  const fromData = decodeImageBase64(`data:image/png;base64,${png}`);
+  assert.equal(fromRaw.length, fromData.length);
+  assert.ok(fromRaw.length > 32);
 });
 
 test("OpenAI image size maps Hub aspects", () => {
