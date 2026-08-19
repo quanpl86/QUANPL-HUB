@@ -188,9 +188,11 @@ test("accepts a full-size PNG cover", () => {
 });
 
 test("image generation standard forbids compressing to fit the tool call", () => {
-  assert.equal(IMAGE_GENERATION_STANDARD.version, "1.4");
-  assert.match(IMAGE_GENERATION_STANDARD.quality.if_base64_too_large, /Do not compress/);
-  assert.match(IMAGE_GENERATION_STANDARD.quality.github_upload, /ALWAYS ALLOWED/);
+  assert.equal(IMAGE_GENERATION_STANDARD.version, "2.0");
+  assert.equal(IMAGE_GENERATION_STANDARD.hard_rule, true);
+  assert.equal(IMAGE_GENERATION_STANDARD.no_openai_api_key, true);
+  assert.match(IMAGE_GENERATION_STANDARD.lanes.A_scene, /ChatGPT Images/);
+  assert.match(IMAGE_GENERATION_STANDARD.lanes.B_svg, /SVG/);
 });
 
 test("GitHub uploads are locked to the asset path", () => {

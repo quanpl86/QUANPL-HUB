@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.24.0",
+    version: "7.25.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -123,7 +123,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Contract canary + short-command map. Call first every session. Covers/scenes: ChatGPT Images IN THIS CHAT (one at a time) then start_image_upload POST put_url. generate_and_upload_blog_image is SVG-only. Never Hub OpenAI API for Plus covers.",
+      description: "Call first every session. HARD image rule: ChatGPT Images in this chat (no API key) → start_image_upload → POST original PNG bytes to put_url. generate_and_upload_blog_image is SVG-only. Never Hub OpenAI API, never MCP image_base64, never FLUX.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -131,10 +131,13 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.24.0",
+          mcp_version: "7.25.0",
           image_pipeline: {
-            scenes: "ChatGPT Images IN THIS CHAT, one at a time. Then start_image_upload and HTTP POST original PNG to put_url. Never generate_and_upload for cover/scene. Never Hub OpenAI API. Never image_base64. If Images tool is missing: stop, ask the user to enable Image generation on the GPT or to type «Tạo cover 16:9: …» / attach PNG, then upload.",
-            svg: "generate_and_upload_blog_image only for workflow/rubric/timeline/table/comparison with required_labels.",
+            hard_rule: true,
+            no_openai_api_key: true,
+            lane_a: "ChatGPT Images in this chat → original PNG bytes → start_image_upload → HTTP POST put_url → GitHub RAW. Sequence: cover, img-01, img-02, img-03. Never parallel.",
+            lane_b: "generate_and_upload_blog_image SVG only (workflow/rubric/timeline/table/comparison + required_labels).",
+            never: ["Hub OpenAI Images API", "MCP image_base64", "FLUX", "create_blog_draft before 1 cover + 3 body RAW URLs"],
             body_min: ARTICLE_INLINE_IMAGE_MIN,
             cover_min: "1536x864",
           },
@@ -550,7 +553,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "start_image_upload",
       {
-        description: "REQUIRED for ChatGPT Images created in this chat. MCP image_base64 is truncated by the ChatGPT connector — never send the original PNG through MCP. This tool returns put_url + Authorization. HTTP POST the original image BYTES (not base64) to put_url. Hub stores on GitHub without recompressing. Cover ≥1536×864.",
+        description: "HARD step after each ChatGPT Image in this chat. Returns put_url + Authorization. HTTP POST original PNG BYTES (not base64) to put_url. Hub stores on GitHub as-is. Do this for cover then img-01, img-02, img-03 one at a time. Never send image_base64 through MCP.",
         inputSchema: z.object({
           idempotency_key: z.string(),
           article_key: z.string().optional(),
@@ -658,27 +661,23 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "SVG ONLY for workflow/rubric/timeline/table/comparison with exact Vietnamese required_labels. Do NOT use this to generate covers or scene illustrations. Hub has no ChatGPT Plus Images; calling this for article_cover hits OpenAI API (often ExceptionGroup) or fails QA. For covers/scenes: create with ChatGPT Images IN THIS CHAT one at a time, then start_image_upload and POST PNG bytes to put_url.",
+        description: "LANE B SVG ONLY: workflow/rubric/timeline/table/comparison/framework with exact Vietnamese required_labels. Server rejects article_cover and scene purposes. Covers/scenes are LANE A: ChatGPT Images in this chat → start_image_upload → POST PNG bytes.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           article_key: z.string().optional().describe("Article slug used in the filename."),
           image_id: z.string().describe("cover or an inline id such as img-01"),
           purpose: z.enum([
-            "article_cover",
-            "editorial_illustration",
-            "concept_diagram",
             "workflow",
             "comparison",
-            "case_study",
             "explainer",
             "rubric",
             "timeline",
             "table",
             "framework",
-          ]),
-          provider: z.enum(["auto", "openai", "gemini", "flux", "stability"]).optional().describe("Leave auto. MCP routes."),
+          ]).describe("SVG lane only. Not article_cover."),
+          provider: z.enum(["auto", "openai", "gemini", "flux", "stability"]).optional().describe("Ignored for SVG. Do not set flux."),
           fallback: z.boolean().optional(),
-          prompt: z.string().describe("English scene prompt for covers/illustrations. Infographic labels go in required_labels, not in this prompt."),
+          prompt: z.string().describe("Visual goal for the SVG. Exact Vietnamese strings go in required_labels, not here."),
           alt: z.string().describe("Vietnamese alt: meaning of the image, not keyword stuffing."),
           aspect: z.enum(["16:9", "4:3", "1:1"]).optional(),
           filename: z.string().optional(),

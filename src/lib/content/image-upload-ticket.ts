@@ -35,8 +35,9 @@ export function createImageUploadSession(meta: ImageUploadTicketMeta) {
     content_type: "image/png",
     max_bytes: IMAGE_UPLOAD_MAX_BYTES,
     expires_in_sec: IMAGE_UPLOAD_TICKET_TTL_MS / 1000,
+    hard_rule: "ChatGPT Images PNG bytes → HTTP POST put_url. Never MCP image_base64. Never Hub OpenAI API.",
     instruction:
-      "ChatGPT MCP truncates image_base64. Do NOT send pixels through MCP. POST the original PNG/JPEG bytes (not base64) to put_url with the Authorization header. Python: urllib.request.Request(put_url, data=open(path,'rb').read(), method='POST', headers={'Authorization': authorization, 'Content-Type': 'image/png'}).",
+      "POST the original PNG bytes (not base64) to put_url with Authorization. Python: urllib.request.Request(put_url, data=open(path,'rb').read(), method='POST', headers={'Authorization': authorization, 'Content-Type': 'image/png'}).",
   };
 }
 
