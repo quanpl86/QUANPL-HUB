@@ -382,7 +382,8 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   const textPolicy = resolveTextPolicy(input);
   const uploadedFromChat = Boolean(input.source_url || input.image_base64);
   const infographic = !uploadedFromChat && (textPolicy === "exact_text" || shouldRenderInfographic({ ...input, text_policy: textPolicy }));
-  if (!uploadedFromChat && !infographic && !input.prompt?.trim()) {
+  const generatePrompt = input.prompt?.trim() ?? "";
+  if (!uploadedFromChat && !infographic && !generatePrompt) {
     throw new Error(
       "IMAGE_GENERATE_FAILED: pass image_base64 from ChatGPT Images, or source_url, or a prompt, or required_labels for SVG"
     );
@@ -421,7 +422,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     renderer = "svg";
     attempts = [{ provider: "svg", result: "success" }];
   } else {
-    const generated = await fetchGeneratedImage(input.prompt, aspect, input.purpose);
+    const generated = await fetchGeneratedImage(generatePrompt, aspect, input.purpose);
     bytes = generated.bytes;
     renderer = generated.generator;
     attempts = generated.attempts;
@@ -432,7 +433,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     assertImageQa(bytes, sniff, kind);
   } catch (error) {
     if (renderer === "svg" || renderer === "upload") throw error;
-    const retry = await fetchGeneratedImage(`${input.prompt}, ultra sharp, high definition`, aspect, input.purpose);
+    const retry = await fetchGeneratedImage(`${generatePrompt}, ultra sharp, high definition`, aspect, input.purpose);
     bytes = retry.bytes;
     renderer = retry.generator;
     attempts = [...attempts, ...retry.attempts];
