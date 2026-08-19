@@ -348,7 +348,7 @@ export type BlogImageGenerateInput = {
   idempotency_key: string;
   image_id: string;
   purpose: string;
-  prompt: string;
+  prompt?: string;
   alt: string;
   aspect?: string;
   filename?: string;
