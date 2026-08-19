@@ -60,12 +60,16 @@ export function buildVersionedAssetPath(
   return `${basePath}/v7/${slugAssetPart(idempotencyKey)}/${name}-${revision}.${ext}`;
 }
 
-function withEditorialSuffix(prompt: string, purpose: string): string {
+function withEditorialSuffix(prompt: string, purpose: string, extraLabels?: string[]): string {
   const base = prompt.trim();
-  if (purpose === "article_cover") {
+  const labels = (extraLabels || []).map((item) => item.trim()).filter(Boolean);
+  const labelBlock = labels.length
+    ? ` If any text appears, it MUST be exactly these Vietnamese strings and nothing else: ${labels.map((item) => `"${item}"`).join("; ")}.`
+    : "";
+  if (purpose === "article_cover" || !labels.length) {
     return `${base}, sharp high-resolution educational editorial illustration, crisp edges, no photorealistic children, no readable text, no watermark, no gibberish letters`;
   }
-  return `${base}, sharp high-resolution educational editorial illustration, crisp detail, no photorealistic children, no watermark, no gibberish fake text`;
+  return `${base}, sharp high-resolution educational editorial illustration, crisp detail, no photorealistic children, no watermark, no gibberish fake text.${labelBlock}`;
 }
 
 export function openaiImageSize(aspect?: string): "1536x1024" | "1024x1024" | "1024x1536" {
@@ -96,54 +100,68 @@ export function preferredImageGenerator(): SceneGenerator {
 async function fetchOpenAiImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error("IMAGE_GENERATE_FAILED: missing OPENAI_API_KEY");
-  const model = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
-  const body = {
-    model,
-    prompt: withEditorialSuffix(prompt, purpose),
-    n: 1,
-    size: openaiImageSize(aspect),
-    quality: "high",
-    output_format: "png",
-  };
-  const run = async () => {
-    const response = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(90000),
-    });
-    if (response.status === 429) {
-      throw new Error("IMAGE_GENERATE_FAILED: 429 openai rate limit");
-    }
-    const json = await response.json() as {
-      error?: { message?: string };
-      data?: Array<{ b64_json?: string; url?: string }>;
+  const preferred = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5";
+  const models = [...new Set([preferred, "gpt-image-1"])];
+  let lastError = "IMAGE_GENERATE_FAILED: openai";
+  for (const model of models) {
+    const body = {
+      model,
+      prompt: withEditorialSuffix(prompt, purpose),
+      n: 1,
+      size: openaiImageSize(aspect),
+      quality: "high",
+      output_format: "png",
     };
-    if (!response.ok) {
-      throw new Error(`IMAGE_GENERATE_FAILED: openai ${response.status} ${json.error?.message || ""}`.trim());
+    const run = async () => {
+      const response = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(90000),
+      });
+      if (response.status === 429) {
+        throw new Error("IMAGE_GENERATE_FAILED: 429 openai rate limit");
+      }
+      const json = await response.json() as {
+        error?: { message?: string };
+        data?: Array<{ b64_json?: string; url?: string }>;
+      };
+      if (!response.ok) {
+        throw new Error(`IMAGE_GENERATE_FAILED: openai ${response.status} ${json.error?.message || ""}`.trim());
+      }
+      const item = json.data?.[0];
+      if (item?.b64_json) {
+        return { bytes: Buffer.from(item.b64_json, "base64"), mimeType: "image/png" as const };
+      }
+      if (item?.url) {
+        const download = await fetch(item.url, { signal: AbortSignal.timeout(30000) });
+        if (!download.ok) throw new Error(`IMAGE_GENERATE_FAILED: openai image download ${download.status}`);
+        return {
+          bytes: Buffer.from(await download.arrayBuffer()),
+          mimeType: download.headers.get("content-type") || "image/png",
+        };
+      }
+      throw new Error("IMAGE_GENERATE_FAILED: openai returned no image");
+    };
+    try {
+      return await run();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      lastError = message;
+      if (isRateLimitImageError(message)) throw error;
+      if (isTransientImageError(message)) {
+        try {
+          return await run();
+        } catch (retryError) {
+          lastError = retryError instanceof Error ? retryError.message : String(retryError);
+        }
+      }
     }
-    const item = json.data?.[0];
-    if (item?.b64_json) {
-      const bytes = Buffer.from(item.b64_json, "base64");
-      return { bytes, mimeType: "image/png" };
-    }
-    if (item?.url) {
-      const download = await fetch(item.url, { signal: AbortSignal.timeout(30000) });
-      if (!download.ok) throw new Error(`IMAGE_GENERATE_FAILED: openai image download ${download.status}`);
-      return { bytes: Buffer.from(await download.arrayBuffer()), mimeType: download.headers.get("content-type") || "image/png" };
-    }
-    throw new Error("IMAGE_GENERATE_FAILED: openai returned no image");
-  };
-  try {
-    return await run();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    if (isRateLimitImageError(message) || !isTransientImageError(message)) throw error;
-    return run();
   }
+  throw new Error(lastError);
 }
 
 function geminiAspect(aspect?: string): string {
@@ -350,7 +368,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   const aspect = input.aspect || (input.purpose === "article_cover" ? "16:9" : "4:3");
   const requested = ASPECT_SIZE[aspect] || ASPECT_SIZE["16:9"];
   const textPolicy = resolveTextPolicy(input);
-  const infographic = !input.source_url && (textPolicy === "exact_text" || shouldRenderInfographic(input));
+  const infographic = !input.source_url && (textPolicy === "exact_text" || shouldRenderInfographic({ ...input, text_policy: textPolicy }));
   const kind = infographic ? "infographic" : input.purpose === "article_cover" ? "cover" : "inline";
   const filename = input.filename
     || (input.article_key ? `${slugAssetPart(input.article_key)}-${slugAssetPart(input.purpose)}-${slugAssetPart(input.image_id)}` : undefined);

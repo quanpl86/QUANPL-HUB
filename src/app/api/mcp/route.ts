@@ -53,7 +53,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.14.0",
+    version: "7.14.1",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -129,7 +129,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.14.0",
+          mcp_version: "7.14.1",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -535,7 +535,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Image Generation Standard v1. You describe the asset; MCP picks the engine. Cover/editorial_illustration: auto OpenAI→Gemini→Flux→Stability (429 skips to next provider, no same-provider 429 loop). workflow/rubric/comparison/timeline/table: SVG exact Vietnamese required_labels. source_url uploads a ChatGPT-direct image. Always a new URL. Returns provider_attempts. Do not choose FLUX yourself.",
+        description: "Image Generation Standard v1.1. PRIMARY scene engine is OpenAI ChatGPT Images (gpt-image-1.5 then gpt-image-1), then Gemini, Flux, Stability. 429 skips to the next provider. PRIMARY for rubric/workflow/timeline/table is SVG with exact Vietnamese required_labels — never an image model for 100% accurate long text. Best visual quality: create in ChatGPT chat then pass source_url. Always a new URL. Do not choose FLUX yourself.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           article_key: z.string().optional().describe("Article slug used in the filename."),

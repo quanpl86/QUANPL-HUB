@@ -67,8 +67,8 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
   {
     title: "8. Ảnh / danh mục",
     items: [
-      { text: "Tạo trực tiếp cho tôi 1 cover + 3 ảnh body, chưa cần đưa vào KingDragonHub.", note: "Ảnh đẹp, kiểm trước. Xong mới: đưa vào bài qua generate_and_upload_blog_image source_url." },
-      { text: "Tạo ảnh cho bài post qua KingDragonHub. Cover/minh họa không chữ: auto provider (OpenAI→Gemini→FLUX→Stability). Ảnh có chữ: SVG + required_labels." },
+      { text: "Tạo trực tiếp cho tôi 1 cover + 3 ảnh body bằng ChatGPT Images, chưa cần đưa vào KingDragonHub.", note: "Ưu tiên chất lượng. Xong: đưa vào bài qua source_url." },
+      { text: "Tạo ảnh cho bài post qua KingDragonHub. Cover/minh họa: OpenAI Images (ChatGPT) primary, fallback Gemini/FLUX. Rubric/workflow/bảng: SVG required_labels." },
       { text: "Tạo 1 cover 16:9, minh họa giáo dục, sạch, rõ, không chữ, tránh mờ và rối." },
       { text: "Ảnh quy trình/bảng tiêu chí: required_labels tiếng Việt, layout_spec rubric_matrix hoặc workflow_steps. Đừng bảo model vẽ chữ." },
       { text: "Gắn danh mục có sẵn, đừng tạo danh mục mới." },

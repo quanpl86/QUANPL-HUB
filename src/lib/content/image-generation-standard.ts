@@ -1,9 +1,14 @@
 export const IMAGE_GENERATION_STANDARD = {
-  version: "1.0",
-  rule: "ChatGPT decides WHAT image is needed. MCP Image Router decides WHICH engine. QA decides IF it may enter the draft.",
+  version: "1.1",
+  rule: "ChatGPT decides WHAT image is needed. MCP Image Router decides WHICH engine. QA decides IF it may enter the draft. OpenAI / ChatGPT Images is PRIMARY for scenes. SVG is PRIMARY for exact Vietnamese structured text.",
   lanes: {
-    chat_direct: "User asks to create images in ChatGPT first. Optional later: generate_and_upload_blog_image source_url.",
-    hub_post: "User asks to create images for the post. Call generate_and_upload_blog_image. Do not pick FLUX yourself.",
+    chat_direct: "Best visual quality: create with ChatGPT Images in this chat (no MCP). After the user picks images, upload via generate_and_upload_blog_image source_url.",
+    hub_post: "User asks to attach images to the KingDragonHub post. Call generate_and_upload_blog_image. Engine: OpenAI Images first, then Gemini, Flux, Stability. Do not pick FLUX yourself.",
+  },
+  primary: {
+    scene: "openai",
+    structured_text: "svg",
+    fallback: ["gemini", "flux", "stability"],
   },
   routing: {
     article_cover: { engine: "ai_router", text_policy: "no_text", aspect: "16:9" },
@@ -31,10 +36,12 @@ export const IMAGE_GENERATION_STANDARD = {
     split: ["concept", "practice", "application"],
   },
   agent_must: [
-    "Describe the asset. Do not choose FLUX/OpenAI/Gemini yourself.",
+    "If the user wants the nicest cover/illustration: create with ChatGPT Images in this chat first, then source_url into Hub.",
+    "If the user wants Hub to generate for the post: call generate_and_upload_blog_image and let MCP pick OpenAI first. Do not choose FLUX.",
     "Cover: 16:9, no text.",
     "Body illustrations: 2–4 distinct scenes, not 3 similar clipboard shots.",
-    "Workflow/rubric/table: required_labels exact Vietnamese + layout_spec. SVG renders them unchanged.",
+    "Workflow/rubric/table/timeline: required_labels exact Vietnamese + layout_spec. SVG only — never an image model.",
+    "Explainer with a few short labels may use OpenAI if text_policy=optional_text; long exact matrices stay SVG.",
     "On fix_cover / fix_inline_images: new URLs only, then update_blog_draft.",
     "Do not update_blog_draft until generate returns qa_gates PASS.",
   ],

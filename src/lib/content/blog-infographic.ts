@@ -59,7 +59,9 @@ export function shouldRenderInfographic(input: {
   required_labels?: string[];
   layout_spec?: InfographicLayout;
   text_accuracy_required?: boolean;
+  text_policy?: string;
 }): boolean {
+  if (input.text_policy === "optional_text" || input.text_policy === "no_text") return false;
   const labels = input.required_labels?.filter(Boolean) || [];
   const type = input.layout_spec?.type;
   if (type === "scene") return false;
