@@ -58,7 +58,7 @@ export class EditorialArticlesRepository {
         scheduled_time: slot.scheduled_time,
         last_seo_score: slot.last_seo_score,
         can_update: status === "revise" || status === "review",
-        mode: slot.week_id ? "week" : "free_write",
+        mode: (slot.week_id ? "week" : "free_write") as EditorialArticleSummary["mode"],
       };
     });
     return {
