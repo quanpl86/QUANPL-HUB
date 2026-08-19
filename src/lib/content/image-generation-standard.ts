@@ -16,7 +16,7 @@ export const IMAGE_GENERATION_STANDARD = {
     ],
   },
   lanes: {
-    A_scene: "HARD for cover / editorial_illustration / concept_diagram / case_study: ChatGPT Images in current chat, one at a time, then start_image_upload + POST binary PNG to put_url.",
+    A_scene: "HARD for cover / editorial_illustration / concept_diagram / case_study: ChatGPT Images in current chat, one at a time, then upload_generated_image_file.",
     B_svg: "HARD for workflow / rubric / timeline / table / comparison / framework with exact Vietnamese labels: generate_and_upload_blog_image SVG only.",
   },
   primary: {
@@ -41,10 +41,10 @@ export const IMAGE_GENERATION_STANDARD = {
   body_plan: {
     short: 3,
     standard: 3,
-    deep: "3-4",
+    deep: 3,
     split: ["concept", "practice", "application"],
-    min_inline: 3,
-    cover: 1,
+    inline_exact: 3,
+    cover_exact: 1,
   },
   when_writing_article: {
     automatic: true,

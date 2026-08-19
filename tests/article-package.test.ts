@@ -182,7 +182,8 @@ test("A10 missing cover or fewer than 3 inline URLs is rejected", () => {
     },
     inline_images: threeInlineImages().slice(0, 2),
   })));
-  assert.ok(oneInline.errors.some((issue) => issue.code === "INLINE_IMAGE_MIN"));
+  assert.ok(oneInline.errors.some((issue) => issue.code === "IMAGE_SET_INCOMPLETE"));
+  assert.match(oneInline.errors.find((issue) => issue.code === "IMAGE_SET_INCOMPLETE")?.message || "", /img-03/);
 });
 
 function threeInlineImages() {
@@ -214,8 +215,8 @@ function threeInlineImages() {
   ];
 }
 
-test("more than 4 inline images is rejected", () => {
-  const images = ["a", "b", "c", "d", "e"].map((id) => ({
+test("more than 3 inline images is rejected", () => {
+  const images = ["a", "b", "c", "d"].map((id) => ({
     id,
     purpose: "explainer",
     prompt: "p",

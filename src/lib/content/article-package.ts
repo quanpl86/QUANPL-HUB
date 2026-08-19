@@ -1,6 +1,9 @@
+import { ARTICLE_ASSET_HARD_RULE } from "./article-asset-rule.ts";
+
 export const ARTICLE_PACKAGE_SCHEMA_VERSION = "article-package/7.0";
-export const ARTICLE_INLINE_IMAGE_MIN = 3;
-export const ARTICLE_INLINE_IMAGE_MAX = 4;
+export const ARTICLE_INLINE_IMAGE_MIN = ARTICLE_ASSET_HARD_RULE.inline_exact;
+export const ARTICLE_INLINE_IMAGE_MAX = ARTICLE_ASSET_HARD_RULE.inline_exact;
+export const ARTICLE_REQUIRED_INLINE_IDS = ARTICLE_ASSET_HARD_RULE.required_inline_ids;
 
 export const INLINE_IMAGE_PURPOSES = [
   "concept_diagram",
@@ -349,10 +352,25 @@ export function validateArticlePackage(
   }
 
   const readyInline = pkg.inline_images.filter((image) => hasPersistentImageUrl(image.url));
-  if (readyInline.length < ARTICLE_INLINE_IMAGE_MIN) {
+  const missingIds = ARTICLE_REQUIRED_INLINE_IDS.filter((id) => {
+    const match = pkg.inline_images.find((image) => image.id === id);
+    return !match || !hasPersistentImageUrl(match.url);
+  });
+  const coverReady = hasPersistentImageUrl(pkg.featured_image?.url);
+  if (
+    !coverReady
+    || readyInline.length !== ARTICLE_INLINE_IMAGE_MIN
+    || pkg.inline_images.length !== ARTICLE_INLINE_IMAGE_MIN
+    || missingIds.length
+  ) {
     errors.push({
-      code: "INLINE_IMAGE_MIN",
-      message: `At least ${ARTICLE_INLINE_IMAGE_MIN} inline images with persistent GitHub RAW URLs are required (cover is separate)`,
+      code: "IMAGE_SET_INCOMPLETE",
+      message: JSON.stringify({
+        error: "IMAGE_SET_INCOMPLETE",
+        expected: { cover: 1, inline: ARTICLE_INLINE_IMAGE_MIN, ids: [...ARTICLE_ASSET_HARD_RULE.required_ids] },
+        received: { cover: coverReady ? 1 : 0, inline: readyInline.length },
+        missing: [...(coverReady ? [] : ["cover"]), ...missingIds],
+      }),
     });
   }
 

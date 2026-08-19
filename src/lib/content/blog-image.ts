@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import {
   assertInfographicContract,
   renderInfographicSvg,
@@ -462,7 +462,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   const generatePrompt = input.prompt?.trim() ?? "";
   if (!uploadedFromChat && !infographic) {
     throw new Error(
-      "IMAGE_GENERATE_FAILED: SCENE_MUST_BE_CHATGPT_IMAGES. Hub does not generate covers/scenes (no Plus Images API; Flux is 1024×576). Create ONE image in this chat with ChatGPT Images, then start_image_upload and POST the original PNG to put_url. Do not retry generate_and_upload_blog_image for article_cover."
+      "IMAGE_GENERATE_FAILED: SCENE_MUST_BE_CHATGPT_IMAGES. Create the image with ChatGPT Images in this chat, then upload_generated_image_file. Do not call generate_and_upload_blog_image for article_cover."
     );
   }
   const kind = infographic ? "infographic" : input.purpose === "article_cover" ? "cover" : "inline";
@@ -547,6 +547,8 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     height: sniff.height || requested.height,
     mime_type: sniff.mime,
     file_bytes: bytes.length,
+    sha256: createHash("sha256").update(bytes).digest("hex"),
+    raw_url: uploaded.url,
     stored_as_received: true,
     path: uploaded.path,
     provider: uploaded.provider,
@@ -561,10 +563,20 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
 
 export async function uploadBlogImage(input: BlogImageGenerateInput) {
   if (!input.image_base64 && !input.source_url && !input.image_bytes) {
-    throw new Error("IMAGE_UPLOAD_FAILED: image_base64, image_bytes, or source_url is required. Create the image in ChatGPT first, then start_image_upload.");
+    throw new Error("IMAGE_UPLOAD_FAILED: image_base64, image_bytes, or source_url is required. Create the image in ChatGPT first, then upload_generated_image_file.");
   }
   return generateAndUploadBlogImage({
     ...input,
+    prompt: input.prompt || "Uploaded from ChatGPT Images",
+  });
+}
+
+export async function uploadGeneratedImageFile(input: BlogImageGenerateInput & { file?: string; file_url?: string }) {
+  const fromFile = input.file?.trim() ? decodeImageBase64(input.file) : undefined;
+  return uploadBlogImage({
+    ...input,
+    image_bytes: input.image_bytes || fromFile,
+    source_url: input.file_url || input.source_url,
     prompt: input.prompt || "Uploaded from ChatGPT Images",
   });
 }

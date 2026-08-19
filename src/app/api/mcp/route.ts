@@ -4,8 +4,9 @@ import { verifyToken } from "@/lib/oauth-utils";
 import { getOAuthIssuer, getOAuthResource } from "@/lib/oauth-security";
 import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
-import { ARTICLE_INLINE_IMAGE_MAX, ARTICLE_INLINE_IMAGE_MIN, normalizeArticlePackage } from "@/lib/content/article-package";
-import { flattenImageError, generateAndUploadBlogImage, uploadBlogImage, uploadGithubImage } from "@/lib/content/blog-image";
+import { ARTICLE_INLINE_IMAGE_MIN, normalizeArticlePackage } from "@/lib/content/article-package";
+import { ARTICLE_ASSET_HARD_RULE } from "@/lib/content/article-asset-rule";
+import { flattenImageError, generateAndUploadBlogImage, uploadBlogImage, uploadGeneratedImageFile, uploadGithubImage } from "@/lib/content/blog-image";
 import { createImageUploadSession } from "@/lib/content/image-upload-ticket";
 import { CHATGPT_MCP_PERMISSIONS } from "@/lib/content/chatgpt-permissions";
 import { EditorialCalendarRepository } from "@/lib/content/editorial-calendar";
@@ -55,7 +56,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.28.0",
+    version: "7.29.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -131,22 +132,25 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.28.0",
+          mcp_version: "7.29.0",
+          asset_policy: ARTICLE_ASSET_HARD_RULE.asset_policy,
+          article_asset_hard_rule: ARTICLE_ASSET_HARD_RULE.text,
           image_pipeline: {
             hard_rule: true,
             no_openai_api_key: true,
             autonomous: true,
             one_user_message: true,
-            lane_a: "From the write request, run in this session without asking the user again: image_gen cover → start_image_upload → POST PNG → img-01 → upload → img-02 → upload → img-03 → upload → draft.",
-            lane_b: "generate_and_upload_blog_image SVG only (workflow/rubric/timeline/table/comparison + required_labels).",
-            if_no_image_gen: "image_gen is NOT an MCP tool. ChatGPT Images is native in this chat. Do not stop because image_gen is missing from the MCP list. If you can create an image here, run all of Lane A now. Stop only if in-chat image creation actually fails.",
-            never: ["Hub OpenAI Images API", "MCP image_base64", "FLUX", "create_blog_draft before 1 cover + 3 body RAW URLs"],
-            body_min: ARTICLE_INLINE_IMAGE_MIN,
-            cover_min: "1536x864",
+            cover_exact: 1,
+            inline_exact: 3,
+            required_ids: ARTICLE_ASSET_HARD_RULE.required_ids,
+            lane_a: "Native ChatGPT Images (not MCP) → upload_generated_image_file with the generated file. Sequence cover, img-01, img-02, img-03. Never parallel. Never extra user prompts.",
+            lane_b: "generate_and_upload_blog_image SVG only.",
+            if_no_image_gen: "image_gen is NOT an MCP tool. If you can draw in this chat, finish Lane A now.",
+            never: ARTICLE_ASSET_HARD_RULE.never,
           },
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
-          media_tool: "start_image_upload",
-          media_tools: ["start_image_upload", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
+          media_tool: "upload_generated_image_file",
+          media_tools: ["upload_generated_image_file", "start_image_upload", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
           permissions: CHATGPT_MCP_PERMISSIONS,
           taxonomy_tool: "get_blog_categories",
           command_tool: "get_editorial_commands",
@@ -163,6 +167,7 @@ function createKingDragonHubMcpServer() {
             "list_editorial_calendar",
             "list_editorial_articles",
             "get_editorial_draft",
+            "upload_generated_image_file",
             "start_image_upload",
             "upload_github_image",
             "upload_blog_image",
@@ -196,8 +201,8 @@ function createKingDragonHubMcpServer() {
           },
           inline_images: {
             type: "array",
-            min_items_with_url: ARTICLE_INLINE_IMAGE_MIN,
-            max_items: ARTICLE_INLINE_IMAGE_MAX,
+            exact_items_with_url: ARTICLE_INLINE_IMAGE_MIN,
+            required_ids: ["img-01", "img-02", "img-03"],
             item_required: ["id", "purpose", "prompt", "alt", "url"],
             url_required: true,
           },
@@ -554,6 +559,44 @@ function createKingDragonHubMcpServer() {
     );
 
     server.registerTool(
+      "upload_generated_image_file",
+      {
+        description: "PRIMARY Lane A upload. After each native ChatGPT Image, pass that generated PNG as `file` (or file_url). Hub QAs and stores original bytes on GitHub. Returns raw_url, width, height, sha256. Do NOT send huge image_base64 through other MCP tools. Retry the SAME image_id on failure. Sequence: cover, img-01, img-02, img-03.",
+        inputSchema: z.object({
+          file: z.string().optional().describe("The PNG just created by ChatGPT Images: data URL, raw base64, or the file the client attaches."),
+          file_url: z.string().optional().describe("HTTPS URL of the original generated file if the client exposes one."),
+          idempotency_key: z.string(),
+          article_key: z.string().optional(),
+          image_id: z.string().describe("cover, img-01, img-02, or img-03"),
+          purpose: z.enum([
+            "article_cover",
+            "editorial_illustration",
+            "concept_diagram",
+            "case_study",
+            "explainer",
+            "workflow",
+            "comparison",
+          ]),
+          alt: z.string(),
+          aspect: z.enum(["16:9", "4:3", "1:1"]).optional(),
+          filename: z.string().optional(),
+          prompt: z.string().optional(),
+        }),
+      },
+      async (input) => {
+        try {
+          const result = await uploadGeneratedImageFile(input);
+          return { content: [{ type: "text", text: JSON.stringify(result) }] };
+        } catch (err: unknown) {
+          return {
+            content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }],
+            isError: true,
+          };
+        }
+      }
+    );
+
+    server.registerTool(
       "start_image_upload",
       {
         description: "HARD step after each ChatGPT Image in this chat. Returns put_url + Authorization. HTTP POST original PNG BYTES (not base64) to put_url. Hub stores on GitHub as-is. Do this for cover then img-01, img-02, img-03 one at a time. Never send image_base64 through MCP.",
@@ -719,7 +762,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. Before calling: ChatGPT Images cover + at least 3 body images uploaded via start_image_upload (POST put_url → GitHub RAW). Free mode: calendar_id=null. Schedule mode: approved due slot. HARD REQUIREMENTS: cover GitHub RAW url; at least 3 inline images with {{IMAGE:id}}; SEO >= 95. Never publish.",
+        description: "Final gate. EXACTLY 1 cover URL + EXACTLY 3 inline GitHub RAW URLs (img-01, img-02, img-03) and {{IMAGE:img-01}}..{{IMAGE:img-03}} in markdown. Server returns IMAGE_SET_INCOMPLETE otherwise. SEO >= 95. Never publish. Free-write: calendar_id=null.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
