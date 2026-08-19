@@ -58,8 +58,9 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
   {
     title: "7. Sửa bài bị trả",
     items: [
+      { text: "Bài nào ChatGPT đã viết? Đã đăng, chờ đọc, hay đang bị trả?" },
       { text: "Check tuần. Có bài bị trả thì sửa draft." },
-      { text: "Sửa bài bị trả. Dùng update_blog_draft, đừng tạo bài mới." },
+      { text: "Sửa bài bị trả: get_editorial_draft rồi update_blog_draft, đừng tạo bài mới. Ảnh mờ thì tạo lại cover/body." },
     ],
   },
   {

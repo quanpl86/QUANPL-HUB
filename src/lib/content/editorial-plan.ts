@@ -473,3 +473,134 @@ export function computeEditorialPerformance(
     },
   };
 }
+
+export type EditorialReportBucket = {
+  key: string;
+  label: string;
+  weeks: number;
+  chatgpt_revises: number;
+  approved: number;
+  cancelled: number;
+  drafted: number;
+  published: number;
+  rejected: number;
+  write_fails: number;
+};
+
+export type EditorialReport = {
+  range: { weeks: number; from: string | null; to: string | null };
+  performance: EditorialPerformance;
+  chatgpt: {
+    week_plans: number;
+    week_revises: number;
+    slot_revises: number;
+    articles_rejected: number;
+    articles_published: number;
+    first_pass_weeks: number;
+    first_pass_rate: number;
+  };
+  by_week: EditorialReportBucket[];
+  by_month: EditorialReportBucket[];
+};
+
+type ReportWeek = {
+  status: string;
+  week_start?: string | null;
+  revision_number?: number;
+  activity?: Array<{ event: string; actor: string }>;
+  slots: Array<{
+    status: string;
+    result_post_id?: string | null;
+    write_fails?: number;
+    last_seo_score?: number | null;
+  }>;
+};
+
+function emptyBucket(key: string, label: string): EditorialReportBucket {
+  return {
+    key,
+    label,
+    weeks: 0,
+    chatgpt_revises: 0,
+    approved: 0,
+    cancelled: 0,
+    drafted: 0,
+    published: 0,
+    rejected: 0,
+    write_fails: 0,
+  };
+}
+
+function addWeekToBucket(bucket: EditorialReportBucket, week: ReportWeek) {
+  bucket.weeks += 1;
+  const gptEdits = (week.activity || []).filter(
+    (item) => item.actor === "chatgpt" && (item.event === "revised" || item.event === "slot_revised")
+  ).length;
+  bucket.chatgpt_revises += gptEdits;
+  if (week.status === "approved") bucket.approved += 1;
+  if (week.status === "cancelled") bucket.cancelled += 1;
+  for (const slot of week.slots || []) {
+    if (slot.status === "drafted") bucket.drafted += 1;
+    if (slot.status === "published") bucket.published += 1;
+    if (slot.status === "revision_requested" && slot.result_post_id) bucket.rejected += 1;
+    bucket.write_fails += Number(slot.write_fails || 0);
+  }
+}
+
+export function computeEditorialReport(weeks: ReportWeek[]): EditorialReport {
+  const performance = computeEditorialPerformance(weeks);
+  const starts = [...weeks.map((week) => week.week_start).filter(Boolean) as string[]].sort();
+  const byWeek = new Map<string, EditorialReportBucket>();
+  const byMonth = new Map<string, EditorialReportBucket>();
+  let weekPlans = 0;
+  let weekRevises = 0;
+  let slotRevises = 0;
+  let rejectedEvents = 0;
+  let publishedEvents = 0;
+  let firstPass = 0;
+  const decided = weeks.filter((week) => week.status === "approved" || week.status === "cancelled");
+
+  for (const week of weeks) {
+    const monday = week.week_start || "";
+    const iso = monday ? isoWeekLabel(monday) : "unknown";
+    const month = monday ? monday.slice(0, 7) : "unknown";
+    if (!byWeek.has(iso)) byWeek.set(iso, emptyBucket(iso, iso));
+    if (!byMonth.has(month)) byMonth.set(month, emptyBucket(month, month));
+    addWeekToBucket(byWeek.get(iso)!, week);
+    addWeekToBucket(byMonth.get(month)!, week);
+
+    const activity = week.activity || [];
+    weekPlans += activity.filter((item) => item.actor === "chatgpt" && item.event === "proposed").length;
+    weekRevises += activity.filter((item) => item.actor === "chatgpt" && item.event === "revised").length;
+    slotRevises += activity.filter((item) => item.actor === "chatgpt" && item.event === "slot_revised").length;
+    rejectedEvents += activity.filter((item) => item.event === "article_rejected").length;
+    publishedEvents += week.slots.filter((slot) => slot.status === "published").length;
+    const gptEdited = activity.some(
+      (item) => item.actor === "chatgpt" && (item.event === "revised" || item.event === "slot_revised")
+    );
+    if (week.status === "approved" && !gptEdited) firstPass += 1;
+  }
+
+  const sortDesc = (items: EditorialReportBucket[]) => items.sort((a, b) => b.key.localeCompare(a.key));
+  return {
+    range: {
+      weeks: weeks.length,
+      from: starts[0] || null,
+      to: starts[starts.length - 1] || null,
+    },
+    performance,
+    chatgpt: {
+      week_plans: weekPlans || weeks.length,
+      week_revises: weekRevises,
+      slot_revises: slotRevises,
+      articles_rejected: rejectedEvents,
+      articles_published: publishedEvents,
+      first_pass_weeks: firstPass,
+      first_pass_rate: decided.filter((week) => week.status === "approved").length
+        ? Math.round((firstPass / decided.filter((week) => week.status === "approved").length) * 100)
+        : 0,
+    },
+    by_week: sortDesc([...byWeek.values()]),
+    by_month: sortDesc([...byMonth.values()]),
+  };
+}

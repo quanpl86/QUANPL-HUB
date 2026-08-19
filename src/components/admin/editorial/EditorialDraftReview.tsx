@@ -4,10 +4,10 @@ import React, { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { getEditorialSlotByPostId, rejectEditorialDraft } from '@/app/actions/editorial-calendar';
 import type { EditorialSlot } from '@/lib/content/editorial-calendar';
+import { DraftRejectForm } from '@/components/admin/editorial/DraftRejectForm';
 
 export function EditorialDraftReview({ postId }: { postId: string }) {
   const [slot, setSlot] = useState<EditorialSlot | null>(null);
-  const [note, setNote] = useState('');
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -30,30 +30,24 @@ export function EditorialDraftReview({ postId }: { postId: string }) {
       <p className="text-sm text-muted">{labels[slot.status] || slot.status}</p>
       {slot.status === 'drafted' && (
         <>
-          <textarea
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="Nếu chưa đạt: ghi vì sao và cần sửa gì"
-            className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
-            rows={3}
-          />
-          <button
-            disabled={pending}
-            onClick={() => startTransition(async () => {
+          <DraftRejectForm
+            pending={pending}
+            onSubmit={(request) => startTransition(async () => {
               try {
-                setSlot(await rejectEditorialDraft(slot.id, note));
-                setNote('');
-                toast.success('Đã trả bài. Bảo ChatGPT check tuần và sửa bài bị trả.');
+                setSlot(await rejectEditorialDraft(slot.id, request));
+                toast.success('Đã trả bài. Bảo ChatGPT: kiểm tra bài bị trả rồi sửa draft.');
               } catch (error: any) {
                 toast.error(error.message);
               }
             })}
-            className="px-3 py-2 border border-brand-orange text-brand-orange text-xs uppercase"
-          >
-            Trả bài cho ChatGPT
-          </button>
-          <p className="text-xs text-muted">Muốn hoàn thành task: bật Công khai bài viết rồi lưu.</p>
+          />
+          <p className="text-xs text-muted">Muốn hoàn thành task: bật Công khai bài viết rồi lưu. Bài đã đăng ChatGPT không sửa được.</p>
         </>
+      )}
+      {slot.status === 'revision_requested' && (
+        <p className="text-sm text-brand-orange">
+          Đã trả ChatGPT. Nói: kiểm tra bài bị trả — đọc get_editorial_draft rồi update_blog_draft.
+        </p>
       )}
     </div>
   );

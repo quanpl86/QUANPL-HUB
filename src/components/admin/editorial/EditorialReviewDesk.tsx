@@ -41,6 +41,8 @@ import type { EditorialComment } from '@/lib/content/editorial-comments';
 import { DEFAULT_REVISION_CONSTRAINTS, computeEditorialPerformance, isoWeekLabel, type EditorialActivity, type RevisionConstraints } from '@/lib/content/editorial-plan';
 import type { EditorialWeek } from '@/lib/content/editorial-week';
 import { EditorialPromptKitDialog } from '@/components/admin/editorial/EditorialPromptKitDialog';
+import { DraftRejectForm } from '@/components/admin/editorial/DraftRejectForm';
+import { EditorialPerformanceReport } from '@/components/admin/editorial/EditorialPerformanceReport';
 
 const WEEK_LABELS: Record<string, string> = {
   proposed: 'Chờ bạn duyệt',
@@ -281,6 +283,8 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
           </p>
         </div>
       </div>
+
+      <EditorialPerformanceReport weeks={weeks} />
 
       <div className="flex flex-wrap gap-2">
         {PIPELINE.map((item) => (
@@ -688,7 +692,7 @@ function SlotEditor({
 }) {
   const [draft, setDraft] = useState(toDraft(slot));
   const [note, setNote] = useState('');
-  const [rejectNote, setRejectNote] = useState('');
+
   const due = isSlotDue(slot);
   const locked = Boolean(planLocked) || slot.status === 'cancelled' || slot.status === 'drafted' || slot.status === 'published';
   const canWrite = Boolean(weekApproved) && (slot.status === 'approved' || slot.status === 'writing');
@@ -966,31 +970,24 @@ function SlotEditor({
           )}
           {slot.status === 'drafted' && slot.result_post_id && (
             <div className="space-y-2 border border-brand-orange/20 p-3">
-              <p className="text-sm">Hệ thống đã nhận bản nháp. Đọc bài rồi đăng hoặc trả lại ChatGPT.</p>
-              <textarea
-                value={rejectNote}
-                onChange={(event) => setRejectNote(event.target.value)}
-                placeholder="Nếu trả bài: ghi vì sao và cần sửa gì"
-                className="w-full border border-brand-orange/20 bg-transparent px-3 py-2 text-sm"
-                rows={3}
+              <p className="text-sm">
+                Hệ thống đã nhận bản nháp.{' '}
+                <a href={`/admin/posts/edit/${slot.result_post_id}`} className="text-brand-orange underline">
+                  Đọc bài
+                </a>
+                {' '}rồi đăng hoặc trả ChatGPT.
+              </p>
+              <DraftRejectForm
+                pending={pending}
+                onSubmit={(request) => startTransition(async () => {
+                  try {
+                    onSlot({ ...(await rejectEditorialDraft(slot.id, request)), comments: slot.comments });
+                    toast.success('Đã trả bài. Bảo ChatGPT: kiểm tra bài bị trả rồi sửa draft.');
+                  } catch (error: any) {
+                    toast.error(humanError(error.message));
+                  }
+                })}
               />
-              <div className="flex flex-wrap gap-2">
-                <button
-                  disabled={pending}
-                  onClick={() => startTransition(async () => {
-                    try {
-                      onSlot({ ...(await rejectEditorialDraft(slot.id, rejectNote)), comments: slot.comments });
-                      setRejectNote('');
-                      toast.success('Đã trả bài. Lần sau bảo ChatGPT: check tuần và sửa bài bị trả.');
-                    } catch (error: any) {
-                      toast.error(humanError(error.message));
-                    }
-                  })}
-                  className={BTN_SECONDARY}
-                >
-                  Trả bài cho ChatGPT
-                </button>
-              </div>
             </div>
           )}
           {slot.status === 'revision_requested' && slot.result_post_id && (

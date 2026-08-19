@@ -7,6 +7,12 @@ import { EditorialCalendarRepository, type EditorialSlotInput } from '@/lib/cont
 import { EditorialWeekRepository } from '@/lib/content/editorial-week';
 import { EditorialCommentRepository } from '@/lib/content/editorial-comments';
 import { EditorialPlanAudit, type RevisionConstraints } from '@/lib/content/editorial-plan';
+import {
+  assertDraftRevisionRequest,
+  formatDraftRevisionRequest,
+  normalizeDraftRevisionRequest,
+  type DraftRevisionRequest,
+} from '@/lib/content/editorial-draft-revision';
 
 async function requireAdmin() {
   if (!await checkAdmin()) throw new Error('Unauthorized');
@@ -254,10 +260,14 @@ export async function getEditorialSlotByPostId(postId: string) {
   return EditorialCalendarRepository.getByPostId(supabase, postId);
 }
 
-export async function rejectEditorialDraft(slotId: string, feedback: string) {
+export async function rejectEditorialDraft(
+  slotId: string,
+  feedback: string | Partial<DraftRevisionRequest>
+) {
   const supabase = await requireAdmin();
-  const note = feedback.trim();
-  if (!note) throw new Error('Cần ghi rõ vì sao trả bài và ChatGPT phải sửa gì');
+  const request = normalizeDraftRevisionRequest(feedback);
+  assertDraftRevisionRequest(request);
+  const note = formatDraftRevisionRequest(request);
   const slot = await EditorialCalendarRepository.get(supabase, slotId);
   if (slot.status !== 'drafted' && slot.status !== 'writing') {
     throw new Error('Chỉ trả được bài đang chờ duyệt');
@@ -275,7 +285,7 @@ export async function rejectEditorialDraft(slotId: string, feedback: string) {
       slot_id: slotId,
       event: 'article_rejected',
       actor: 'admin',
-      payload: { feedback: note },
+      payload: { feedback: note, request },
     });
   }
   const updated = await EditorialCalendarRepository.setStatus(supabase, slotId, 'revision_requested', note);

@@ -11,6 +11,7 @@ import { EditorialWeekRepository } from "@/lib/content/editorial-week";
 import { EditorialCommentRepository } from "@/lib/content/editorial-comments";
 import { EditorialPlanAudit } from "@/lib/content/editorial-plan";
 import { EDITORIAL_COMMANDS } from "@/lib/content/editorial-commands";
+import { EditorialArticlesRepository } from "@/lib/content/editorial-articles";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { revalidateEditorialSurfaces } from "@/lib/content/editorial-revalidate";
 
@@ -51,7 +52,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.10.2",
+    version: "7.11.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -127,7 +128,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.10.2",
+          mcp_version: "7.11.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -139,6 +140,8 @@ function createKingDragonHubMcpServer() {
             "add_editorial_comment",
             "get_due_editorial_slots",
             "list_editorial_calendar",
+            "list_editorial_articles",
+            "get_editorial_draft",
             "update_blog_draft",
           ],
           review_desk: "/admin/editorial",
@@ -150,6 +153,7 @@ function createKingDragonHubMcpServer() {
             "3": "If revision_requested: get_editorial_week, read comments + revision_constraints, then revise_editorial_week with based_on_revision=week.revision_number. Success moves the week to revision_ready. Stale based_on_revision returns REVISION_CONFLICT.",
             "4": "After the week is approved: each session call get_due_editorial_slots. Write in item_order.",
             "5": "Write only due slots via create_blog_draft(calendar_id). Server rejects writing before scheduled datetime.",
+            "6": "Rejected drafts: list_editorial_articles or get_due_editorial_slots revise[]. get_editorial_draft(calendar_id), follow revision_request, regen images if asked, then update_blog_draft. Published posts are LOCKED.",
             limitation: "ChatGPT cannot auto-wake at the scheduled time. The user must open a conversation or a ChatGPT scheduled task on the due day.",
           },
           schema_version: "article-package/7.0",
@@ -292,10 +296,45 @@ function createKingDragonHubMcpServer() {
             type: "text",
             text: JSON.stringify({
               ...result,
-              instruction: "Write due[] with create_blog_draft(calendar_id). Fix revise[] with update_blog_draft(calendar_id) after reading admin comments. Ignore blocked[] until the admin approves the week. Do not write upcoming[].",
+              instruction: "Write due[] with create_blog_draft(calendar_id). Fix revise[]: get_editorial_draft(calendar_id) then update_blog_draft. Ignore blocked[] until the admin approves the week. Do not write upcoming[]. Published is LOCKED.",
             }),
           }],
         };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+      }
+    }
+  );
+
+  server.registerTool(
+    "list_editorial_articles",
+    {
+      description: "List ChatGPT calendar articles that already have a draft or published post. workflow_status: published (LOCKED), review (waiting admin), revise (admin returned — get_editorial_draft then update_blog_draft), writing. Never update published posts.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        const result = await EditorialArticlesRepository.list(getSupabaseAdmin());
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+      }
+    }
+  );
+
+  server.registerTool(
+    "get_editorial_draft",
+    {
+      description: "Read one ChatGPT calendar draft/post: id, title, content, images, SEO, comments, revision_request (content/style/cover/inline images/SEO/AIO/seo_target). Pass calendar_id from list_editorial_articles or get_due revise[]. If can_update=false the post is published — do not update_blog_draft.",
+      inputSchema: z.object({
+        calendar_id: z.string().optional().nullable(),
+        post_id: z.string().optional().nullable(),
+      }),
+    },
+    async (input) => {
+      try {
+        const draft = await EditorialArticlesRepository.getDraft(getSupabaseAdmin(), input);
+        return { content: [{ type: "text", text: JSON.stringify(draft) }] };
       } catch (err: unknown) {
         return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
       }

@@ -13,6 +13,7 @@ import { compileArticleHtml } from "./compile-article-html";
 import { loadTaxonomyCatalog, resolvePostTaxonomy } from "./taxonomy";
 import { analyzeSystemSeo, formatSeoGateError, SEO_SCORE_MIN } from "./seo-advisor";
 import { EditorialCalendarRepository } from "./editorial-calendar";
+import { seoTargetForSlot } from "./editorial-articles";
 
 function sanitizeTaskId(taskId: unknown): string | null {
   if (typeof taskId !== "string") return null;
@@ -431,7 +432,10 @@ export class PostsRepository {
     if (!post) throw new Error("DRAFT_NOT_FOUND");
     if (post.is_published) throw new Error("PLAN_LOCKED: published posts cannot be updated by MCP");
 
-    const prepared = await prepareValidatedDraft(supabase, draftData);
+    const seoFloor = slot.result_post_id
+      ? await seoTargetForSlot(supabase, calendarId, SEO_SCORE_MIN)
+      : SEO_SCORE_MIN;
+    const prepared = await prepareValidatedDraft(supabase, draftData, seoFloor);
     const { error: updError } = await supabase.from("posts").update({
       title: prepared.title,
       excerpt: prepared.excerpt,
@@ -467,7 +471,7 @@ export class PostsRepository {
   }
 }
 
-async function prepareValidatedDraft(supabase: any, draftData: any) {
+async function prepareValidatedDraft(supabase: any, draftData: any, seoMin = SEO_SCORE_MIN) {
   const activePolicy = await EditorialPolicyRepository.getActivePolicy();
   if (draftData.policy_version !== activePolicy.policy_version) {
     throw new Error("QUALITY_GATE_FAILED: policy_version mismatch");
@@ -508,8 +512,12 @@ async function prepareValidatedDraft(supabase: any, draftData: any) {
     primary_keyword: draftData.seo?.primary_keyword,
     faq_count: pkg.aio.faq.length,
   });
-  if (seoReport.score < SEO_SCORE_MIN) {
-    throw new Error(formatSeoGateError(seoReport));
+  if (seoReport.score < seoMin) {
+    throw new Error(
+      seoMin > SEO_SCORE_MIN
+        ? `QUALITY_GATE_FAILED: admin SEO target is ${seoMin}, score is ${seoReport.score}`
+        : formatSeoGateError(seoReport)
+    );
   }
   const taxonomy = await resolvePostTaxonomy(supabase, {
     category_id: draftData.category_id,

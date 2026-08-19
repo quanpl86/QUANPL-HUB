@@ -178,7 +178,7 @@ export class EditorialWeekRepository {
       .select("*")
       .order("week_start", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(52);
     if (status) query = query.eq("status", status);
     const { data, error } = await query;
     if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);

@@ -19,11 +19,17 @@ import {
   assertRevisionBase,
   assertRichWeeklySlots,
   computeEditorialPerformance,
+  computeEditorialReport,
   enforceRevisionConstraints,
   shouldMarkWeekRevisionReady,
   activityForSlot,
   changedSlotIdsFromDiff,
 } from "../src/lib/content/editorial-plan.ts";
+import {
+  assertDraftRevisionRequest,
+  formatDraftRevisionRequest,
+  normalizeDraftRevisionRequest,
+} from "../src/lib/content/editorial-draft-revision.ts";
 
 test("short command map covers plan, check, revise, and both write modes", () => {
   const ids = EDITORIAL_COMMANDS.commands.map((item) => item.id);
@@ -43,6 +49,9 @@ test("short command map covers plan, check, revise, and both write modes", () =>
     assert.ok(ids.includes(id), `missing command ${id}`);
   }
   assert.ok(EDITORIAL_COMMANDS.refuse.some((item) => /publish/i.test(item)));
+  const fix = EDITORIAL_COMMANDS.commands.find((item) => item.id === "fix_rejected_draft");
+  assert.ok(fix?.hear.some((item) => /đã viết/.test(item)));
+  assert.ok(fix?.do.some((item) => /get_editorial_draft/.test(item)));
 });
 
 test("admin prompt kit has all editorial job groups", () => {
@@ -262,6 +271,50 @@ test("due list keeps a slot blocked when the week is not approved", async () => 
   assert.equal(result.due.length, 0);
   assert.equal(result.blocked.length, 1);
   assert.match(result.blocked[0].blocked_reason, /WEEK_NOT_APPROVED/);
+});
+
+test("draft revision request requires a flag or notes and formats Vietnamese instructions", () => {
+  assert.throws(() => assertDraftRevisionRequest(normalizeDraftRevisionRequest({})), /Cần tick/);
+  const request = normalizeDraftRevisionRequest({
+    fix_cover: true,
+    seo_target: 97,
+    notes: "Ảnh bìa mờ",
+  });
+  const body = formatDraftRevisionRequest(request);
+  assert.match(body, /Ảnh bìa/);
+  assert.match(body, /97/);
+  assert.match(body, /get_editorial_draft/);
+  assert.match(body, /update_blog_draft/);
+});
+
+test("report buckets ChatGPT revises by ISO week and first-pass approved weeks", () => {
+  const report = computeEditorialReport([
+    {
+      status: "approved",
+      week_start: "2026-08-17",
+      revision_number: 1,
+      activity: [{ event: "proposed", actor: "chatgpt" }],
+      slots: [{ status: "published" }],
+    },
+    {
+      status: "approved",
+      week_start: "2026-08-10",
+      revision_number: 3,
+      activity: [
+        { event: "proposed", actor: "chatgpt" },
+        { event: "revised", actor: "chatgpt" },
+        { event: "slot_revised", actor: "chatgpt" },
+      ],
+      slots: [{ status: "drafted" }],
+    },
+  ]);
+  assert.equal(report.chatgpt.week_plans, 2);
+  assert.equal(report.chatgpt.week_revises, 1);
+  assert.equal(report.chatgpt.slot_revises, 1);
+  assert.equal(report.chatgpt.first_pass_weeks, 1);
+  assert.equal(report.chatgpt.articles_published, 1);
+  assert.ok(report.by_week.length >= 2);
+  assert.ok(report.by_month.some((row) => row.key === "2026-08"));
 });
 
 test("performance treats published as write pass and rejected drafts as write fail", () => {
