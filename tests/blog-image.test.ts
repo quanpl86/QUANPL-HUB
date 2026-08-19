@@ -188,7 +188,7 @@ test("accepts a full-size PNG cover", () => {
 });
 
 test("image generation standard forbids compressing to fit the tool call", () => {
-  assert.equal(IMAGE_GENERATION_STANDARD.version, "1.2");
+  assert.equal(IMAGE_GENERATION_STANDARD.version, "1.3");
   assert.match(IMAGE_GENERATION_STANDARD.quality.if_base64_too_large, /Do not compress/);
   assert.match(IMAGE_GENERATION_STANDARD.quality.github_upload, /ALWAYS ALLOWED/);
 });

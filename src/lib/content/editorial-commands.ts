@@ -1,6 +1,16 @@
 export const EDITORIAL_COMMANDS = {
   language: "vi-VN",
-  rule: "Người dùng nói ngắn. Map đúng một việc mỗi tin. Không gộp viết tự do với viết theo tuần. Không publish, không duyệt tuần, không xóa bài. ĐƯỢC upload ảnh gốc lên GitHub imgBlog (upload_github_image) và các quyền viết nháp/lịch tuần.",
+  rule: "Người dùng nói ngắn. Map đúng một việc mỗi tin. Không gộp viết tự do với viết theo tuần. Không publish, không duyệt tuần, không xóa bài. Mỗi bài viết: cover ChatGPT Images + tối thiểu 3 ảnh body, POST put_url lên GitHub, rồi mới create_blog_draft.",
+  when_writing: {
+    automatic: true,
+    cover: "Tạo bằng ChatGPT Images trong chat này (16:9, ≥1536×864, không chữ). start_image_upload rồi HTTP POST PNG gốc tới put_url. Gắn RAW GitHub vào featured_image.url.",
+    body_min: 3,
+    body_max: 4,
+    body: "Tối thiểu 3 ảnh body khác nhau từ ChatGPT Images (cùng cách POST put_url). {{IMAGE:img-01}} … {{IMAGE:img-03}} trong markdown.",
+    structured_text: "workflow/rubric/timeline/bảng: generate_and_upload_blog_image SVG + required_labels tiếng Việt — không vẽ chữ bằng model.",
+    github: "Hub ghi quanpl86/imgBlog. URL RAW mới mỗi ảnh. Không image_base64 qua MCP (connector cắt).",
+    never: ["nén WebP", "FLUX 1024×576 làm cover", "cover SVG giả cho cảnh", "gửi draft khi còn thiếu URL ảnh"],
+  },
   status_vi: {
     proposed: "chờ duyệt",
     revision_requested: "đang chờ sửa / bài bị trả",
@@ -111,8 +121,8 @@ export const EDITORIAL_COMMANDS = {
       ],
       do: [
         "get_editorial_guidelines, get_blog_inventory, get_blog_categories",
-        "generate_and_upload_blog_image: cover + ít nhất 2 ảnh body",
-        "create_blog_draft calendar_id=null task_id=null",
+        "when_writing: ChatGPT Images cover + tối thiểu 3 ảnh body → start_image_upload → POST put_url → URL GitHub",
+        "create_blog_draft calendar_id=null task_id=null chỉ khi đã có đủ URL ảnh",
       ],
       never: ["propose_editorial_week", "calendar_id khác null"],
     },
@@ -130,7 +140,7 @@ export const EDITORIAL_COMMANDS = {
         "get_due_editorial_slots",
         "blocked[]: chỉ báo, không viết",
         "upcoming[]: chỉ báo, không viết",
-        "due[]: viết, create_blog_draft với đúng calendar_id",
+        "due[]: when_writing (cover + ≥3 ảnh body ChatGPT Images, POST put_url), rồi create_blog_draft với đúng calendar_id",
         "revise[]: xem command fix_rejected_draft / check_gpt_articles",
       ],
       never: ["calendar_id=null khi viết từ lịch", "viết upcoming hoặc blocked"],
@@ -145,7 +155,7 @@ export const EDITORIAL_COMMANDS = {
       do: [
         "get_editorial_week hoặc get_due_editorial_slots",
         "Chỉ 1 slot user nêu, phải nằm due[] hoặc đã Cho viết ngay",
-        "create_blog_draft với calendar_id của slot đó",
+        "when_writing: cover + ≥3 ảnh body ChatGPT Images, POST put_url, rồi create_blog_draft với calendar_id của slot đó",
       ],
       never: ["viết thêm bài khác", "calendar_id=null"],
     },

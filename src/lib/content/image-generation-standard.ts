@@ -1,5 +1,5 @@
 export const IMAGE_GENERATION_STANDARD = {
-  version: "1.2",
+  version: "1.3",
   rule: "ChatGPT decides WHAT image is needed. MCP Image Router decides WHICH engine. QA decides IF it may enter the draft. OpenAI / ChatGPT Images is PRIMARY for scenes. SVG is PRIMARY for exact Vietnamese structured text. Never compress/downscale to fit a tool call.",
   quality: {
     cover_min: "1536x864",
@@ -42,12 +42,25 @@ export const IMAGE_GENERATION_STANDARD = {
     retry_same_provider_only_for: ["502", "503", "timeout"],
   },
   body_plan: {
-    short: 2,
+    short: 3,
     standard: 3,
-    deep: "3-5",
+    deep: "3-4",
     split: ["concept", "practice", "application"],
+    min_inline: 3,
+    cover: 1,
+  },
+  when_writing_article: {
+    automatic: true,
+    steps: [
+      "Create cover with ChatGPT Images in this chat (16:9, no text).",
+      "Create at least 3 distinct body illustrations with ChatGPT Images.",
+      "For each raster image: start_image_upload then HTTP POST original PNG bytes to put_url. Hub stores on GitHub.",
+      "Workflow/rubric/table: generate_and_upload_blog_image SVG with Vietnamese required_labels.",
+      "create_blog_draft only after cover URL + ≥3 inline GitHub RAW URLs exist.",
+    ],
   },
   agent_must: [
+    "When writing any article: ChatGPT Images cover + at least 3 body images, uploaded via start_image_upload PUT path to GitHub. This is default, not optional.",
     "If the user wants the nicest cover/illustration: create with ChatGPT Images in this chat first, then start_image_upload and POST original PNG bytes. Never image_base64 on MCP. Never WebP 800x450.",
     "If MCP base64 is truncated: do not compress and do not use FLUX 1024×576. POST bytes to put_url.",
     "If the user wants Hub to generate for the post: call generate_and_upload_blog_image and let MCP pick OpenAI first. Do not choose FLUX.",

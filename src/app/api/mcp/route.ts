@@ -4,7 +4,7 @@ import { verifyToken } from "@/lib/oauth-utils";
 import { getOAuthIssuer, getOAuthResource } from "@/lib/oauth-security";
 import { PostsRepository } from "@/lib/content/posts.repository";
 import { EditorialPolicyRepository } from "@/lib/editorial/editorial-policy.repository";
-import { normalizeArticlePackage } from "@/lib/content/article-package";
+import { ARTICLE_INLINE_IMAGE_MAX, ARTICLE_INLINE_IMAGE_MIN, normalizeArticlePackage } from "@/lib/content/article-package";
 import { flattenImageError, generateAndUploadBlogImage, uploadBlogImage, uploadGithubImage } from "@/lib/content/blog-image";
 import { createImageUploadSession } from "@/lib/content/image-upload-ticket";
 import { CHATGPT_MCP_PERMISSIONS } from "@/lib/content/chatgpt-permissions";
@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.18.0",
+    version: "7.19.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -123,7 +123,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Contract canary + full Vietnamese short-command map. Call first every session. Follow short_commands / get_editorial_commands for: đề xuất lịch, check lịch, báo chi tiết, check hạn, sửa lịch, viết tự do, viết đến hạn, sửa bài bị trả.",
+      description: "Contract canary + short-command map. Call first every session. When writing an article: ChatGPT Images cover + at least 3 body images, start_image_upload then POST put_url to GitHub, then create_blog_draft. Never MCP image_base64 for those images.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -131,7 +131,8 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.18.0",
+          mcp_version: "7.19.0",
+          when_writing_article: EDITORIAL_COMMANDS.when_writing,
           media_tool: "start_image_upload",
           media_tools: ["start_image_upload", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
           permissions: CHATGPT_MCP_PERMISSIONS,
@@ -183,7 +184,8 @@ function createKingDragonHubMcpServer() {
           },
           inline_images: {
             type: "array",
-            min_items_with_url: 2,
+            min_items_with_url: ARTICLE_INLINE_IMAGE_MIN,
+            max_items: ARTICLE_INLINE_IMAGE_MAX,
             item_required: ["id", "purpose", "prompt", "alt", "url"],
             url_required: true,
           },
@@ -709,7 +711,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. Free mode: calendar_id=null or omit — server attaches a loose slot so admin can reject and you later update_blog_draft(calendar_id from the response). Schedule mode: calendar_id must be an approved due slot from get_due_editorial_slots. If the slot belongs to a week, that week must be approved. Server rejects writing before scheduled_date + scheduled_time (Asia/Ho_Chi_Minh). HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. Before calling: ChatGPT Images cover + at least 3 body images uploaded via start_image_upload (POST put_url → GitHub RAW). Free mode: calendar_id=null. Schedule mode: approved due slot. HARD REQUIREMENTS: cover GitHub RAW url; at least 3 inline images with {{IMAGE:id}}; SEO >= 95. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),
@@ -733,7 +735,7 @@ function createKingDragonHubMcpServer() {
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
             url: z.string().nullable(),
-          }).describe("Cover spec. url MUST be a GitHub RAW HTTPS URL from generate_and_upload_blog_image."),
+          }).describe("Cover spec. url MUST be GitHub RAW from start_image_upload (ChatGPT Images POST put_url) or generate_and_upload_blog_image SVG."),
           featured_image_url: z.string().nullable().describe("Same persistent cover URL as featured_image.url."),
           featured_image_alt: z.string().optional(),
           inline_images: z.array(z.object({

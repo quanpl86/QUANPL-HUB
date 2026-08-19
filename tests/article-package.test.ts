@@ -16,7 +16,7 @@ function baseDraft(overrides: Record<string, unknown> = {}) {
     title: "AI và game hóa trong giáo dục mầm non",
     slug: "ai-game-hoa-mam-non",
     excerpt: "Hướng dẫn thực hành",
-    content_markdown: "## Section\n{{IMAGE:img-01}}\n\n## Next\n{{IMAGE:img-02}}\n",
+    content_markdown: "## Section\n{{IMAGE:img-01}}\n\n## Next\n{{IMAGE:img-02}}\n\n## More\n{{IMAGE:img-03}}\n",
     seo: {
       title: "AI và game hóa",
       description: "desc",
@@ -54,7 +54,7 @@ test("A01 legacy featured_image string still normalizes", () => {
   const check = validateArticlePackage(normalizeArticlePackage(baseDraft({
     featured_image: "https://raw.githubusercontent.com/quanpl86/imgBlog/main/cover.webp",
     featured_image_alt: "Alt từ v6",
-    inline_images: twoInlineImages(),
+    inline_images: threeInlineImages(),
   })));
   assert.equal(check.errors.length, 0);
 });
@@ -118,7 +118,7 @@ test("A06 inline_images validate id and purpose", () => {
       alt: "alt",
       url: "https://raw.githubusercontent.com/x/y/cover.webp",
     },
-    inline_images: twoInlineImages(),
+    inline_images: threeInlineImages(),
   }));
   const check = validateArticlePackage(pkg);
   assert.equal(check.errors.length, 0);
@@ -161,7 +161,7 @@ test("A09 cover object missing prompt or alt is rejected", () => {
   assert.ok(missingAlt.errors.some((issue) => issue.code === "COVER_ALT_MISSING"));
 });
 
-test("A10 missing cover or fewer than 2 inline URLs is rejected", () => {
+test("A10 missing cover or fewer than 3 inline URLs is rejected", () => {
   const noCover = validateArticlePackage(normalizeArticlePackage(baseDraft({
     featured_image: {
       purpose: "article_cover",
@@ -169,7 +169,7 @@ test("A10 missing cover or fewer than 2 inline URLs is rejected", () => {
       alt: "alt",
       url: null,
     },
-    inline_images: twoInlineImages(),
+    inline_images: threeInlineImages(),
   })));
   assert.ok(noCover.errors.some((issue) => issue.code === "COVER_URL_MISSING"));
 
@@ -180,12 +180,12 @@ test("A10 missing cover or fewer than 2 inline URLs is rejected", () => {
       alt: "alt",
       url: "https://raw.githubusercontent.com/x/y/cover.webp",
     },
-    inline_images: [twoInlineImages()[0]],
+    inline_images: threeInlineImages().slice(0, 2),
   })));
   assert.ok(oneInline.errors.some((issue) => issue.code === "INLINE_IMAGE_MIN"));
 });
 
-function twoInlineImages() {
+function threeInlineImages() {
   return [
     {
       id: "img-01",
@@ -202,6 +202,14 @@ function twoInlineImages() {
       alt: "b",
       caption: "c2",
       url: "https://raw.githubusercontent.com/x/y/two.webp",
+    },
+    {
+      id: "img-03",
+      purpose: "case_study",
+      prompt: "p",
+      alt: "c",
+      caption: "c3",
+      url: "https://raw.githubusercontent.com/x/y/three.webp",
     },
   ];
 }

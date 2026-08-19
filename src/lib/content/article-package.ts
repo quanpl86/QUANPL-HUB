@@ -1,4 +1,6 @@
 export const ARTICLE_PACKAGE_SCHEMA_VERSION = "article-package/7.0";
+export const ARTICLE_INLINE_IMAGE_MIN = 3;
+export const ARTICLE_INLINE_IMAGE_MAX = 4;
 
 export const INLINE_IMAGE_PURPOSES = [
   "concept_diagram",
@@ -273,14 +275,14 @@ export function validateArticlePackage(
     errors.push({
       code: "COVER_URL_MISSING",
       image_id: "featured_image",
-      message: "featured_image.url is required. Call generate_and_upload_blog_image with image_id=cover first.",
+      message: "featured_image.url is required. Create the cover with ChatGPT Images, then start_image_upload and POST the PNG to put_url.",
     });
   }
 
-  if (pkg.inline_images.length > 4) {
+  if (pkg.inline_images.length > ARTICLE_INLINE_IMAGE_MAX) {
     errors.push({
       code: "INLINE_IMAGE_LIMIT",
-      message: "inline_images may contain at most 4 items",
+      message: `inline_images may contain at most ${ARTICLE_INLINE_IMAGE_MAX} items`,
     });
   }
 
@@ -324,7 +326,7 @@ export function validateArticlePackage(
       errors.push({
         code: "INLINE_URL_MISSING",
         image_id: image.id,
-        message: `inline image "${image.id}" url is required. Call generate_and_upload_blog_image first.`,
+        message: `inline image "${image.id}" url is required. ChatGPT Images: start_image_upload then POST put_url. Structured labels: generate_and_upload_blog_image SVG.`,
       });
     } else {
       const hasPlaceholder = pkg.content_markdown.includes(`{{IMAGE:${image.id}}}`);
@@ -347,10 +349,10 @@ export function validateArticlePackage(
   }
 
   const readyInline = pkg.inline_images.filter((image) => hasPersistentImageUrl(image.url));
-  if (readyInline.length < 2) {
+  if (readyInline.length < ARTICLE_INLINE_IMAGE_MIN) {
     errors.push({
       code: "INLINE_IMAGE_MIN",
-      message: "At least 2 inline images with persistent URLs are required in the article body",
+      message: `At least ${ARTICLE_INLINE_IMAGE_MIN} inline images with persistent GitHub RAW URLs are required (cover is separate)`,
     });
   }
 

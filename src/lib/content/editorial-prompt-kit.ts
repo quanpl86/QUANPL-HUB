@@ -67,7 +67,7 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
   {
     title: "8. Ảnh / danh mục",
     items: [
-      { text: "Viết bài, tạo cover + ảnh body bằng ChatGPT Images, rồi upload vào KingDragonHub.", note: "start_image_upload rồi POST PNG gốc tới put_url. Không image_base64 qua MCP (bị cắt)." },
+      { text: "Viết bài, tạo cover + tối thiểu 3 ảnh body bằng ChatGPT Images, rồi upload vào KingDragonHub.", note: "Tự làm: vẽ trong chat → start_image_upload → POST put_url → GitHub → draft." },
       { text: "Tạo trực tiếp 1 cover + 3 ảnh body, chưa cần Hub." },
       { text: "Rubric/workflow: generate_and_upload_blog_image SVG, required_labels tiếng Việt." },
       { text: "Tạo 1 cover 16:9 ≥1536px, minh họa giáo dục, sạch, rõ, không chữ, PNG gốc không nén." },

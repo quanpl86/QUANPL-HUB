@@ -90,7 +90,7 @@ async function runTests() {
     title: "Test Article for MCP-04",
     slug: "test-article-mcp-04-" + Date.now(),
     excerpt: "This is a test article",
-    content_markdown: "## Hello\n{{IMAGE:img-01}}\n\n## More\n{{IMAGE:img-02}}\n",
+    content_markdown: "## Hello\n{{IMAGE:img-01}}\n\n## More\n{{IMAGE:img-02}}\n\n## Extra\n{{IMAGE:img-03}}\n",
     category_id: undefined,
     tags: ["test", "mcp"],
     featured_image: {
@@ -116,6 +116,14 @@ async function runTests() {
         alt: "Explainer",
         caption: "Concept",
         url: "https://raw.githubusercontent.com/quanpl86/imgBlog/main/public/editor-assets/test-2.png",
+      },
+      {
+        id: "img-03",
+        purpose: "case_study",
+        prompt: "case",
+        alt: "Case",
+        caption: "Case",
+        url: "https://raw.githubusercontent.com/quanpl86/imgBlog/main/public/editor-assets/test-1.png",
       },
     ],
     seo: {
