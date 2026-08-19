@@ -1,18 +1,20 @@
 export const EDITORIAL_COMMANDS = {
   language: "vi-VN",
-  rule: "Người dùng nói ngắn. Map đúng một việc mỗi tin. Không gộp viết tự do với viết theo tuần. Không publish, không duyệt tuần, không xóa bài. HARD: cover + ≥3 ảnh body = ChatGPT Images trong chat này → start_image_upload → POST PNG gốc put_url. Không OpenAI API key. Không image_base64 MCP.",
+  rule: "Người dùng nói ngắn MỘT LẦN. GPT tự chạy hết trong phiên: check → viết → image_gen từng ảnh → start_image_upload → POST put_url → create_blog_draft. Không hỏi user gửi thêm prompt cover/upload. Không publish.",
   when_writing: {
     automatic: true,
     hard_rule: true,
-    lane_a: "ChatGPT Images trong chat này (Plus, không API key) → PNG gốc → start_image_upload → HTTP POST bytes lên put_url → GitHub RAW.",
-    cover: "Từng ảnh một. Cover 16:9 ≥1536×864 không chữ. Xong cover thì upload ngay, rồi img-01, img-02, img-03. Không song song.",
+    one_user_message: true,
+    do_not_ask_user_between_steps: true,
+    lane_a: "Trong CÙNG lượt: image_gen cover → start_image_upload → POST PNG → img-01 → upload → img-02 → upload → img-03 → upload. Không dừng hỏi user.",
+    cover: "16:9 ≥1536×864 không chữ. GPT tự đặt prompt ảnh.",
     body_min: 3,
     body_max: 4,
-    body: "{{IMAGE:img-01}} … {{IMAGE:img-03}} trong markdown, URL GitHub RAW.",
+    body: "{{IMAGE:img-01}} … {{IMAGE:img-03}}, URL GitHub RAW.",
     lane_b: "workflow/rubric/timeline/bảng: generate_and_upload_blog_image SVG + required_labels tiếng Việt.",
     github: "Hub ghi quanpl86/imgBlog. Không image_base64 qua MCP.",
     if_no_image_gen:
-      "Nếu phiên này không có tool ChatGPT Images/image_gen: DỪNG. Không generate_and_upload cover, không draft. Báo user bật Image generation (DALL·E) trên GPT KingDragonHub Editorial rồi chat mới, hoặc user nhắn «Tạo cover 16:9: …» / đính PNG. Khi ảnh hiện, tiếp Lane A.",
+      "CHỈ khi tool image_gen thật sự không có: báo 1 câu rồi dừng. Có image_gen thì KHÔNG hỏi user, tự chạy hết Lane A.",
     never: [
       "generate_and_upload_blog_image cho cover/cảnh",
       "OpenAI Images API phía Hub",
@@ -133,10 +135,14 @@ export const EDITORIAL_COMMANDS = {
       ],
       do: [
         "get_editorial_guidelines, get_blog_inventory, get_blog_categories, list_editorial_articles",
-        "Nếu đã có bản nháp chưa đăng cùng chủ đề: get_editorial_draft, when_writing (cover ChatGPT Images + ≥3 ảnh body, POST put_url), rồi update_blog_draft(calendar_id). Không tạo bài trùng.",
-        "Nếu chưa có nháp: when_writing rồi create_blog_draft calendar_id=null task_id=null chỉ khi đã có đủ URL ảnh",
+        "Nếu đã có nháp unpublished cùng chủ đề: tự chạy hết Lane A rồi update_blog_draft. Không hỏi user thêm. Không tạo bài trùng.",
+        "Nếu chưa có nháp: tự chạy hết Lane A (4 ảnh tuần tự + POST put_url) rồi create_blog_draft calendar_id=null. Không hỏi user gõ prompt cover/upload.",
       ],
-      never: ["propose_editorial_week", "create_blog_draft khi đã có nháp unpublished cùng chủ đề"],
+      never: [
+        "propose_editorial_week",
+        "create_blog_draft khi đã có nháp unpublished cùng chủ đề",
+        "dừng giữa chừng để user gửi prompt cover/upload nếu image_gen đang có",
+      ],
     },
     {
       id: "write_due_from_week",

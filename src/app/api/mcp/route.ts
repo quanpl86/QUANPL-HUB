@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.26.0",
+    version: "7.27.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -123,7 +123,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Call first every session. HARD image rule: ChatGPT Images in this chat (no API key) → start_image_upload → POST original PNG bytes to put_url. generate_and_upload_blog_image is SVG-only. Never Hub OpenAI API, never MCP image_base64, never FLUX.",
+      description: "Call first every session. From ONE user write request, autonomously run Lane A: image_gen cover then start_image_upload POST put_url, then img-01..03 the same way, then create_blog_draft. Do not ask the user for extra cover/upload prompts. SVG-only generate_and_upload. No Hub OpenAI API, no MCP image_base64, no FLUX.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -131,11 +131,13 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.26.0",
+          mcp_version: "7.27.0",
           image_pipeline: {
             hard_rule: true,
             no_openai_api_key: true,
-            lane_a: "ChatGPT Images in this chat → original PNG bytes → start_image_upload → HTTP POST put_url → GitHub RAW. Sequence: cover, img-01, img-02, img-03. Never parallel.",
+            autonomous: true,
+            one_user_message: true,
+            lane_a: "From the write request, run in this session without asking the user again: image_gen cover → start_image_upload → POST PNG → img-01 → upload → img-02 → upload → img-03 → upload → draft.",
             lane_b: "generate_and_upload_blog_image SVG only (workflow/rubric/timeline/table/comparison + required_labels).",
             if_no_image_gen: "Stop. Ask the user to enable Image generation on the GPT or to generate/attach PNG in this chat. Then Lane A. Never Hub OpenAI API.",
             never: ["Hub OpenAI Images API", "MCP image_base64", "FLUX", "create_blog_draft before 1 cover + 3 body RAW URLs"],

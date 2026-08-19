@@ -1,5 +1,5 @@
 export const IMAGE_GENERATION_STANDARD = {
-  version: "2.0",
+  version: "2.1",
   hard_rule: true,
   no_openai_api_key: true,
   rule: "HARD. Lane A scenes: ChatGPT Images in this chat (Plus, no API key) → start_image_upload → HTTP POST original PNG bytes to put_url → GitHub RAW. Lane B structured Vietnamese text: generate_and_upload_blog_image SVG. Never Hub OpenAI Images API. Never MCP image_base64. Never FLUX.",
@@ -49,19 +49,20 @@ export const IMAGE_GENERATION_STANDARD = {
   when_writing_article: {
     automatic: true,
     hard_rule: true,
+    one_user_message: true,
     steps: [
-      "ChatGPT Images ONE image (cover 16:9 ≥1536×864, no text).",
-      "Immediately start_image_upload then HTTP POST original PNG bytes to put_url. Never image_base64 on MCP.",
-      "Repeat for img-01, img-02, img-03 (never parallel).",
-      "Structured diagrams: generate_and_upload_blog_image SVG + required_labels.",
-      "create_blog_draft / update_blog_draft only after 1 cover RAW + ≥3 body RAW URLs.",
+      "From ONE user write request, finish the whole job in this session. Do not ask the user to type cover prompts or upload prompts.",
+      "image_gen cover (16:9 ≥1536×864, no text) → start_image_upload → POST PNG bytes to put_url.",
+      "Then img-01, img-02, img-03 the same way, never parallel.",
+      "Lane B SVG if needed. Then create_blog_draft / update_blog_draft.",
     ],
   },
   agent_must: [
-    "HARD: scene pixels come only from ChatGPT Images in this chat. No KingDragonHub OpenAI API key is required or used.",
-    "HARD: after each image, start_image_upload → POST binary PNG to put_url → keep the GitHub RAW URL.",
+    "AUTOMATION: one user sentence is enough. Keep calling image_gen, start_image_upload, and HTTP POST until 4 RAW URLs exist, then draft.",
+    "HARD: scene pixels from ChatGPT Images in this chat. No Hub OpenAI API key.",
+    "HARD: after each image, start_image_upload → POST binary PNG to put_url.",
     "HARD: generate_and_upload_blog_image is SVG-only. Never for article_cover.",
-    "One image at a time. Never FLUX. Never MCP image_base64.",
+    "Never wait for a second user message between cover and body images if image_gen is available.",
     "Do not create or update a draft until cover + ≥3 body GitHub RAW URLs exist.",
   ],
 };

@@ -43,7 +43,7 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
   {
     title: "5. Viết bài — tự do",
     items: [
-      { text: "Viết bài mới chế độ tự do, nội dung là [điền chủ đề].", note: "Đã có nháp chưa đăng cùng chủ đề thì GPT nâng ảnh/sửa đúng bài đó, không tạo trùng." },
+      { text: "Viết bài mới chế độ tự do, nội dung là [điền chủ đề].", note: "Một câu là đủ. GPT tự cover + 3 ảnh + upload GitHub + draft. Không cần prompt ảnh phụ." },
       { text: "Blog tự do: [điền chủ đề]." },
     ],
   },
