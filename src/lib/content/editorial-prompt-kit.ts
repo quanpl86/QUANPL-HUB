@@ -68,6 +68,7 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
     title: "8. Ảnh / danh mục",
     items: [
       { text: "Tạo lại cover, giữ 2 ảnh body." },
+      { text: "Ảnh quy trình/bảng tiêu chí: gửi required_labels tiếng Việt, layout_spec rubric_matrix hoặc workflow_steps. Đừng bảo Flux vẽ chữ." },
       { text: "Gắn danh mục có sẵn, đừng tạo danh mục mới." },
     ],
   },

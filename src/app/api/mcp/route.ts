@@ -52,7 +52,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.11.1",
+    version: "7.12.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -128,7 +128,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.11.1",
+          mcp_version: "7.12.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -533,9 +533,9 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Generate an editorial blog image, upload it to GitHub, and return a persistent RAW URL. REQUIRED before create_blog_draft: call once with image_id=cover (16:9), then at least twice for body images (img-01, img-02). Put those URLs into featured_image.url and inline_images[].url. Does not create a post. Preschool/child scenes must be illustration-only.",
+        description: "Generate → QA → versioned GitHub RAW URL. Cover/case_study/concept_diagram: Flux illustration (no readable text). workflow/comparison/explainer: REQUIRED required_labels + layout_spec; server renders SVG with exact Vietnamese text (do not ask Flux to draw letters). Each call creates a NEW url (no overwrite). QA rejects tiny/blurry files. Preschool scenes illustration-only.",
         inputSchema: z.object({
-          idempotency_key: z.string().describe("Same key as the draft. Retry overwrites the same GitHub path."),
+          idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           image_id: z.string().describe("cover or an inline id such as img-01"),
           purpose: z.enum([
             "article_cover",
@@ -545,10 +545,23 @@ function createKingDragonHubMcpServer() {
             "case_study",
             "explainer",
           ]),
-          prompt: z.string().describe("English illustration prompt. No photorealistic children."),
+          prompt: z.string().describe("English scene prompt for Flux covers/illustrations. For infographics, still send a short prompt; labels go in required_labels."),
           alt: z.string().describe("Vietnamese alt text. Required. Copied into featured_image.alt / img alt."),
           aspect: z.enum(["16:9", "4:3", "1:1"]).optional(),
           filename: z.string().optional(),
+          visual_goal: z.string().optional().describe("What the reader must understand from the image."),
+          must_show: z.array(z.string()).optional(),
+          required_labels: z.array(z.string()).optional().describe("Exact Vietnamese strings to render. Required for workflow/comparison/explainer."),
+          required_values: z.array(z.string()).optional(),
+          layout_spec: z.object({
+            type: z.enum(["rubric_matrix", "workflow_steps", "comparison", "scene"]),
+            rows: z.number().optional(),
+            columns: z.number().optional(),
+          }).optional(),
+          must_not_show: z.array(z.string()).optional(),
+          text_language: z.string().optional(),
+          text_accuracy_required: z.boolean().optional(),
+          visual_style: z.string().optional(),
         }),
       },
       async (input) => {

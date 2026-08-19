@@ -175,7 +175,8 @@ export const EDITORIAL_COMMANDS = {
       hear: ["tạo lại cover", "tạo lại ảnh", "đổi ảnh body"],
       do: [
         "generate_and_upload_blog_image",
-        "Gắn URL mới vào featured_image / inline_images rồi mới create hoặc update draft",
+        "workflow/comparison/explainer: required_labels + layout_spec (server vẽ SVG chữ đúng). Cover: Flux, không chữ.",
+        "Gắn URL MỚI vào featured_image / inline_images rồi create hoặc update draft. Không tái sử dụng URL cũ.",
       ],
       never: ["publish"],
     },
