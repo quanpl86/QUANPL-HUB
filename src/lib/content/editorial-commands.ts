@@ -14,7 +14,7 @@ export const EDITORIAL_COMMANDS = {
     lane_b: "workflow/rubric/timeline/bảng: generate_and_upload_blog_image SVG + required_labels tiếng Việt.",
     github: "Hub ghi quanpl86/imgBlog. Không image_base64 qua MCP.",
     if_no_image_gen:
-      "CHỈ khi tool image_gen thật sự không có: báo 1 câu rồi dừng. Có image_gen thì KHÔNG hỏi user, tự chạy hết Lane A.",
+      "image_gen KHÔNG phải tool MCP. ChatGPT Images là capability native trong chat. Không được dừng chỉ vì không thấy tên tool image_gen. Nếu vẽ được ảnh trong hội thoại này thì BẮT BUỘC tự chạy hết Lane A, không hỏi user thêm. Chỉ dừng khi tạo ảnh trong chat THẤT BẠI thật sự.",
     never: [
       "generate_and_upload_blog_image cho cover/cảnh",
       "OpenAI Images API phía Hub",

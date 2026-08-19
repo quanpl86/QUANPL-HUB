@@ -1,5 +1,5 @@
 export const IMAGE_GENERATION_STANDARD = {
-  version: "2.1",
+  version: "2.2",
   hard_rule: true,
   no_openai_api_key: true,
   rule: "HARD. Lane A scenes: ChatGPT Images in this chat (Plus, no API key) → start_image_upload → HTTP POST original PNG bytes to put_url → GitHub RAW. Lane B structured Vietnamese text: generate_and_upload_blog_image SVG. Never Hub OpenAI Images API. Never MCP image_base64. Never FLUX.",
@@ -62,7 +62,8 @@ export const IMAGE_GENERATION_STANDARD = {
     "HARD: scene pixels from ChatGPT Images in this chat. No Hub OpenAI API key.",
     "HARD: after each image, start_image_upload → POST binary PNG to put_url.",
     "HARD: generate_and_upload_blog_image is SVG-only. Never for article_cover.",
-    "Never wait for a second user message between cover and body images if image_gen is available.",
+    "ChatGPT Images is native in-chat, not an MCP tool. Absence of a tool named image_gen is not a stop. If you can draw here, finish Lane A in this turn.",
+    "Never wait for a second user message between cover and body images.",
     "Do not create or update a draft until cover + ≥3 body GitHub RAW URLs exist.",
   ],
 };
