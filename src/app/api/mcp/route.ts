@@ -52,7 +52,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.11.0",
+    version: "7.11.1",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -128,7 +128,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.11.0",
+          mcp_version: "7.11.1",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -567,7 +567,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Create a review-only DRAFT from Article Package v7. Free mode: calendar_id=null. Schedule mode: calendar_id must be an approved due slot from get_due_editorial_slots. If the slot belongs to a week, that week must be approved. Server rejects writing before scheduled_date + scheduled_time (Asia/Ho_Chi_Minh). HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95. Never publish.",
+        description: "Create a review-only DRAFT from Article Package v7. Free mode: calendar_id=null or omit — server attaches a loose slot so admin can reject and you later update_blog_draft(calendar_id from the response). Schedule mode: calendar_id must be an approved due slot from get_due_editorial_slots. If the slot belongs to a week, that week must be approved. Server rejects writing before scheduled_date + scheduled_time (Asia/Ho_Chi_Minh). HARD REQUIREMENTS: cover HTTPS url; at least 2 inline images with {{IMAGE:id}}; system SEO score >= 95. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
           task_id: z.string().optional().nullable(),

@@ -257,7 +257,20 @@ export async function releaseEditorialSlotNow(id: string) {
 
 export async function getEditorialSlotByPostId(postId: string) {
   const supabase = await requireAdmin();
-  return EditorialCalendarRepository.getByPostId(supabase, postId);
+  const existing = await EditorialCalendarRepository.getByPostId(supabase, postId);
+  if (existing) return existing;
+  const { data: post, error } = await supabase
+    .from('posts')
+    .select('id, title, excerpt, is_published, is_ai_generated')
+    .eq('id', postId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!post || post.is_published || !post.is_ai_generated) return null;
+  return EditorialCalendarRepository.attachFreeWriteDraft(supabase, {
+    postId: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+  });
 }
 
 export async function rejectEditorialDraft(

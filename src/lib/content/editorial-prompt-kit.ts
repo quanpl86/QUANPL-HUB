@@ -43,7 +43,8 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
   {
     title: "5. Viết bài — tự do",
     items: [
-      { text: "Viết bài mới chế độ tự do, nội dung là [điền chủ đề]." },
+      { text: "Viết bài mới chế độ tự do, nội dung là [điền chủ đề].", note: "Không cần gõ calendar_id. Cùng vòng trả → GPT sửa như bài lịch tuần." },
+      { text: "Blog tự do: [điền chủ đề]." },
     ],
   },
   {

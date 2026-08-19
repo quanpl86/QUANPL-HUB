@@ -230,10 +230,21 @@ export class PostsRepository {
       }
 
       if (existingPost) {
+        let linkedCalendarId = calendarId;
+        if (!linkedCalendarId) {
+          const slot = await EditorialCalendarRepository.attachFreeWriteDraft(supabase, {
+            postId: existingPost.id,
+            title: draftData.title || existingPost.slug,
+            excerpt: draftData.excerpt,
+            primary_keyword: draftData.seo?.primary_keyword,
+          });
+          linkedCalendarId = slot.id;
+        }
         return {
           success: true,
           created: false,
           reason: "IDEMPOTENT_REPLAY",
+          calendar_id: linkedCalendarId,
           draft: {
             id: existingPost.id,
             slug: existingPost.slug,
@@ -565,11 +576,25 @@ async function handleDraftSuccess(
 ) {
   const taskId = sanitizeTaskId(draftData.task_id);
   const calendarId = sanitizeTaskId(draftData.calendar_id);
+  let linkedCalendarId = calendarId;
   if (calendarId) {
     try {
       await EditorialCalendarRepository.markDrafted(supabase, calendarId, data.id, seoScore);
     } catch (error) {
       console.error("[PostsRepository] mark calendar drafted failed:", error);
+    }
+  } else {
+    try {
+      const slot = await EditorialCalendarRepository.attachFreeWriteDraft(supabase, {
+        postId: data.id,
+        title: data.title,
+        excerpt: data.excerpt,
+        primary_keyword: draftData.seo?.primary_keyword,
+        seoScore,
+      });
+      linkedCalendarId = slot.id;
+    } catch (error) {
+      console.error("[PostsRepository] attach free-write slot failed:", error);
     }
   }
 
@@ -594,6 +619,7 @@ async function handleDraftSuccess(
     success: true,
     created: true,
     draft_id: data.id,
+    calendar_id: linkedCalendarId,
     title: data.title,
     slug: data.slug,
     review_url: `https://kingdragonhub.com/admin/posts/edit/${data.id}`,

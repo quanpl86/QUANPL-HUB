@@ -506,6 +506,37 @@ export class EditorialCalendarRepository {
     return toSlot(data);
   }
 
+  static async attachFreeWriteDraft(
+    supabase: any,
+    input: {
+      postId: string;
+      title: string;
+      excerpt?: string | null;
+      primary_keyword?: string | null;
+      seoScore?: number | null;
+    }
+  ) {
+    const existing = await this.getByPostId(supabase, input.postId);
+    if (existing) return existing;
+    const rows = [{
+      title: input.title.trim() || "Bài viết tự do",
+      outline: (input.excerpt || "Bài viết chế độ tự do").trim(),
+      notes: "free_write",
+      primary_keyword: input.primary_keyword?.trim() || null,
+      why_this_article: "Bài viết chế độ tự do — không thuộc lịch tuần.",
+      source_strategy: "Theo brief người dùng trong chat.",
+      search_intent: "informational",
+      status: "drafted",
+      week_id: null,
+      result_post_id: input.postId,
+      last_seo_score: input.seoScore ?? null,
+      item_order: 0,
+    }];
+    const { data, error } = await supabase.from("editorial_calendar").insert(rows).select("*").single();
+    if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+    return toSlot(data);
+  }
+
   static async markDrafted(supabase: any, id: string, postId: string, seoScore?: number | null) {
     const payload: Record<string, unknown> = {
       status: "drafted",

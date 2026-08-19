@@ -29,6 +29,7 @@ import {
   assertDraftRevisionRequest,
   formatDraftRevisionRequest,
   normalizeDraftRevisionRequest,
+  parseDraftRevisionFromFeedback,
 } from "../src/lib/content/editorial-draft-revision.ts";
 
 test("short command map covers plan, check, revise, and both write modes", () => {
@@ -52,6 +53,9 @@ test("short command map covers plan, check, revise, and both write modes", () =>
   const fix = EDITORIAL_COMMANDS.commands.find((item) => item.id === "fix_rejected_draft");
   assert.ok(fix?.hear.some((item) => /đã viết/.test(item)));
   assert.ok(fix?.do.some((item) => /get_editorial_draft/.test(item)));
+  const free = EDITORIAL_COMMANDS.commands.find((item) => item.id === "free_write");
+  assert.ok(free?.hear.includes("blog tự do"));
+  assert.ok(free?.hear.includes("bài tự do"));
 });
 
 test("admin prompt kit has all editorial job groups", () => {
@@ -285,6 +289,30 @@ test("draft revision request requires a flag or notes and formats Vietnamese ins
   assert.match(body, /97/);
   assert.match(body, /get_editorial_draft/);
   assert.match(body, /update_blog_draft/);
+  const parsed = parseDraftRevisionFromFeedback(body);
+  assert.equal(parsed?.fix_cover, true);
+  assert.equal(parsed?.seo_target, 97);
+  assert.equal(parsed?.notes, "Ảnh bìa mờ");
+});
+
+test("attachFreeWriteDraft reuses an existing slot for the same post", async () => {
+  const existing = { id: "slot-fw", week_id: null, title: "Free", status: "drafted", result_post_id: "post-1", tags: [] };
+  const supabase = {
+    from(table: string) {
+      return {
+        select() { return this; },
+        eq() { return this; },
+        maybeSingle: async () => ({ data: existing, error: null }),
+        insert() { throw new Error("should not insert"); },
+      };
+    },
+  };
+  const slot = await EditorialCalendarRepository.attachFreeWriteDraft(supabase, {
+    postId: "post-1",
+    title: "Free",
+  });
+  assert.equal(slot.id, "slot-fw");
+  assert.equal(slot.week_id, null);
 });
 
 test("report buckets ChatGPT revises by ISO week and first-pass approved weeks", () => {

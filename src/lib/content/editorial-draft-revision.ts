@@ -80,3 +80,23 @@ export function formatDraftRevisionRequest(request: DraftRevisionRequest): strin
   );
   return lines.join("\n");
 }
+
+export function parseDraftRevisionFromFeedback(text: string | null | undefined): DraftRevisionRequest | null {
+  const body = String(text || "").trim();
+  if (!body) return null;
+  if (!body.includes("YÊU CẦU SỬA DRAFT")) {
+    return normalizeDraftRevisionRequest(body);
+  }
+  const detail = /Chi tiết:\s*([\s\S]*?)(?:\nChatGPT:|$)/.exec(body);
+  const seo = /Điểm SEO mục tiêu\s*≥\s*(\d+)/.exec(body);
+  return normalizeDraftRevisionRequest({
+    fix_content: body.includes("Câu chữ"),
+    fix_style: body.includes("Văn phong"),
+    fix_cover: body.includes("Ảnh bìa"),
+    fix_inline_images: body.includes("Ảnh trong bài"),
+    fix_seo: body.includes("Chuẩn hoá SEO") || Boolean(seo),
+    fix_aio: body.includes("Chuẩn hoá AIO"),
+    seo_target: seo ? Number(seo[1]) : null,
+    notes: detail?.[1]?.trim() || "",
+  });
+}

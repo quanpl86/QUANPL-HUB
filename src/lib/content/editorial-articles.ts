@@ -1,6 +1,10 @@
 import { EditorialCalendarRepository, type EditorialSlot } from "./editorial-calendar";
 import { EditorialCommentRepository } from "./editorial-comments";
-import { normalizeDraftRevisionRequest, type DraftRevisionRequest } from "./editorial-draft-revision";
+import {
+  normalizeDraftRevisionRequest,
+  parseDraftRevisionFromFeedback,
+  type DraftRevisionRequest,
+} from "./editorial-draft-revision";
 
 export type EditorialArticleSummary = {
   calendar_id: string;
@@ -14,6 +18,7 @@ export type EditorialArticleSummary = {
   scheduled_time: string | null;
   last_seo_score: number | null;
   can_update: boolean;
+  mode: "week" | "free_write";
 };
 
 function workflowStatus(slot: EditorialSlot, isPublished: boolean): EditorialArticleSummary["workflow_status"] {
@@ -53,12 +58,13 @@ export class EditorialArticlesRepository {
         scheduled_time: slot.scheduled_time,
         last_seo_score: slot.last_seo_score,
         can_update: status === "revise" || status === "review",
+        mode: slot.week_id ? "week" : "free_write",
       };
     });
     return {
       articles,
       instruction:
-        "published = đã đăng, LOCKED — không update_blog_draft. review = chờ admin đọc. revise = admin đã trả, gọi get_editorial_draft rồi update_blog_draft(calendar_id). writing = GPT đang gửi draft.",
+        "published = đã đăng, LOCKED. review = chờ admin đọc. revise = admin đã trả — get_editorial_draft rồi update_blog_draft(calendar_id). mode=free_write là bài tự do (week_id null), cùng vòng trả/sửa. writing = GPT đang gửi draft.",
     };
   }
 
@@ -92,7 +98,9 @@ export class EditorialArticlesRepository {
       );
     }
 
-    const revision = await latestRevisionRequest(supabase, slot.id);
+    const revision =
+      (await latestRevisionRequest(supabase, slot.id)) ||
+      parseDraftRevisionFromFeedback(slot.admin_feedback);
     const isPublished = Boolean(post.is_published || slot.status === "published");
     const status = workflowStatus(slot, isPublished);
 
@@ -156,7 +164,14 @@ async function latestRevisionRequest(supabase: any, slotId: string): Promise<Dra
 }
 
 export async function seoTargetForSlot(supabase: any, slotId: string, fallback = 95): Promise<number> {
-  const request = await latestRevisionRequest(supabase, slotId);
-  if (request?.seo_target && request.seo_target > fallback) return request.seo_target;
+  const fromActivity = await latestRevisionRequest(supabase, slotId);
+  if (fromActivity?.seo_target && fromActivity.seo_target > fallback) return fromActivity.seo_target;
+  try {
+    const slot = await EditorialCalendarRepository.get(supabase, slotId);
+    const parsed = parseDraftRevisionFromFeedback(slot.admin_feedback);
+    if (parsed?.seo_target && parsed.seo_target > fallback) return parsed.seo_target;
+  } catch {
+    /* unknown slot */
+  }
   return fallback;
 }
