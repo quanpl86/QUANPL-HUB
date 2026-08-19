@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.21.0",
+    version: "7.22.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -123,7 +123,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Contract canary + short-command map. Call first every session. When writing an article: ChatGPT Images cover + at least 3 body images, start_image_upload then POST put_url to GitHub, then create_blog_draft. Never MCP image_base64 for those images.",
+      description: "Contract canary + short-command map. Call first every session. Covers/scenes: ChatGPT Images IN THIS CHAT (one at a time) then start_image_upload POST put_url. generate_and_upload_blog_image is SVG-only. Never Hub OpenAI API for Plus covers.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -131,7 +131,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.21.0",
+          mcp_version: "7.22.0",
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
           media_tool: "start_image_upload",
           media_tools: ["start_image_upload", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
@@ -652,7 +652,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Image Generation Standard v1.2. PRIMARY scene engine is OpenAI ChatGPT Images (gpt-image-1.5 then gpt-image-1), then Gemini, Flux, Stability. Hub stores PNG/original bytes as-is — no extra compression. Cover ≥1536×864. 429 skips to the next provider. PRIMARY for rubric/workflow/timeline/table is SVG with exact Vietnamese required_labels. Best visual quality: create in ChatGPT chat then pass source_url of the ORIGINAL, never a compressed WebP. Always a new URL. Do not choose FLUX yourself.",
+        description: "SVG ONLY for workflow/rubric/timeline/table/comparison with exact Vietnamese required_labels. Do NOT use this to generate covers or scene illustrations. Hub has no ChatGPT Plus Images; calling this for article_cover hits OpenAI API (often ExceptionGroup) or fails QA. For covers/scenes: create with ChatGPT Images IN THIS CHAT one at a time, then start_image_upload and POST PNG bytes to put_url.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           article_key: z.string().optional().describe("Article slug used in the filename."),
