@@ -164,7 +164,7 @@ export const EDITORIAL_COMMANDS = {
       do: [
         "list_editorial_articles — published/review/revise/writing",
         "revise: get_editorial_draft(calendar_id), đọc revision_request + comments",
-        "Ảnh bìa/body: generate_and_upload_blog_image rồi gắn URL mới",
+        "Ảnh bìa/body mờ: tạo lại PNG gốc ≥1536 (cover) rồi upload_blog_image — không nén WebP",
         "SEO/AIO: đạt seo_target nếu admin ghi, tối thiểu 95",
         "update_blog_draft(calendar_id). Không tạo bài mới",
       ],
@@ -180,12 +180,14 @@ export const EDITORIAL_COMMANDS = {
         "tạo trực tiếp",
       ],
       do: [
-        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này (Plus, không API key), rồi upload_blog_image image_base64",
+        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này (Plus, không API key), rồi upload_blog_image với PNG gốc. Cover ≥1536×864, inline ≥1280×720",
+        "Ưu tiên source_url file gốc. image_base64 chỉ khi PNG không bị cắt. KHÔNG nén WebP, KHÔNG resize 800×450",
+        "Nếu base64 quá lớn: generate_and_upload_blog_image để Hub tạo PNG — không được nén cho vừa tool",
         "Rubric/workflow/timeline/bảng: generate_and_upload_blog_image + required_labels, SVG",
         "Chỉ khi user bắt Hub tự gen (không ảnh trong chat): generate_and_upload_blog_image không base64 — server fallback, có thể 429",
         "Gắn URL MỚI vào package. Không tái sử dụng URL cũ.",
       ],
-      never: ["publish"],
+      never: ["publish", "nén WebP 800x450", "giảm chất lượng để vừa tool call"],
     },
     {
       id: "use_existing_taxonomy",

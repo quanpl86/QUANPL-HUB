@@ -66,6 +66,22 @@ function webpSize(bytes: Buffer): { width: number | null; height: number | null 
   return { width: null, height: null };
 }
 
+export const IMAGE_QA_MIN_SIZE = {
+  cover: { width: 1536, height: 864 },
+  inline: { width: 1280, height: 720 },
+  infographic: { width: 1000, height: 700 },
+} as const;
+
+const QUALITY_HINT =
+  "Do NOT resize, convert to small WebP, or compress to fit the tool call. Upload the original PNG (cover ≥1536×864, inline ≥1280×720). If MCP truncates image_base64, pass source_url of the original HTTPS file instead — never a downscaled 800×450 WebP.";
+
+export function minRasterBytes(width: number, height: number, ext: ImageSniff["ext"]): number {
+  const pixels = Math.max(1, width * height);
+  if (ext === "jpg") return Math.max(180_000, Math.ceil(pixels * 0.14));
+  if (ext === "webp") return Math.max(200_000, Math.ceil(pixels * 0.16));
+  return Math.max(250_000, Math.ceil(pixels * 0.22));
+}
+
 export function assertImageQa(
   bytes: Buffer,
   sniff: ImageSniff,
@@ -73,21 +89,22 @@ export function assertImageQa(
 ): string[] {
   const gates: string[] = [];
   if (sniff.ext === "svg") {
-    gates.push("IMAGE_RESOLUTION_PASS", "IMAGE_SHARPNESS_PASS", "IMAGE_FORMAT_PASS");
+    gates.push("IMAGE_RESOLUTION_PASS", "IMAGE_SHARPNESS_PASS", "IMAGE_FORMAT_PASS", "IMAGE_COMPRESSION_PASS");
     return gates;
   }
-  const minW = kind === "cover" ? 1280 : 1000;
-  const minH = kind === "cover" ? 720 : 700;
-  if (!sniff.width || !sniff.height || sniff.width < minW || sniff.height < minH) {
+  const min = IMAGE_QA_MIN_SIZE[kind];
+  if (!sniff.width || !sniff.height || sniff.width < min.width || sniff.height < min.height) {
     throw new Error(
-      `IMAGE_QA_FAILED: IMAGE_RESOLUTION_PASS width=${sniff.width} height=${sniff.height} min=${minW}x${minH}`
+      `IMAGE_QA_FAILED: IMAGE_RESOLUTION_PASS width=${sniff.width} height=${sniff.height} min=${min.width}x${min.height}. ${QUALITY_HINT}`
     );
   }
   gates.push("IMAGE_RESOLUTION_PASS");
-  const minBytes = sniff.ext === "jpg" ? 50_000 : 80_000;
+  const minBytes = minRasterBytes(sniff.width, sniff.height, sniff.ext);
   if (bytes.length < minBytes) {
-    throw new Error(`IMAGE_QA_FAILED: IMAGE_SHARPNESS_PASS file too small (${bytes.length} bytes) for ${sniff.width}x${sniff.height}`);
+    throw new Error(
+      `IMAGE_QA_FAILED: IMAGE_COMPRESSION_TOO_HIGH bytes=${bytes.length} min=${minBytes} for ${sniff.width}x${sniff.height} ${sniff.ext}. ${QUALITY_HINT}`
+    );
   }
-  gates.push("IMAGE_SHARPNESS_PASS", "IMAGE_FORMAT_PASS");
+  gates.push("IMAGE_SHARPNESS_PASS", "IMAGE_COMPRESSION_PASS", "IMAGE_FORMAT_PASS");
   return gates;
 }

@@ -53,7 +53,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.15.0",
+    version: "7.16.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -129,7 +129,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.15.0",
+          mcp_version: "7.16.0",
           media_tool: "upload_blog_image",
           media_tools: ["upload_blog_image", "generate_and_upload_blog_image"],
           taxonomy_tool: "get_blog_categories",
@@ -537,7 +537,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "upload_blog_image",
       {
-        description: "PRIMARY for cover/illustration: ChatGPT creates the image in this chat (Plus, no API key), then call this tool to store it on KingDragonHub. Pass image_base64 (data URL or raw base64 of the image you just generated) or source_url if you have a public HTTPS URL. QA + versioned GitHub RAW URL. Does not call OpenAI API. For rubric/workflow/table with exact Vietnamese text use generate_and_upload_blog_image (SVG) instead.",
+        description: "PRIMARY for cover/illustration: ChatGPT creates the image in this chat (Plus, no API key), then this tool stores the ORIGINAL pixels on KingDragonHub. Hub does not recompress. Cover ≥1536×864, inline ≥1280×720, PNG preferred. NEVER resize to 800×450, NEVER convert to small WebP/JPEG to fit the tool call. If image_base64 would be truncated, pass source_url of the original full-resolution HTTPS file (or call generate_and_upload_blog_image so Hub generates a PNG). QA rejects over-compressed files. For rubric/workflow/table with exact Vietnamese text use generate_and_upload_blog_image (SVG).",
         inputSchema: z.object({
           idempotency_key: z.string(),
           article_key: z.string().optional(),
@@ -559,8 +559,8 @@ function createKingDragonHubMcpServer() {
           prompt: z.string().optional(),
           aspect: z.enum(["16:9", "4:3", "1:1"]).optional(),
           filename: z.string().optional(),
-          image_base64: z.string().optional().describe("PNG/JPEG/WebP as data URL or raw base64 from the image you created in this chat."),
-          source_url: z.string().optional().describe("Public HTTPS URL only. ChatGPT file URLs often fail; prefer image_base64."),
+          image_base64: z.string().optional().describe("Original PNG (preferred) as data URL or raw base64. Do not downscale or WebP-compress first. If this would be truncated, omit it and use source_url."),
+          source_url: z.string().optional().describe("PREFERRED when the original file is large. Public HTTPS of the FULL-RESOLUTION original (GitHub RAW PNG, etc.). ChatGPT file URLs may fail — then use generate_and_upload_blog_image instead of compressing."),
         }),
       },
       async (input) => {
@@ -579,7 +579,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Image Generation Standard v1.1. PRIMARY scene engine is OpenAI ChatGPT Images (gpt-image-1.5 then gpt-image-1), then Gemini, Flux, Stability. 429 skips to the next provider. PRIMARY for rubric/workflow/timeline/table is SVG with exact Vietnamese required_labels — never an image model for 100% accurate long text. Best visual quality: create in ChatGPT chat then pass source_url. Always a new URL. Do not choose FLUX yourself.",
+        description: "Image Generation Standard v1.2. PRIMARY scene engine is OpenAI ChatGPT Images (gpt-image-1.5 then gpt-image-1), then Gemini, Flux, Stability. Hub stores PNG/original bytes as-is — no extra compression. Cover ≥1536×864. 429 skips to the next provider. PRIMARY for rubric/workflow/timeline/table is SVG with exact Vietnamese required_labels. Best visual quality: create in ChatGPT chat then pass source_url of the ORIGINAL, never a compressed WebP. Always a new URL. Do not choose FLUX yourself.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           article_key: z.string().optional().describe("Article slug used in the filename."),
@@ -618,8 +618,8 @@ function createKingDragonHubMcpServer() {
           text_accuracy_required: z.boolean().optional(),
           visual_style: z.string().optional(),
           qa_required: z.boolean().optional(),
-          source_url: z.string().optional().describe("HTTPS URL of an image already created in ChatGPT. Server fetches, QAs, and uploads a versioned RAW URL. Skip generation."),
-          image_base64: z.string().optional().describe("Prefer upload_blog_image. Data URL or raw base64 of a ChatGPT-created image."),
+          source_url: z.string().optional().describe("HTTPS URL of the ORIGINAL full-resolution image. Server fetches, QAs, stores bytes as-is, returns a versioned RAW URL. Skip generation. Do not point this at a downscaled WebP."),
+          image_base64: z.string().optional().describe("Prefer upload_blog_image. Original PNG data URL/base64 only — never a compressed thumbnail."),
         }),
       },
       async (input) => {

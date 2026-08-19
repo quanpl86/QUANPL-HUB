@@ -176,6 +176,7 @@ export function ExploreContent({ initialPosts, categories, title, subtitle = 'TÃ
                         alt={post.title} 
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        quality={95}
                         className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
                       />
                     )}

@@ -1,9 +1,20 @@
 export const IMAGE_GENERATION_STANDARD = {
-  version: "1.1",
-  rule: "ChatGPT decides WHAT image is needed. MCP Image Router decides WHICH engine. QA decides IF it may enter the draft. OpenAI / ChatGPT Images is PRIMARY for scenes. SVG is PRIMARY for exact Vietnamese structured text.",
+  version: "1.2",
+  rule: "ChatGPT decides WHAT image is needed. MCP Image Router decides WHICH engine. QA decides IF it may enter the draft. OpenAI / ChatGPT Images is PRIMARY for scenes. SVG is PRIMARY for exact Vietnamese structured text. Never compress/downscale to fit a tool call.",
+  quality: {
+    cover_min: "1536x864",
+    inline_min: "1280x720",
+    prefer: "original PNG, Hub stores bytes as-is",
+    forbidden: [
+      "resize to 800x450 or similar to shrink base64",
+      "convert to small WebP/JPEG as a payload trick",
+      "upscale a tiny compressed file to pass resolution",
+    ],
+    if_base64_too_large: "pass source_url of the ORIGINAL full-resolution HTTPS file, or call generate_and_upload_blog_image so Hub creates a PNG. Do not compress.",
+  },
   lanes: {
-    chat_direct: "PRIMARY for cover/illustration: create with ChatGPT Images in this chat (Plus, no API key). Then upload_blog_image with image_base64. MCP does not generate those pixels.",
-    hub_post: "Only if the user insists Hub generate without an in-chat image: generate_and_upload_blog_image. Engine OpenAI API→Gemini→Flux→Stability (API billed, not Plus). Do not pick FLUX yourself.",
+    chat_direct: "PRIMARY for cover/illustration: create with ChatGPT Images in this chat (Plus, no API key). Then upload_blog_image with source_url of the original or uncompressed image_base64. MCP does not generate those pixels and does not recompress.",
+    hub_post: "Only if the user insists Hub generate without an in-chat image, OR if original pixels cannot be sent without compressing: generate_and_upload_blog_image. Engine OpenAI API→Gemini→Flux→Stability (API billed, not Plus). Do not pick FLUX yourself.",
   },
   primary: {
     scene: "chatgpt_images_then_upload_blog_image",
@@ -36,7 +47,8 @@ export const IMAGE_GENERATION_STANDARD = {
     split: ["concept", "practice", "application"],
   },
   agent_must: [
-    "If the user wants the nicest cover/illustration: create with ChatGPT Images in this chat first, then source_url into Hub.",
+    "If the user wants the nicest cover/illustration: create with ChatGPT Images in this chat first, then upload the ORIGINAL pixels (source_url preferred). Never WebP 800x450.",
+    "If base64 would be truncated: do not compress. Use source_url of the original, or generate_and_upload_blog_image (Hub PNG).",
     "If the user wants Hub to generate for the post: call generate_and_upload_blog_image and let MCP pick OpenAI first. Do not choose FLUX.",
     "Cover: 16:9, no text.",
     "Body illustrations: 2–4 distinct scenes, not 3 similar clipboard shots.",

@@ -280,6 +280,7 @@ export default async function PostPage({ params }: PostPageProps) {
               alt={post.seo_keywords?.image_alt || post.title} 
               fill
               sizes="(max-width: 1200px) 100vw, 1200px"
+              quality={95}
               priority
               className="object-contain z-10"
             />

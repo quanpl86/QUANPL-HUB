@@ -146,6 +146,7 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
                         alt={data.title || 'Preview Image'}
                         fill
                         sizes="(max-width: 1200px) 100vw, 1200px"
+                        quality={95}
                         className="object-contain z-10"
                       />
                     </>

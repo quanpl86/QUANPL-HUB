@@ -429,8 +429,9 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   }
 
   let sniff = sniffImage(bytes);
+  let qaGates: string[] = [];
   try {
-    assertImageQa(bytes, sniff, kind);
+    qaGates = assertImageQa(bytes, sniff, kind);
   } catch (error) {
     if (renderer === "svg" || renderer === "upload") throw error;
     const retry = await fetchGeneratedImage(`${generatePrompt}, ultra sharp, high definition`, aspect, input.purpose);
@@ -438,7 +439,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     renderer = retry.generator;
     attempts = [...attempts, ...retry.attempts];
     sniff = sniffImage(bytes);
-    assertImageQa(bytes, sniff, kind);
+    qaGates = assertImageQa(bytes, sniff, kind);
   }
 
   const filePath = buildVersionedAssetPath(input.idempotency_key, input.image_id, sniff.ext, filename);
@@ -448,7 +449,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     `Add editorial image ${input.image_id} (${input.purpose}, ${sniff.ext})`
   );
 
-  const gates = ["IMAGE_RESOLUTION_PASS", "IMAGE_SHARPNESS_PASS", "IMAGE_FORMAT_PASS", "IMAGE_ASPECT_RATIO_PASS"];
+  const gates = [...qaGates, "IMAGE_ASPECT_RATIO_PASS"];
   if (textPolicy === "no_text") gates.push("IMAGE_NO_TEXT_PASS");
   if (infographic) {
     gates.push("IMAGE_TEXT_MATCH_PASS", "IMAGE_LANGUAGE_VI_PASS", "IMAGE_LAYOUT_PASS", "IMAGE_CONTENT_MATCH_PASS");
@@ -463,6 +464,8 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
     width: sniff.width || requested.width,
     height: sniff.height || requested.height,
     mime_type: sniff.mime,
+    file_bytes: bytes.length,
+    stored_as_received: true,
     path: uploaded.path,
     provider: uploaded.provider,
     renderer,

@@ -14,8 +14,8 @@ import {
   renderInfographicSvg,
   shouldRenderInfographic,
 } from "../src/lib/content/blog-infographic.ts";
-import { sniffImage } from "../src/lib/content/image-qa.ts";
-import { resolveTextPolicy } from "../src/lib/content/image-generation-standard.ts";
+import { assertImageQa, minRasterBytes, sniffImage } from "../src/lib/content/image-qa.ts";
+import { IMAGE_GENERATION_STANDARD, resolveTextPolicy } from "../src/lib/content/image-generation-standard.ts";
 
 test("rejects photorealistic child prompts", () => {
   assert.throws(
@@ -52,12 +52,12 @@ test("image generator chain is OpenAI then Gemini then Flux then Stability", () 
     OPENAI_API_KEY: "sk-test",
     GEMINI_API_KEY: "gem-test",
     STABILITY_API_KEY: "sk-stab",
-  } as NodeJS.ProcessEnv);
+  } as unknown as NodeJS.ProcessEnv);
   assert.deepEqual(chain, ["openai", "gemini", "flux", "stability"]);
 });
 
 test("image generator chain without paid keys still has flux", () => {
-  const chain = imageGeneratorChain({} as NodeJS.ProcessEnv);
+  const chain = imageGeneratorChain({} as unknown as NodeJS.ProcessEnv);
   assert.deepEqual(chain, ["flux"]);
 });
 
@@ -126,4 +126,58 @@ test("workflow with labels is rendered as infographic", () => {
     shouldRenderInfographic({ purpose: "article_cover", required_labels: [] }),
     false
   );
+});
+
+function fakePng(width: number, height: number, byteLength: number): Buffer {
+  const bytes = Buffer.alloc(Math.max(byteLength, 32));
+  bytes[0] = 0x89;
+  bytes[1] = 0x50;
+  bytes[2] = 0x4e;
+  bytes[3] = 0x47;
+  bytes.writeUInt32BE(width, 16);
+  bytes.writeUInt32BE(height, 20);
+  return bytes;
+}
+
+function fakeWebp(width: number, height: number, byteLength: number): Buffer {
+  const bytes = Buffer.alloc(Math.max(byteLength, 32));
+  bytes.write("RIFF", 0);
+  bytes.write("WEBP", 8);
+  bytes.write("VP8X", 12);
+  const w = width - 1;
+  const h = height - 1;
+  bytes[24] = w & 255;
+  bytes[25] = (w >> 8) & 255;
+  bytes[26] = (w >> 16) & 255;
+  bytes[27] = h & 255;
+  bytes[28] = (h >> 8) & 255;
+  bytes[29] = (h >> 16) & 255;
+  return bytes;
+}
+
+test("rejects ChatGPT-style 800x450 compressed WebP covers", () => {
+  const tiny = fakeWebp(800, 450, 40_000);
+  const sniff = sniffImage(tiny);
+  assert.equal(sniff.width, 800);
+  assert.equal(sniff.height, 450);
+  assert.throws(() => assertImageQa(tiny, sniff, "cover"), /IMAGE_RESOLUTION_PASS|IMAGE_COMPRESSION_TOO_HIGH/);
+});
+
+test("rejects a 1280x720 cover that is still over-compressed", () => {
+  const flat = fakePng(1280, 720, 90_000);
+  const sniff = sniffImage(flat);
+  assert.throws(() => assertImageQa(flat, sniff, "cover"), /IMAGE_RESOLUTION_PASS|IMAGE_COMPRESSION_TOO_HIGH/);
+});
+
+test("accepts a full-size PNG cover", () => {
+  const png = fakePng(1920, 1080, minRasterBytes(1920, 1080, "png"));
+  const sniff = sniffImage(png);
+  const gates = assertImageQa(png, sniff, "cover");
+  assert.ok(gates.includes("IMAGE_COMPRESSION_PASS"));
+  assert.ok(gates.includes("IMAGE_RESOLUTION_PASS"));
+});
+
+test("image generation standard forbids compressing to fit the tool call", () => {
+  assert.equal(IMAGE_GENERATION_STANDARD.version, "1.2");
+  assert.match(IMAGE_GENERATION_STANDARD.quality.if_base64_too_large, /Do not compress/);
 });
