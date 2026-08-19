@@ -4,6 +4,7 @@ import {
   assertSafeImagePrompt,
   buildIdempotentAssetPath,
   buildVersionedAssetPath,
+  imageGeneratorChain,
   openaiImageSize,
   slugAssetPart,
 } from "../src/lib/content/blog-image.ts";
@@ -36,6 +37,20 @@ test("idempotent path is stable for the same keys", () => {
 
 test("slug strips vietnamese diacritics", () => {
   assert.equal(slugAssetPart("Ảnh bìa mầm non"), "anh-bia-mam-non");
+});
+
+test("image generator chain is OpenAI then Gemini then Flux then Stability", () => {
+  const chain = imageGeneratorChain({
+    OPENAI_API_KEY: "sk-test",
+    GEMINI_API_KEY: "gem-test",
+    STABILITY_API_KEY: "sk-stab",
+  } as NodeJS.ProcessEnv);
+  assert.deepEqual(chain, ["openai", "gemini", "flux", "stability"]);
+});
+
+test("image generator chain without paid keys still has flux", () => {
+  const chain = imageGeneratorChain({} as NodeJS.ProcessEnv);
+  assert.deepEqual(chain, ["flux"]);
 });
 
 test("OpenAI image size maps Hub aspects", () => {

@@ -73,11 +73,23 @@ export function openaiImageSize(aspect?: string): "1536x1024" | "1024x1024" | "1
   return "1536x1024";
 }
 
-export function preferredImageGenerator(): "openai" | "flux" {
-  const forced = (process.env.BLOG_IMAGE_PROVIDER || "auto").toLowerCase();
-  if (forced === "flux") return "flux";
-  if (forced === "openai") return "openai";
-  return process.env.OPENAI_API_KEY ? "openai" : "flux";
+export type SceneGenerator = "openai" | "gemini" | "flux" | "stability";
+
+export function imageGeneratorChain(env: NodeJS.ProcessEnv = process.env): SceneGenerator[] {
+  const forced = (env.BLOG_IMAGE_PROVIDER || "auto").toLowerCase();
+  const available: SceneGenerator[] = [];
+  if (env.OPENAI_API_KEY) available.push("openai");
+  if (env.GEMINI_API_KEY || env.GOOGLE_API_KEY) available.push("gemini");
+  available.push("flux");
+  if (env.STABILITY_API_KEY) available.push("stability");
+  if (forced === "openai" || forced === "gemini" || forced === "flux" || forced === "stability") {
+    return [forced, ...available.filter((item) => item !== forced)];
+  }
+  return available;
+}
+
+export function preferredImageGenerator(): SceneGenerator {
+  return imageGeneratorChain()[0] || "flux";
 }
 
 async function sleep(ms: number) {
@@ -135,6 +147,63 @@ async function fetchOpenAiImage(prompt: string, aspect: string, purpose: string)
   throw new Error(lastError);
 }
 
+function geminiAspect(aspect?: string): string {
+  if (aspect === "1:1" || aspect === "4:3" || aspect === "16:9" || aspect === "9:16" || aspect === "3:4") return aspect;
+  return "16:9";
+}
+
+async function fetchGeminiImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
+  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!key) throw new Error("IMAGE_GENERATE_FAILED: missing GEMINI_API_KEY");
+  const model = process.env.GEMINI_IMAGE_MODEL || "imagen-4.0-generate-001";
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${encodeURIComponent(key)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        instances: [{ prompt: withEditorialSuffix(prompt, purpose) }],
+        parameters: { sampleCount: 1, aspectRatio: geminiAspect(aspect) },
+      }),
+      signal: AbortSignal.timeout(90000),
+    }
+  );
+  const json = await response.json() as {
+    error?: { message?: string };
+    predictions?: Array<{ bytesBase64Encoded?: string; mimeType?: string }>;
+  };
+  if (response.status === 429) throw new Error("IMAGE_GENERATE_FAILED: 429 gemini rate limit");
+  if (!response.ok) {
+    throw new Error(`IMAGE_GENERATE_FAILED: gemini ${response.status} ${json.error?.message || ""}`.trim());
+  }
+  const b64 = json.predictions?.[0]?.bytesBase64Encoded;
+  if (!b64) throw new Error("IMAGE_GENERATE_FAILED: gemini returned no image");
+  return { bytes: Buffer.from(b64, "base64"), mimeType: json.predictions?.[0]?.mimeType || "image/png" };
+}
+
+async function fetchStabilityImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
+  const key = process.env.STABILITY_API_KEY;
+  if (!key) throw new Error("IMAGE_GENERATE_FAILED: missing STABILITY_API_KEY");
+  const form = new FormData();
+  form.set("prompt", withEditorialSuffix(prompt, purpose));
+  form.set("output_format", "png");
+  form.set("aspect_ratio", geminiAspect(aspect));
+  const response = await fetch("https://api.stability.ai/v2beta/stable-image/generate/core", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, Accept: "image/*" },
+    body: form,
+    signal: AbortSignal.timeout(90000),
+  });
+  if (response.status === 429) throw new Error("IMAGE_GENERATE_FAILED: 429 stability rate limit");
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`IMAGE_GENERATE_FAILED: stability ${response.status} ${text.slice(0, 200)}`);
+  }
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length < 1000) throw new Error("IMAGE_GENERATE_FAILED: stability empty image");
+  return { bytes, mimeType: response.headers.get("content-type") || "image/png" };
+}
+
 async function fetchFluxImage(prompt: string, aspect: string, purpose: string): Promise<{ bytes: Buffer; mimeType: string }> {
   const size = ASPECT_SIZE[aspect] || ASPECT_SIZE["16:9"];
   const url =
@@ -167,19 +236,42 @@ async function fetchGeneratedImage(
   prompt: string,
   aspect: string,
   purpose: string
-): Promise<{ bytes: Buffer; generator: "openai" | "flux" }> {
-  const preferred = preferredImageGenerator();
-  if (preferred === "openai") {
+): Promise<{ bytes: Buffer; generator: SceneGenerator }> {
+  const chain = imageGeneratorChain();
+  const errors: string[] = [];
+  for (const generator of chain) {
     try {
-      const openai = await fetchOpenAiImage(prompt, aspect, purpose);
-      return { bytes: openai.bytes, generator: "openai" };
+      if (generator === "openai") {
+        const result = await fetchOpenAiImage(prompt, aspect, purpose);
+        return { bytes: result.bytes, generator };
+      }
+      if (generator === "gemini") {
+        const result = await fetchGeminiImage(prompt, aspect, purpose);
+        return { bytes: result.bytes, generator };
+      }
+      if (generator === "stability") {
+        const result = await fetchStabilityImage(prompt, aspect, purpose);
+        return { bytes: result.bytes, generator };
+      }
+      const result = await fetchFluxImage(prompt, aspect, purpose);
+      return { bytes: result.bytes, generator: "flux" };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error("[blog-image] OpenAI generate failed, falling back to flux:", message);
+      errors.push(`${generator}: ${message}`);
+      console.error(`[blog-image] ${generator} failed, trying next:`, message);
     }
   }
-  const flux = await fetchFluxImage(prompt, aspect, purpose);
-  return { bytes: flux.bytes, generator: "flux" };
+  throw new Error(`IMAGE_GENERATE_FAILED: all providers failed (${errors.join(" | ")})`);
+}
+
+async function fetchSourceImage(url: string): Promise<{ bytes: Buffer; generator: "upload" }> {
+  if (!/^https:\/\//i.test(url)) throw new Error("IMAGE_UPLOAD_FAILED: source_url must be https");
+  const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
+  if (!response.ok) throw new Error(`IMAGE_UPLOAD_FAILED: source_url ${response.status}`);
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length < 1000) throw new Error("IMAGE_UPLOAD_FAILED: source_url empty");
+  if (bytes.length > 10 * 1024 * 1024) throw new Error("IMAGE_UPLOAD_FAILED: source_url exceeds 10MB");
+  return { bytes, generator: "upload" };
 }
 
 async function upsertGithubFile(
@@ -246,23 +338,28 @@ export type BlogImageGenerateInput = {
   text_language?: string;
   text_accuracy_required?: boolean;
   visual_style?: string;
+  source_url?: string;
 };
 
 export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) {
   if (!input.alt.trim()) {
     throw new Error("QUALITY_GATE_FAILED: COVER_ALT_MISSING");
   }
-  assertSafeImagePrompt(input.prompt);
-  assertInfographicContract(input);
+  if (input.prompt) assertSafeImagePrompt(input.prompt);
+  if (!input.source_url) assertInfographicContract(input);
 
   const aspect = input.aspect || (input.purpose === "article_cover" ? "16:9" : "4:3");
   const requested = ASPECT_SIZE[aspect] || ASPECT_SIZE["16:9"];
-  const infographic = shouldRenderInfographic(input);
+  const infographic = !input.source_url && shouldRenderInfographic(input);
   const kind = infographic ? "infographic" : input.purpose === "article_cover" ? "cover" : "inline";
 
   let bytes: Buffer;
-  let renderer: "svg" | "openai" | "flux" = "flux";
-  if (infographic) {
+  let renderer: "svg" | SceneGenerator | "upload" = "flux";
+  if (input.source_url) {
+    const uploadedSource = await fetchSourceImage(input.source_url);
+    bytes = uploadedSource.bytes;
+    renderer = "upload";
+  } else if (infographic) {
     bytes = renderInfographicSvg({
       visual_goal: input.visual_goal || input.alt,
       required_labels: input.required_labels,
@@ -281,7 +378,7 @@ export async function generateAndUploadBlogImage(input: BlogImageGenerateInput) 
   try {
     assertImageQa(bytes, sniff, kind);
   } catch (error) {
-    if (renderer === "svg") throw error;
+    if (renderer === "svg" || renderer === "upload") throw error;
     const retry = await fetchGeneratedImage(`${input.prompt}, ultra sharp, high definition`, aspect, input.purpose);
     bytes = retry.bytes;
     renderer = retry.generator;

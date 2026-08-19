@@ -172,11 +172,18 @@ export const EDITORIAL_COMMANDS = {
     },
     {
       id: "regen_images",
-      hear: ["tạo lại cover", "tạo lại ảnh", "đổi ảnh body"],
+      hear: [
+        "tạo lại cover",
+        "tạo lại ảnh",
+        "đổi ảnh body",
+        "tạo ảnh cho bài post",
+        "tạo trực tiếp",
+      ],
       do: [
-        "generate_and_upload_blog_image",
-        "workflow/comparison/explainer: required_labels + layout_spec (server vẽ SVG chữ đúng). Cover: Flux, không chữ.",
-        "Gắn URL MỚI vào featured_image / inline_images rồi create hoặc update draft. Không tái sử dụng URL cũ.",
+        "Cover/minh họa không chữ: generate_and_upload_blog_image, server auto OpenAI→Gemini→FLUX→Stability",
+        "Ảnh có chữ (rubric/workflow/bảng): required_labels + layout_spec, server SVG",
+        "Ảnh đã tạo trong ChatGPT: generate_and_upload_blog_image source_url=https…",
+        "Gắn URL MỚI vào featured_image / inline_images. Không tái sử dụng URL cũ.",
       ],
       never: ["publish"],
     },

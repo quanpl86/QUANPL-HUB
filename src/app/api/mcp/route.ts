@@ -52,7 +52,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.12.1",
+    version: "7.13.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -128,7 +128,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.12.1",
+          mcp_version: "7.13.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -533,7 +533,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Generate → QA → versioned GitHub RAW URL. Cover/case_study/concept_diagram: OpenAI Images (gpt-image-1) when OPENAI_API_KEY is set, else Flux. workflow/comparison/explainer: REQUIRED required_labels + layout_spec; server renders SVG with exact Vietnamese text — do not draw letters in an image model. Each call creates a NEW url. 429 retries then fails clearly. Preschool scenes illustration-only.",
+        description: "Two image lanes. Cover/illustration (no text): auto provider OpenAI → Gemini → Flux → Stability; 429 skips to next. Infographic/workflow/comparison with required_labels: SVG renderer, exact Vietnamese text. Optional source_url=https to upload an image already created in ChatGPT (no generation). Each call versions the URL. QA rejects tiny files. Preschool illustration-only.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           image_id: z.string().describe("cover or an inline id such as img-01"),
@@ -562,6 +562,7 @@ function createKingDragonHubMcpServer() {
           text_language: z.string().optional(),
           text_accuracy_required: z.boolean().optional(),
           visual_style: z.string().optional(),
+          source_url: z.string().optional().describe("HTTPS URL of an image already created in ChatGPT. Server fetches, QAs, and uploads a versioned RAW URL. Skip generation."),
         }),
       },
       async (input) => {
