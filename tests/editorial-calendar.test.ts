@@ -20,6 +20,7 @@ import {
   assertRichWeeklySlots,
   computeEditorialPerformance,
   enforceRevisionConstraints,
+  shouldMarkWeekRevisionReady,
 } from "../src/lib/content/editorial-plan.ts";
 
 test("short command map covers plan, check, revise, and both write modes", () => {
@@ -145,6 +146,25 @@ test("keep_keyword blocks primary_keyword change without writing", () => {
     ),
     /CONSTRAINT_VIOLATION: primary_keyword/
   );
+});
+
+test("week becomes revision_ready only after the last returned slot is revised", () => {
+  const slots = [
+    { id: "a", status: "proposed" },
+    { id: "b", status: "revision_requested" },
+    { id: "c", status: "revision_requested" },
+  ];
+  assert.equal(shouldMarkWeekRevisionReady("revision_requested", slots, "b"), false);
+  assert.equal(
+    shouldMarkWeekRevisionReady(
+      "revision_requested",
+      slots.map((slot) => slot.id === "b" ? { ...slot, status: "proposed" } : slot),
+      "c"
+    ),
+    true
+  );
+  assert.equal(shouldMarkWeekRevisionReady("proposed", [{ id: "a", status: "proposed" }], "a"), true);
+  assert.equal(shouldMarkWeekRevisionReady("approved", slots, "b"), false);
 });
 
 test("stale based_on_revision is REVISION_CONFLICT", () => {

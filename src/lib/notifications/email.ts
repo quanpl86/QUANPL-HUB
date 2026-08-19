@@ -61,21 +61,37 @@ function wrapEmail(body: string) {
   `;
 }
 
-export async function sendDraftEmailNotification(topic: string, draftId: string) {
-  const mail = mailer();
-  if (!mail) {
-    console.warn('[Email] Missing GMAIL_USER or GMAIL_APP_PASSWORD, skipping email notification.');
-    return;
-  }
+/**
+ * Await SMTP before the MCP/API response returns.
+ * Fire-and-forget `.catch()` is killed when the Netlify isolate freezes.
+ */
+async function queueMail(work: () => Promise<void>) {
+  await work().catch((err) => console.error("[Email] failed:", err));
+}
 
-  try {
+export async function sendDraftEmailNotification(
+  topic: string,
+  draftId: string,
+  kind: "created" | "updated" = "created"
+) {
+  await queueMail(async () => {
+    const mail = mailer();
+    if (!mail) {
+      console.warn("[Email] Missing GMAIL_USER or GMAIL_APP_PASSWORD, skipping email notification.");
+      return;
+    }
     const reviewUrl = `${dashboardBase()}/admin/posts/edit/${draftId}`;
+    const created = kind === "created";
     await mail.transporter.sendMail({
       from: `"KING DRAGON AI" <${mail.user}>`,
       to: mail.to,
-      subject: `[AI Content] Bài viết mới: ${topic}`,
+      subject: created
+        ? `[AI Content] Bài viết mới: ${topic}`
+        : `[AI Content] Bản nháp đã sửa: ${topic}`,
       html: wrapEmail(`
-        <p>Hệ thống AI vừa soạn thảo xong một bài viết mới và đang chờ bạn kiểm duyệt.</p>
+        <p>${created
+          ? "ChatGPT vừa soạn xong một bản nháp và đang chờ bạn kiểm duyệt."
+          : "ChatGPT vừa sửa bản nháp bị trả và đang chờ bạn đọc lại."}</p>
         <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #ff6a00; margin: 20px 0;">
           <strong>Chủ đề:</strong> ${escapeHtml(topic)}
         </div>
@@ -84,24 +100,23 @@ export async function sendDraftEmailNotification(topic: string, draftId: string)
         </p>
       `),
     });
-    console.log(`[Email] Notification sent successfully for topic: ${topic}`);
-  } catch (err) {
-    console.error('[Email] Failed to send notification:', err);
-  }
+    console.log(`[Email] Draft ${kind} sent for topic: ${topic}`);
+  });
 }
 
 export async function sendEditorialWeekReviewEmail(week: WeekEmail, kind: "proposed" | "revised") {
-  const mail = mailer();
-  if (!mail) {
-    console.warn('[Email] Missing GMAIL_USER or GMAIL_APP_PASSWORD, skipping week review email.');
-    return;
-  }
+  await queueMail(async () => {
+    const mail = mailer();
+    if (!mail) {
+      console.warn("[Email] Missing GMAIL_USER or GMAIL_APP_PASSWORD, skipping week review email.");
+      return;
+    }
 
-  const reviewUrl = `${dashboardBase()}/admin/editorial`;
-  const heading = kind === "revised"
-    ? "ChatGPT đã hiệu chỉnh lại lịch tuần và gửi lại để bạn duyệt."
-    : "ChatGPT vừa gửi danh sách bài viết trong tuần để bạn review.";
-  const rows = week.slots.map((slot) => `
+    const reviewUrl = `${dashboardBase()}/admin/editorial`;
+    const heading = kind === "revised"
+      ? "ChatGPT đã hiệu chỉnh lại lịch tuần và gửi lại để bạn duyệt."
+      : "ChatGPT vừa gửi danh sách bài viết trong tuần để bạn review.";
+    const rows = week.slots.map((slot) => `
     <tr>
       <td style="padding: 8px; border-bottom: 1px solid #eee; white-space: nowrap;">
         ${escapeHtml([slot.scheduled_date, slot.scheduled_time].filter(Boolean).join(" "))}
@@ -113,11 +128,12 @@ export async function sendEditorialWeekReviewEmail(week: WeekEmail, kind: "propo
     </tr>
   `).join("");
 
-  try {
     await mail.transporter.sendMail({
       from: `"KING DRAGON AI" <${mail.user}>`,
       to: mail.to,
-      subject: `[Lịch tuần] ${week.title || week.week_start} — chờ duyệt`,
+      subject: kind === "revised"
+        ? `[Lịch tuần] ${week.title || week.week_start} — ChatGPT đã sửa, chờ xem`
+        : `[Lịch tuần] ${week.title || week.week_start} — chờ duyệt`,
       html: wrapEmail(`
         <p>${heading}</p>
         <p><strong>${escapeHtml(week.title || `Tuần ${week.week_start}`)}</strong></p>
@@ -128,10 +144,8 @@ export async function sendEditorialWeekReviewEmail(week: WeekEmail, kind: "propo
         </p>
       `),
     });
-    console.log(`[Email] Week review sent for ${week.week_start}`);
-  } catch (err) {
-    console.error('[Email] Failed to send week review:', err);
-  }
+    console.log(`[Email] Week review sent for ${week.week_start} (${kind})`);
+  });
 }
 
 export async function sendEditorialDueReminderEmail(slots: WeekEmailSlot[]) {

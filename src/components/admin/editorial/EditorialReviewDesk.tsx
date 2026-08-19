@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useTransition } from 'react';
+import React, { useEffect, useMemo, useState, useTransition } from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -32,6 +32,7 @@ import {
   reorderEditorialSlots,
   requestEditorialRevision,
   requestEditorialWeekRevision,
+  listEditorialWeeks,
   updateEditorialSlot,
   updateEditorialWeekMeta,
 } from '@/app/actions/editorial-calendar';
@@ -80,6 +81,7 @@ const EVENT_LABELS: Record<string, string> = {
   comment_added: 'Có ghi chú mới',
   revision_requested: 'Bạn yêu cầu ChatGPT sửa',
   revised: 'ChatGPT gửi bản sửa',
+  slot_revised: 'ChatGPT đã sửa một bài',
   approved: 'Bạn đã duyệt và khóa tuần',
   cancelled: 'Bạn đã hủy tuần',
   article_rejected: 'Bạn trả bài — ChatGPT cần sửa',
@@ -153,6 +155,10 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
   const [filter, setFilter] = useState('all');
   const [promptOpen, setPromptOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setWeeks(initialWeeks);
+  }, [initialWeeks]);
   const visibleWeeks = filter === 'all' ? weeks : weeks.filter((week) => week.status === filter);
   const selected = visibleWeeks.find((week) => week.id === selectedId) || visibleWeeks[0] || null;
   const focusWeek = weeks.find((week) => week.id === selectedId) || weeks[0];
@@ -206,13 +212,34 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
             {weekTitleVi(iso)} — xem đề xuất của ChatGPT, góp ý, rồi duyệt hoặc yêu cầu sửa.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setPromptOpen(true)}
-          className={`${BTN_PRIMARY} shrink-0`}
-        >
-          Prompt AI
-        </button>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => startTransition(async () => {
+              try {
+                const next = await listEditorialWeeks();
+                setWeeks(next);
+                if (next.length && !next.some((week) => week.id === selectedId)) {
+                  setSelectedId(next[0].id);
+                }
+                toast.success('Đã tải lại từ Hub.');
+              } catch (error: any) {
+                toast.error(humanError(error.message));
+              }
+            })}
+            className={BTN_GHOST}
+          >
+            Tải lại
+          </button>
+          <button
+            type="button"
+            onClick={() => setPromptOpen(true)}
+            className={BTN_PRIMARY}
+          >
+            Prompt AI
+          </button>
+        </div>
       </div>
 
       <EditorialPromptKitDialog open={promptOpen} onClose={() => setPromptOpen(false)} />
@@ -569,10 +596,10 @@ function WeekWorkspace({
         </div>
       )}
 
-      {week.activity?.length > 0 && (
-        <div className="border border-brand-orange/20 p-4 space-y-2">
-          <p className="text-sm font-semibold">Nhật ký</p>
-          {week.activity.map((item) => (
+      <div className="border border-brand-orange/20 p-4 space-y-2">
+        <p className="text-sm font-semibold">Nhật ký</p>
+        {week.activity?.length > 0 ? (
+          week.activity.map((item) => (
             <p key={item.id} className="text-sm">
               <span className="text-[11px] text-muted">
                 {new Date(item.created_at).toLocaleString('vi-VN')} · {ACTOR_LABELS[item.actor] || item.actor}
@@ -580,9 +607,13 @@ function WeekWorkspace({
               <br />
               {EVENT_LABELS[item.event] || item.event}
             </p>
-          ))}
-        </div>
-      )}
+          ))
+        ) : (
+          <p className="text-sm text-muted">
+            Chưa có hành động nào ghi vào Hub. Nếu ChatGPT báo đã sửa trên chat nhưng không có dòng ở đây thì tool chưa ghi thành công — bấm Tải lại, rồi bảo nó gọi lại <code>revise_editorial_week</code> với <code>based_on_revision</code>.
+          </p>
+        )}
+      </div>
 
       <div>
         <p className="tech-mono text-[11px] text-muted uppercase mb-3">

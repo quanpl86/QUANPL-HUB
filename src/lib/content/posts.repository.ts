@@ -453,7 +453,7 @@ export class PostsRepository {
       throw new Error("Failed to update draft: " + updError.message);
     }
     await EditorialCalendarRepository.markDrafted(supabase, calendarId, post.id, prepared.seoScore);
-    sendDraftEmailNotification(prepared.title, post.id).catch(console.error);
+    await sendDraftEmailNotification(prepared.title, post.id, "updated");
     return {
       success: true,
       created: false,
@@ -580,8 +580,7 @@ async function handleDraftSuccess(
     }).eq("id", taskId);
   }
 
-  // Gửi email thông báo cho Admin (không await để tránh chặn response của API)
-  sendDraftEmailNotification(data.title, data.id).catch(console.error);
+  await sendDraftEmailNotification(data.title, data.id, "created");
 
   return {
     success: true,

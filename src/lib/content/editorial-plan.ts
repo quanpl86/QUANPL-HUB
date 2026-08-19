@@ -115,6 +115,15 @@ export function assertPlanUnlocked(status: string) {
   if (status === "approved") throw new Error("PLAN_LOCKED: approved plans cannot be edited or revised");
 }
 
+export function shouldMarkWeekRevisionReady(
+  weekStatus: string,
+  slots: Array<{ id: string; status: string }>,
+  revisedSlotId: string
+) {
+  if (weekStatus !== "revision_requested" && weekStatus !== "proposed") return false;
+  return slots.every((slot) => slot.id === revisedSlotId || slot.status !== "revision_requested");
+}
+
 export function assertRevisionBase(currentRevision: number, basedOnRevision: unknown) {
   const basedOn = Number(basedOnRevision);
   if (!Number.isInteger(basedOn)) {

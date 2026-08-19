@@ -16,6 +16,7 @@ import {
   enforceRevisionConstraints,
   parseConstraints,
   snapshotSlots,
+  shouldMarkWeekRevisionReady,
   type EditorialActivity,
   type FieldDiff,
   type PlanRevision,
@@ -199,7 +200,7 @@ export class EditorialWeekRepository {
     await EditorialCalendarRepository.propose(supabase, slots, data.id);
     const week = await this.get(supabase, data.id);
     await persistSnapshot(supabase, week, "chatgpt", "proposed");
-    sendEditorialWeekReviewEmail(week, "proposed").catch(console.error);
+    await sendEditorialWeekReviewEmail(week, "proposed");
     return this.get(supabase, data.id);
   }
 
@@ -266,8 +267,33 @@ export class EditorialWeekRepository {
     if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
     const week = await this.get(supabase, id);
     await persistSnapshot(supabase, week, "chatgpt", "revised");
-    sendEditorialWeekReviewEmail(week, "revised").catch(console.error);
+    await sendEditorialWeekReviewEmail(week, "revised");
     return this.get(supabase, id);
+  }
+
+  /** After revise_editorial_slot: log, snapshot, and mark week revision_ready when no returned slots remain. */
+  static async noteSlotRevised(supabase: any, weekId: string, slotId: string): Promise<EditorialWeek> {
+    const current = await this.get(supabase, weekId);
+    if (current.status === "approved" || current.status === "cancelled") {
+      return current;
+    }
+    const allReturnedFixed = shouldMarkWeekRevisionReady(current.status, current.slots, slotId);
+    const nextRevision = current.revision_number + 1;
+    const nextStatus = allReturnedFixed ? "revision_ready" : current.status;
+    const { error } = await supabase
+      .from("editorial_weeks")
+      .update({
+        status: nextStatus,
+        revision_number: nextRevision,
+      })
+      .eq("id", weekId);
+    if (error) throw new Error(`DATABASE_ERROR: ${error.message}`);
+    const week = await this.get(supabase, weekId);
+    await persistSnapshot(supabase, week, "chatgpt", allReturnedFixed ? "revised" : "slot_revised");
+    if (allReturnedFixed) {
+      await sendEditorialWeekReviewEmail(week, "revised");
+    }
+    return this.get(supabase, weekId);
   }
 
   static async requestRevision(

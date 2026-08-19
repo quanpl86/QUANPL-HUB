@@ -12,6 +12,7 @@ import { EditorialCommentRepository } from "@/lib/content/editorial-comments";
 import { EditorialPlanAudit } from "@/lib/content/editorial-plan";
 import { EDITORIAL_COMMANDS } from "@/lib/content/editorial-commands";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { revalidateEditorialSurfaces } from "@/lib/content/editorial-revalidate";
 
 const editorialSlotSchema = z.object({
   id: z.string().optional().describe("Existing slot id when revising a week."),
@@ -50,7 +51,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.10.1",
+    version: "7.10.2",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -126,7 +127,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.10.1",
+          mcp_version: "7.10.2",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -317,6 +318,7 @@ function createKingDragonHubMcpServer() {
       async (input) => {
         try {
           const week = await EditorialWeekRepository.propose(getSupabaseAdmin(), input);
+          revalidateEditorialSurfaces();
           return {
             content: [{
               type: "text",
@@ -349,6 +351,7 @@ function createKingDragonHubMcpServer() {
         try {
           const { id, ...patch } = input;
           const week = await EditorialWeekRepository.revise(getSupabaseAdmin(), id, patch);
+          revalidateEditorialSurfaces();
           return {
             content: [{
               type: "text",
@@ -389,6 +392,7 @@ function createKingDragonHubMcpServer() {
             event: "comment_added",
             actor: "chatgpt",
           });
+          revalidateEditorialSurfaces();
           return { content: [{ type: "text", text: JSON.stringify({ comment }) }] };
         } catch (err: unknown) {
           return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
@@ -425,7 +429,12 @@ function createKingDragonHubMcpServer() {
       async (input) => {
         try {
           const { id, ...patch } = input;
-          const slot = await EditorialCalendarRepository.revise(getSupabaseAdmin(), id, patch);
+          const supabase = getSupabaseAdmin();
+          const slot = await EditorialCalendarRepository.revise(supabase, id, patch);
+          if (slot.week_id) {
+            await EditorialWeekRepository.noteSlotRevised(supabase, slot.week_id, slot.id);
+          }
+          revalidateEditorialSurfaces();
           return { content: [{ type: "text", text: JSON.stringify({ slot }) }] };
         } catch (err: unknown) {
           return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
@@ -474,6 +483,7 @@ function createKingDragonHubMcpServer() {
       async (draftData) => {
         try {
           const result = await PostsRepository.updateDraft(draftData);
+          revalidateEditorialSurfaces((result as { draft?: { id?: string } })?.draft?.id);
           return { content: [{ type: "text", text: JSON.stringify(result) }] };
         } catch (err: unknown) {
           return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
@@ -608,6 +618,7 @@ function createKingDragonHubMcpServer() {
             featured_image_alt: pkg.featured_image?.alt,
             inline_images: pkg.inline_images,
           });
+          revalidateEditorialSurfaces((result as { draft_id?: string })?.draft_id);
           return {
             content: [{ type: "text", text: JSON.stringify(result) }],
           };
@@ -663,6 +674,12 @@ export async function POST(req: Request) {
   // Chuyển tiếp Request cho handler xử lý
   return handler.fetch(req);
 }
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
+// Export GET for SSE connections
+export const GET = POST;
 
 // Export GET for SSE connections
 export const GET = POST;
