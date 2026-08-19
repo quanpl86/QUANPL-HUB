@@ -680,6 +680,3 @@ export const maxDuration = 300;
 
 // Export GET for SSE connections
 export const GET = POST;
-
-// Export GET for SSE connections
-export const GET = POST;
