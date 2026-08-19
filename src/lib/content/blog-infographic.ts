@@ -65,7 +65,7 @@ export function shouldRenderInfographic(input: {
   if (type === "scene") return false;
   if (type === "rubric_matrix" || type === "workflow_steps" || type === "comparison") return labels.length > 0;
   if (input.text_accuracy_required && labels.length > 0) return true;
-  if (["workflow", "comparison", "explainer"].includes(input.purpose) && labels.length > 0) return true;
+  if (["workflow", "comparison", "explainer", "rubric", "timeline", "table", "framework"].includes(input.purpose) && labels.length > 0) return true;
   return false;
 }
 
@@ -74,7 +74,7 @@ export function assertInfographicContract(input: {
   required_labels?: string[];
   layout_spec?: InfographicLayout;
 }): void {
-  if (!["workflow", "comparison", "explainer"].includes(input.purpose)) return;
+  if (!["workflow", "comparison", "explainer", "rubric", "timeline", "table", "framework"].includes(input.purpose)) return;
   const labels = input.required_labels?.filter((item) => item.trim()) || [];
   if (!labels.length) {
     throw new Error(

@@ -14,6 +14,7 @@ import {
   shouldRenderInfographic,
 } from "../src/lib/content/blog-infographic.ts";
 import { sniffImage } from "../src/lib/content/image-qa.ts";
+import { resolveTextPolicy } from "../src/lib/content/image-generation-standard.ts";
 
 test("rejects photorealistic child prompts", () => {
   assert.throws(
@@ -37,6 +38,12 @@ test("idempotent path is stable for the same keys", () => {
 
 test("slug strips vietnamese diacritics", () => {
   assert.equal(slugAssetPart("Ảnh bìa mầm non"), "anh-bia-mam-non");
+});
+
+test("text policy is no_text for covers and exact_text for workflow labels", () => {
+  assert.equal(resolveTextPolicy({ purpose: "article_cover" }), "no_text");
+  assert.equal(resolveTextPolicy({ purpose: "workflow", required_labels: ["Quan sát"] }), "exact_text");
+  assert.equal(resolveTextPolicy({ purpose: "editorial_illustration", text_policy: "no_text" }), "no_text");
 });
 
 test("image generator chain is OpenAI then Gemini then Flux then Stability", () => {

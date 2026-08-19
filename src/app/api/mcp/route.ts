@@ -11,6 +11,7 @@ import { EditorialWeekRepository } from "@/lib/content/editorial-week";
 import { EditorialCommentRepository } from "@/lib/content/editorial-comments";
 import { EditorialPlanAudit } from "@/lib/content/editorial-plan";
 import { EDITORIAL_COMMANDS } from "@/lib/content/editorial-commands";
+import { IMAGE_GENERATION_STANDARD } from "@/lib/content/image-generation-standard";
 import { EditorialArticlesRepository } from "@/lib/content/editorial-articles";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { revalidateEditorialSurfaces } from "@/lib/content/editorial-revalidate";
@@ -52,7 +53,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.13.0",
+    version: "7.14.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -128,7 +129,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.13.0",
+          mcp_version: "7.14.0",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [
@@ -147,6 +148,7 @@ function createKingDragonHubMcpServer() {
           review_desk: "/admin/editorial",
           command_tool: "get_editorial_commands",
           short_commands: EDITORIAL_COMMANDS,
+          image_generation_standard: IMAGE_GENERATION_STANDARD,
           calendar_workflow: {
             "1": "propose_editorial_week — send the weekly article list for review. Do NOT write articles yet.",
             "2": "Admin reviews at /admin/editorial: reorder (item_order), edit briefs, and leave detailed comments.",
@@ -533,25 +535,34 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "Two image lanes. Cover/illustration (no text): auto provider OpenAI → Gemini → Flux → Stability; 429 skips to next. Infographic/workflow/comparison with required_labels: SVG renderer, exact Vietnamese text. Optional source_url=https to upload an image already created in ChatGPT (no generation). Each call versions the URL. QA rejects tiny files. Preschool illustration-only.",
+        description: "Image Generation Standard v1. You describe the asset; MCP picks the engine. Cover/editorial_illustration: auto OpenAI→Gemini→Flux→Stability (429 skips to next provider, no same-provider 429 loop). workflow/rubric/comparison/timeline/table: SVG exact Vietnamese required_labels. source_url uploads a ChatGPT-direct image. Always a new URL. Returns provider_attempts. Do not choose FLUX yourself.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
+          article_key: z.string().optional().describe("Article slug used in the filename."),
           image_id: z.string().describe("cover or an inline id such as img-01"),
           purpose: z.enum([
             "article_cover",
+            "editorial_illustration",
             "concept_diagram",
             "workflow",
             "comparison",
             "case_study",
             "explainer",
+            "rubric",
+            "timeline",
+            "table",
+            "framework",
           ]),
-          prompt: z.string().describe("English scene prompt for Flux covers/illustrations. For infographics, still send a short prompt; labels go in required_labels."),
-          alt: z.string().describe("Vietnamese alt text. Required. Copied into featured_image.alt / img alt."),
+          provider: z.enum(["auto", "openai", "gemini", "flux", "stability"]).optional().describe("Leave auto. MCP routes."),
+          fallback: z.boolean().optional(),
+          prompt: z.string().describe("English scene prompt for covers/illustrations. Infographic labels go in required_labels, not in this prompt."),
+          alt: z.string().describe("Vietnamese alt: meaning of the image, not keyword stuffing."),
           aspect: z.enum(["16:9", "4:3", "1:1"]).optional(),
           filename: z.string().optional(),
+          text_policy: z.enum(["no_text", "exact_text", "optional_text"]).optional(),
           visual_goal: z.string().optional().describe("What the reader must understand from the image."),
           must_show: z.array(z.string()).optional(),
-          required_labels: z.array(z.string()).optional().describe("Exact Vietnamese strings to render. Required for workflow/comparison/explainer."),
+          required_labels: z.array(z.string()).optional().describe("Exact Vietnamese strings. Required for workflow/rubric/comparison/timeline. Renderer must not paraphrase."),
           required_values: z.array(z.string()).optional(),
           layout_spec: z.object({
             type: z.enum(["rubric_matrix", "workflow_steps", "comparison", "scene"]),
@@ -562,6 +573,7 @@ function createKingDragonHubMcpServer() {
           text_language: z.string().optional(),
           text_accuracy_required: z.boolean().optional(),
           visual_style: z.string().optional(),
+          qa_required: z.boolean().optional(),
           source_url: z.string().optional().describe("HTTPS URL of an image already created in ChatGPT. Server fetches, QAs, and uploads a versioned RAW URL. Skip generation."),
         }),
       },
