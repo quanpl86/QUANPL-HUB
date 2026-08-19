@@ -11,6 +11,8 @@ export const EDITORIAL_COMMANDS = {
     body: "{{IMAGE:img-01}} … {{IMAGE:img-03}} trong markdown, URL GitHub RAW.",
     lane_b: "workflow/rubric/timeline/bảng: generate_and_upload_blog_image SVG + required_labels tiếng Việt.",
     github: "Hub ghi quanpl86/imgBlog. Không image_base64 qua MCP.",
+    if_no_image_gen:
+      "Nếu phiên này không có tool ChatGPT Images/image_gen: DỪNG. Không generate_and_upload cover, không draft. Báo user bật Image generation (DALL·E) trên GPT KingDragonHub Editorial rồi chat mới, hoặc user nhắn «Tạo cover 16:9: …» / đính PNG. Khi ảnh hiện, tiếp Lane A.",
     never: [
       "generate_and_upload_blog_image cho cover/cảnh",
       "OpenAI Images API phía Hub",

@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.25.0",
+    version: "7.26.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -131,12 +131,13 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.25.0",
+          mcp_version: "7.26.0",
           image_pipeline: {
             hard_rule: true,
             no_openai_api_key: true,
             lane_a: "ChatGPT Images in this chat → original PNG bytes → start_image_upload → HTTP POST put_url → GitHub RAW. Sequence: cover, img-01, img-02, img-03. Never parallel.",
             lane_b: "generate_and_upload_blog_image SVG only (workflow/rubric/timeline/table/comparison + required_labels).",
+            if_no_image_gen: "Stop. Ask the user to enable Image generation on the GPT or to generate/attach PNG in this chat. Then Lane A. Never Hub OpenAI API.",
             never: ["Hub OpenAI Images API", "MCP image_base64", "FLUX", "create_blog_draft before 1 cover + 3 body RAW URLs"],
             body_min: ARTICLE_INLINE_IMAGE_MIN,
             cover_min: "1536x864",
