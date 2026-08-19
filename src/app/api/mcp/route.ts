@@ -55,7 +55,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.19.0",
+    version: "7.20.0",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -131,7 +131,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.19.0",
+          mcp_version: "7.20.0",
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
           media_tool: "start_image_upload",
           media_tools: ["start_image_upload", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
@@ -163,7 +163,7 @@ function createKingDragonHubMcpServer() {
             "3": "If revision_requested: get_editorial_week, read comments + revision_constraints, then revise_editorial_week with based_on_revision=week.revision_number. Success moves the week to revision_ready. Stale based_on_revision returns REVISION_CONFLICT.",
             "4": "After the week is approved: each session call get_due_editorial_slots. Write in item_order.",
             "5": "Write only due slots via create_blog_draft(calendar_id). Server rejects writing before scheduled datetime.",
-            "6": "Rejected drafts: list_editorial_articles or get_due_editorial_slots revise[]. get_editorial_draft(calendar_id), follow revision_request, regen images if asked, then update_blog_draft. Published posts are LOCKED.",
+            "6": "Rejected drafts: list_editorial_articles or get_due_editorial_slots revise[]. get_editorial_draft(calendar_id), follow revision_request, regen images if asked, then update_blog_draft. Unpublished review drafts: if the user asks to write that topic again or upgrade images, update_blog_draft — do not duplicate. Published posts are LOCKED.",
             limitation: "ChatGPT cannot auto-wake at the scheduled time. The user must open a conversation or a ChatGPT scheduled task on the due day.",
           },
           schema_version: "article-package/7.0",
@@ -336,7 +336,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_editorial_draft",
     {
-      description: "Read one ChatGPT calendar draft/post: id, title, content, images, SEO, comments, revision_request (content/style/cover/inline images/SEO/AIO/seo_target). Pass calendar_id from list_editorial_articles or get_due revise[]. If can_update=false the post is published — do not update_blog_draft.",
+      description: "Read one ChatGPT calendar draft/post: id, title, content, images, SEO, comments, revision_request. Pass calendar_id from list_editorial_articles. If can_update=false the post is published — do not update. If can_update=true (review or revise) and the user asked to write/upgrade this article, update_blog_draft — do not create a duplicate.",
       inputSchema: z.object({
         calendar_id: z.string().optional().nullable(),
         post_id: z.string().optional().nullable(),
@@ -495,7 +495,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "update_blog_draft",
       {
-        description: "Revise an existing DRAFT after admin rejected the article. calendar_id required. Same Article Package v7 gates as create_blog_draft. Only DRAFT→DRAFT. Published posts are rejected. After success the slot returns to drafted (awaiting review).",
+        description: "Update an unpublished DRAFT. calendar_id required. Allowed when slot is drafted (review) or revision_requested. Use this when the user asks to rewrite/upgrade images on an existing draft — do not wait for admin reject, do not create a second post. Same Article Package v7 gates (cover + ≥3 inline GitHub RAW URLs, SEO ≥ 95). Published posts are LOCKED. After success the slot stays drafted (awaiting review).",
         inputSchema: z.object({
           calendar_id: z.string(),
           schema_version: z.string(),

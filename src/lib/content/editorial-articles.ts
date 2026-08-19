@@ -64,7 +64,7 @@ export class EditorialArticlesRepository {
     return {
       articles,
       instruction:
-        "published = đã đăng, LOCKED. review = chờ admin đọc. revise = admin đã trả — get_editorial_draft rồi update_blog_draft(calendar_id). mode=free_write là bài tự do (week_id null), cùng vòng trả/sửa. writing = GPT đang gửi draft.",
+        "published = đã đăng, LOCKED. review = chờ admin đọc — vẫn được update_blog_draft nếu user bảo viết lại / nâng ảnh (không tạo bài trùng). revise = admin đã trả — bắt buộc get_editorial_draft rồi update_blog_draft(calendar_id). mode=free_write là bài tự do (week_id null). writing = GPT đang gửi draft.",
     };
   }
 
@@ -141,7 +141,7 @@ export class EditorialArticlesRepository {
         ? "PLAN_LOCKED: published. Do not call update_blog_draft."
         : status === "revise"
           ? "Admin returned this draft. Follow revision_request and comments. Regen images if fix_cover or fix_inline_images. Then update_blog_draft(calendar_id). Do not create_blog_draft."
-          : "Draft is waiting for admin review. Only update_blog_draft if the admin asked you to fix it.",
+          : "Unpublished draft in review. can_update=true. If the user asked to write this topic again or upgrade images (ChatGPT Images cover + ≥3 body via start_image_upload POST put_url), update_blog_draft(calendar_id). Do not create a second draft. Do not wait for admin reject.",
     };
   }
 }

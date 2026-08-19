@@ -118,13 +118,14 @@ export const EDITORIAL_COMMANDS = {
         "viết blog tự do",
         "viết bài, nội dung là",
         "viết bài mới, nội dung là",
+        "viết bài về",
       ],
       do: [
-        "get_editorial_guidelines, get_blog_inventory, get_blog_categories",
-        "when_writing: ChatGPT Images cover + tối thiểu 3 ảnh body → start_image_upload → POST put_url → URL GitHub",
-        "create_blog_draft calendar_id=null task_id=null chỉ khi đã có đủ URL ảnh",
+        "get_editorial_guidelines, get_blog_inventory, get_blog_categories, list_editorial_articles",
+        "Nếu đã có bản nháp chưa đăng cùng chủ đề: get_editorial_draft, when_writing (cover ChatGPT Images + ≥3 ảnh body, POST put_url), rồi update_blog_draft(calendar_id). Không tạo bài trùng.",
+        "Nếu chưa có nháp: when_writing rồi create_blog_draft calendar_id=null task_id=null chỉ khi đã có đủ URL ảnh",
       ],
-      never: ["propose_editorial_week", "calendar_id khác null"],
+      never: ["propose_editorial_week", "create_blog_draft khi đã có nháp unpublished cùng chủ đề"],
     },
     {
       id: "write_due_from_week",
