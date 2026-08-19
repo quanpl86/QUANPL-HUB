@@ -166,6 +166,14 @@ export async function requestEditorialRevision(id: string, feedback: string) {
     'revision_requested',
     note || current?.comments.at(-1)?.body || ''
   );
+  if (week.status === 'proposed' || week.status === 'revision_ready') {
+    await EditorialWeekRepository.requestRevision(
+      supabase,
+      slot.week_id,
+      note || current?.comments.at(-1)?.body || 'Xem ghi chú trên từng bài',
+      week.revision_constraints
+    );
+  }
   revalidateDesk();
   return updated;
 }

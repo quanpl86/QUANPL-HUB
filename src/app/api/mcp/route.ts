@@ -50,7 +50,7 @@ function errorMessage(error: unknown): string {
 function createKingDragonHubMcpServer() {
   const server = new McpServer({
     name: "KingDragonHub-MCP",
-    version: "7.10.0",
+    version: "7.10.1",
   });
 
   // [Tool 1]: get_blog_inventory
@@ -126,7 +126,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.10.0",
+          mcp_version: "7.10.1",
           media_tool: "generate_and_upload_blog_image",
           taxonomy_tool: "get_blog_categories",
           calendar_tools: [

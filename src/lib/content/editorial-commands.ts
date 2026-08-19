@@ -90,7 +90,8 @@ export const EDITORIAL_COMMANDS = {
       do: [
         "get_editorial_week",
         "Đọc comments + revision_constraints + revision_number",
-        "revise_editorial_week với based_on_revision đúng",
+        "Nếu tuần proposed nhưng có slot revision_requested: vẫn gọi revise_editorial_week",
+        "revise_editorial_week với based_on_revision đúng, gửi đủ 3 slot (kể cả bài không bị trả)",
         "Nếu REVISION_CONFLICT: get lại rồi sửa tiếp",
       ],
       never: ["create_blog_draft"],

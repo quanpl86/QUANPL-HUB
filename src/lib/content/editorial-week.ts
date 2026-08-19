@@ -239,8 +239,9 @@ export class EditorialWeekRepository {
   static async revise(supabase: any, id: string, patch: Partial<EditorialWeekInput>): Promise<EditorialWeek> {
     const current = await this.get(supabase, id);
     assertPlanUnlocked(current.status);
-    if (current.status !== "revision_requested") {
-      throw new Error("INVALID_STATUS: week can only be revised when status is revision_requested");
+    const slotNeedsRevise = current.slots.some((slot) => slot.status === "revision_requested");
+    if (current.status !== "revision_requested" && !(current.status === "proposed" && slotNeedsRevise)) {
+      throw new Error("INVALID_STATUS: week can only be revised when status is revision_requested, or when some slots were sent back");
     }
     assertRevisionBase(current.revision_number, patch.based_on_revision);
     const nextSlots = (patch.slots || []).map((slot) => applySlotAliases(slot));
