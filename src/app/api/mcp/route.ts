@@ -165,7 +165,7 @@ function createKingDragonHubMcpServer() {
   const server = new McpServer(
     {
       name: "KingDragonHub-MCP",
-      version: "7.33.0",
+      version: "7.34.0",
     },
     {
       instructions: `${ARTICLE_WORKFLOW_INSTRUCTIONS} ${ARTICLE_ASSET_HARD_RULE.text}`,
@@ -245,7 +245,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.33.0",
+          mcp_version: "7.34.0",
           asset_policy: ARTICLE_ASSET_HARD_RULE.asset_policy,
           article_asset_hard_rule: ARTICLE_ASSET_HARD_RULE.text,
           image_pipeline: {
@@ -265,7 +265,7 @@ function createKingDragonHubMcpServer() {
           },
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
           chatgpt_media_tool: "upload_generated_image_file",
-          article_workflow_tools: ["start_article_workflow", "get_active_article_workflow", "continue_article_workflow", "report_article_image_failure"],
+          article_workflow_tools: ["start_article_workflow", "get_active_article_workflow", "continue_article_workflow", "finalize_article_workflow", "report_article_image_failure"],
           external_media_tool: "start_image_upload",
           media_tools: ["upload_generated_image_file", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
           permissions: CHATGPT_MCP_PERMISSIONS,
@@ -703,7 +703,7 @@ function createKingDragonHubMcpServer() {
       "continue_article_workflow",
       {
         title: "Continue Article With Previous Image",
-        description: "PRIMARY command for 'Tiếp tục'. If an image was generated in the previous assistant response, pass that native file as `file`; the server infers cover/img-01/img-02/img-03, uploads it, and returns the next image prompt. Generate that next image as the final action. If READY_TO_DRAFT, omit file and the server retries draft creation.",
+        description: "PRIMARY upload command for 'Tiếp tục'. Pass the native image from the previous assistant response as required `file`; the server infers cover/img-01/img-02/img-03, uploads it, and returns the next image prompt. Generate that next image as the final action. This tool always requires a native file; use finalize_article_workflow to retry a draft after all image slots are processed.",
         inputSchema: z.object({
           run_id: z.string().optional().describe("Optional. Omit to resume the single active workflow."),
           file: z.object({
@@ -711,7 +711,7 @@ function createKingDragonHubMcpServer() {
             file_id: z.string().min(1),
             mime_type: z.string().optional(),
             file_name: z.string().optional(),
-          }).strict().optional().describe("Native image file from the immediately previous assistant response."),
+          }).strict().describe("Required native image file from the immediately previous assistant response."),
         }),
         annotations: {
           readOnlyHint: false,
@@ -740,25 +740,13 @@ function createKingDragonHubMcpServer() {
             }) }] };
           }
           if (run.status === "READY_TO_DRAFT" || run.status === "READY_TO_DRAFT_INCOMPLETE") {
-            return { content: [{ type: "text", text: JSON.stringify(await finalizeArticleWorkflow(run)) }] };
+            throw new Error("ARTICLE_WORKFLOW_STATE_CONFLICT: images are complete; call finalize_article_workflow without a file");
           }
 
           const nextAction = getArticleWorkflowNextAction(run);
           if (nextAction.action !== "GENERATE_IMAGE") {
             throw new Error(`ARTICLE_WORKFLOW_STATE_CONFLICT: unexpected ${nextAction.action}`);
           }
-          if (!input.file) {
-            return {
-              content: [{ type: "text", text: JSON.stringify({
-                status: "AWAITING_NATIVE_FILE",
-                run_id: run.id,
-                expected_image_id: nextAction.image_id,
-                next_action: nextAction,
-                instruction: "Use the native image from the previous assistant response as file. If it is unavailable, regenerate only this pending image.",
-              }) }],
-            };
-          }
-
           const uploaded = await uploadGeneratedImageFile({
             file: input.file,
             idempotency_key: run.idempotency_key,
@@ -803,6 +791,30 @@ function createKingDragonHubMcpServer() {
             }
           }
           return { content: [{ type: "text", text: JSON.stringify({ error: message, run_id: run?.id }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "finalize_article_workflow",
+      {
+        title: "Finalize Article Workflow",
+        description: "Use only when get_active_article_workflow returns READY_TO_DRAFT or READY_TO_DRAFT_INCOMPLETE, usually to retry draft creation after a prior draft error. This tool never accepts a file.",
+        inputSchema: z.object({
+          run_id: z.string().optional().describe("Optional. Omit to finalize the single active workflow."),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+      },
+      async (input) => {
+        try {
+          const run = await ArticleWorkflowRepository.getActive(input.run_id);
+          if (!run) throw new Error("ARTICLE_WORKFLOW_NOT_FOUND: no active article workflow");
+          if (run.status !== "READY_TO_DRAFT" && run.status !== "READY_TO_DRAFT_INCOMPLETE") {
+            throw new Error(`ARTICLE_WORKFLOW_STATE_CONFLICT: cannot finalize while ${run.status}`);
+          }
+          return { content: [{ type: "text", text: JSON.stringify(await finalizeArticleWorkflow(run)) }] };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
         }
       }
     );

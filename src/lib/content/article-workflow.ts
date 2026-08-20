@@ -260,7 +260,7 @@ export function applyArticleWorkflowImageFailure(
 export const ARTICLE_WORKFLOW_INSTRUCTIONS = [
   "ARTICLE_WORKFLOW_V2.",
   "When the user asks to write an article, research and prepare the complete Article Package, call start_article_workflow, then immediately generate the returned cover as the final action.",
-  "When the user says Tiếp tục, Tiếp tục nhé, Làm tiếp, or equivalent, call continue_article_workflow with the native image file from the previous assistant response; never ask for technical IDs.",
+  "When the user says Tiếp tục, Tiếp tục nhé, Làm tiếp, or equivalent, inspect the active state: for AWAITING_IMAGE_UPLOAD call continue_article_workflow with the required native image file; for READY_TO_DRAFT call finalize_article_workflow without a file. Never ask for technical IDs.",
   "After each upload, generate the returned next image as the final action. After img-03, continue_article_workflow creates the draft automatically.",
   "If image generation or upload fails, call report_article_image_failure. Retry the same image once; after the second failure the server creates a detailed image holder and advances. Never silently omit an image.",
   "Never parallelize images. Never use base64 or start_image_upload from ChatGPT.",
