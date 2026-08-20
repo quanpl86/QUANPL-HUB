@@ -1,12 +1,13 @@
 export const EDITORIAL_COMMANDS = {
   language: "vi-VN",
-  rule: "Người dùng nói ngắn MỘT LẦN. GPT tự chạy hết trong phiên: check → viết → image_gen từng ảnh → upload_generated_image_file(file attachment) → create_blog_draft. Không hỏi user gửi thêm prompt cover/upload. Không publish.",
+  rule: "Người dùng chỉ cần nói 'Hãy viết bài về…', sau đó 'Tiếp tục nhé'. GPT research → start_article_workflow → tạo cover; mỗi lần Tiếp tục thì continue_article_workflow upload ảnh trước và trả prompt ảnh kế. Sau img-03 tự tạo draft. Không hỏi ID kỹ thuật. Không publish.",
   when_writing: {
     automatic: true,
     hard_rule: true,
-    one_user_message: true,
-    do_not_ask_user_between_steps: true,
-    lane_a: "Trong CÙNG lượt: ChatGPT Images cover → upload_generated_image_file → img-01 → upload → img-02 → upload → img-03 → upload. Không dừng hỏi user.",
+    resumable: true,
+    one_user_message: false,
+    do_not_ask_for_technical_fields: true,
+    lane_a: "start_article_workflow → cover. Mỗi lần user nói Tiếp tục: continue_article_workflow(file ảnh trước) → ảnh kế tiếp. Sau img-03 tự tạo draft.",
     cover: "16:9 ≥1536×864 không chữ. GPT tự đặt prompt ảnh.",
     body_exact: 3,
     body_min: 3,
@@ -15,7 +16,7 @@ export const EDITORIAL_COMMANDS = {
     lane_b: "workflow/rubric/timeline/bảng: generate_and_upload_blog_image SVG + required_labels tiếng Việt.",
     github: "Hub ghi quanpl86/imgBlog. Không image_base64 qua MCP.",
     if_no_image_gen:
-      "image_gen KHÔNG phải tool MCP. ChatGPT Images là capability native trong chat. Không được dừng chỉ vì không thấy tên tool image_gen. Nếu vẽ được ảnh trong hội thoại này thì BẮT BUỘC tự chạy hết Lane A, không hỏi user thêm. Chỉ dừng khi tạo ảnh trong chat THẤT BẠI thật sự.",
+      "image_gen KHÔNG phải tool MCP. ChatGPT Images là capability native trong chat. Tạo đúng ảnh mà next_action yêu cầu, sau đó chờ câu 'Tiếp tục' để bridge native file vào MCP.",
     never: [
       "generate_and_upload_blog_image cho cover/cảnh",
       "OpenAI Images API phía Hub",

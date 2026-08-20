@@ -183,6 +183,7 @@ export async function getContentScheduleState() {
     supabase
       .from('content_instructions')
       .select('*')
+      .or('instruction_type.is.null,instruction_type.neq.ARTICLE_WORKFLOW')
       .order('is_default', { ascending: false })
       .order('updated_at', { ascending: false }),
     supabase

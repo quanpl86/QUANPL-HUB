@@ -43,7 +43,7 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
   {
     title: "5. Viết bài — tự do",
     items: [
-      { text: "Viết bài mới chế độ tự do, nội dung là [điền chủ đề].", note: "Một câu là đủ. GPT tự cover + 3 ảnh + upload GitHub + draft. Không cần prompt ảnh phụ." },
+      { text: "Hãy viết bài về [điền chủ đề].", note: "Sau mỗi ảnh chỉ cần nhắn: Tiếp tục nhé. GPT tự nhớ bước, upload và tạo ảnh kế tiếp." },
       { text: "Blog tự do: [điền chủ đề]." },
     ],
   },
@@ -67,7 +67,7 @@ export const EDITORIAL_PROMPT_KIT: PromptKitSection[] = [
   {
     title: "8. Ảnh / danh mục",
     items: [
-      { text: "Viết bài, tạo cover + 3 ảnh body bằng ChatGPT Images, rồi upload vào KingDragonHub.", note: "Tự làm: vẽ trong chat → upload_generated_image_file(file attachment) → GitHub → draft." },
+      { text: "Hãy viết bài về [chủ đề].", note: "GPT research + viết + tạo cover; mỗi lần bạn nói Tiếp tục nhé, workflow upload ảnh trước và tạo ảnh kế." },
       { text: "Tạo trực tiếp 1 cover + 3 ảnh body, chưa cần Hub." },
       { text: "Rubric/workflow: generate_and_upload_blog_image SVG, required_labels tiếng Việt." },
       { text: "Tạo 1 cover 16:9 ≥1536px, minh họa giáo dục, sạch, rõ, không chữ, PNG gốc không nén." },

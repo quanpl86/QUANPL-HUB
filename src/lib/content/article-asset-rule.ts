@@ -1,5 +1,5 @@
 export const ARTICLE_ASSET_HARD_RULE = {
-  version: "v2",
+  version: "v3",
   mode: "exact" as const,
   cover_exact: 1,
   inline_exact: 3,
@@ -35,8 +35,7 @@ export const ARTICLE_ASSET_HARD_RULE = {
     "SVG for cover/scene",
     "WebP thumbnail",
     "create_blog_draft before 4 RAW URLs",
-    "ask user for extra prompts between states",
     "stop because image_gen is missing from the MCP tool list",
   ],
-  text: "ARTICLE_ASSET_HARD_RULE_V2. ChatGPT lane: create native ChatGPT Image, then pass its file attachment to upload_generated_image_file; the host supplies download_url + file_id. Sequence cover→upload, img-01→upload, img-02→upload, img-03→upload. Never parallel. Never use base64, Hub OpenAI API, FLUX, start_image_upload, or SVG for scenes. start_image_upload is external-client only. Do not create/update a draft until 4 GitHub RAW URLs exist.",
+  text: "ARTICLE_ASSET_HARD_RULE_V3. Resumable ChatGPT lane: start_article_workflow returns the cover prompt. On each user 'Tiếp tục', continue_article_workflow receives the previous native image file; the host supplies download_url + file_id. It uploads the image and returns the next prompt. Sequence cover→img-01→img-02→img-03; never parallel. After img-03 the workflow creates the draft. Never use base64, Hub OpenAI API, FLUX, start_image_upload, or SVG for scenes; start_image_upload is external-client only.",
 } as const;

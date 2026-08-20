@@ -1,5 +1,5 @@
 export const IMAGE_GENERATION_STANDARD = {
-  version: "2.3",
+  version: "3.0",
   hard_rule: true,
   no_openai_api_key: true,
   rule: "HARD. Lane A1 ChatGPT scenes: ChatGPT Images → native file attachment → upload_generated_image_file → GitHub RAW. Lane A2 external clients only: start_image_upload → HTTP POST PNG bytes. Lane B structured Vietnamese text: generate_and_upload_blog_image SVG. Never Hub OpenAI Images API, MCP image_base64, or FLUX.",
@@ -52,21 +52,21 @@ export const IMAGE_GENERATION_STANDARD = {
   when_writing_article: {
     automatic: true,
     hard_rule: true,
-    one_user_message: true,
+    resumable: true,
+    one_user_message: false,
     steps: [
-      "From ONE user write request, finish the whole job in this session. Do not ask the user to type cover prompts or upload prompts.",
-      "image_gen cover (16:9 ≥1536×864, no text) → pass the generated file attachment to upload_generated_image_file.",
-      "Then img-01, img-02, img-03 the same way, one at a time. Reuse each returned raw_url in the article package.",
-      "Lane B SVG if needed. Then create_blog_draft / update_blog_draft.",
+      "Research and prepare Article Package v7, call start_article_workflow, then generate the returned cover as the final action.",
+      "On each user 'Tiếp tục', call continue_article_workflow with the previous native image file.",
+      "Generate each returned next image as the final action; sequence cover, img-01, img-02, img-03.",
+      "After img-03, continue_article_workflow creates the draft automatically.",
     ],
   },
   agent_must: [
-    "AUTOMATION: one user sentence is enough. Keep calling image_gen and upload_generated_image_file until 4 RAW URLs exist, then draft.",
+    "AUTOMATION: the initial user sentence starts research, article preparation, durable state, and cover generation.",
     "HARD: scene pixels from ChatGPT Images in this chat. No Hub OpenAI API key.",
-    "HARD: after each image, pass the native file attachment to upload_generated_image_file. ChatGPT must not call start_image_upload.",
+    "HARD: on 'Tiếp tục', pass the previous native file to continue_article_workflow. ChatGPT must not call start_image_upload.",
     "HARD: generate_and_upload_blog_image is SVG-only. Never for article_cover.",
-    "ChatGPT Images is native in-chat, not an MCP tool. Absence of a tool named image_gen is not a stop. If you can draw here, finish Lane A in this turn.",
-    "Never wait for a second user message between cover and body images.",
+    "ChatGPT Images is native in-chat, not an MCP tool. Image generation may end a response, so resume from durable server state.",
     "Do not create or update a draft until cover + ≥3 body GitHub RAW URLs exist.",
   ],
 };

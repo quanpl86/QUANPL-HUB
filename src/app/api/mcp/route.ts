@@ -18,6 +18,14 @@ import { IMAGE_GENERATION_STANDARD } from "@/lib/content/image-generation-standa
 import { EditorialArticlesRepository } from "@/lib/content/editorial-articles";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { revalidateEditorialSurfaces } from "@/lib/content/editorial-revalidate";
+import {
+  ARTICLE_WORKFLOW_INSTRUCTIONS,
+  applyArticleWorkflowAsset,
+  createArticleWorkflowRun,
+  getArticleWorkflowNextAction,
+  type ArticleWorkflowRun,
+} from "@/lib/content/article-workflow";
+import { ArticleWorkflowRepository } from "@/lib/content/article-workflow.repository";
 
 const editorialSlotSchema = z.object({
   id: z.string().optional().describe("Existing slot id when revising a week."),
@@ -49,18 +57,115 @@ const editorialSlotSchema = z.object({
   })).optional(),
 });
 
+const articleWorkflowPackageSchema = z.object({
+  schema_version: z.literal("article-package/7.0"),
+  task_id: z.string().optional().nullable(),
+  calendar_id: z.string().optional().nullable(),
+  idempotency_key: z.string().min(1),
+  policy_version: z.string().min(1),
+  policy_hash: z.string().min(1),
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  excerpt: z.string().min(1),
+  content_markdown: z.string().min(1),
+  field: z.string().optional(),
+  subject: z.string().optional(),
+  category_id: z.string().optional(),
+  category: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  featured_image: z.object({
+    purpose: z.literal("article_cover"),
+    prompt: z.string().min(1),
+    alt: z.string().min(1),
+    caption: z.string().optional(),
+    suggested_filename: z.string().optional(),
+    url: z.string().nullable(),
+  }),
+  featured_image_url: z.string().nullable(),
+  featured_image_alt: z.string().optional(),
+  inline_images: z.array(z.object({
+    id: z.enum(["img-01", "img-02", "img-03"]),
+    purpose: z.enum(["concept_diagram", "workflow", "comparison", "case_study", "explainer"]),
+    position: z.object({
+      placeholder: z.string().optional(),
+      after_heading_id: z.string().optional(),
+    }).optional(),
+    prompt: z.string().min(1),
+    alt: z.string().min(1),
+    caption: z.string().optional(),
+    suggested_filename: z.string().optional(),
+    url: z.string().nullable(),
+  })).length(3),
+  seo: z.object({
+    title: z.string(),
+    description: z.string(),
+    primary_keyword: z.string(),
+    secondary_keywords: z.array(z.string()),
+    search_intent: z.object({
+      primary: z.string(),
+      secondary_questions: z.array(z.string()).optional(),
+    }),
+    semantic_entities: z.array(z.string()),
+  }),
+  aio: z.object({
+    direct_answer: z.string(),
+    tldr: z.string(),
+    key_takeaways: z.array(z.string()),
+    faq: z.array(z.object({ question: z.string(), answer: z.string() })).optional(),
+  }),
+  references: z.array(z.object({
+    title: z.string(),
+    url: z.string(),
+    source_type: z.string(),
+  })),
+  internal_links: z.array(z.object({ post_id: z.string(), anchor: z.string() })),
+  schema_org: z.record(z.string(), z.any()).optional(),
+  quality: z.object({
+    overall: z.number(),
+    factual_accuracy: z.number(),
+    source_quality: z.number(),
+    seo: z.number(),
+    aio: z.number(),
+    editorial: z.number(),
+    hard_fail_conditions: z.array(z.string()),
+  }),
+});
+
 function errorMessage(error: unknown): string {
   return flattenImageError(error) || "Unknown error";
+}
+
+async function finalizeArticleWorkflow(run: ArticleWorkflowRun) {
+  if (run.status !== "READY_TO_DRAFT") {
+    throw new Error(`ARTICLE_WORKFLOW_STATE_CONFLICT: cannot create draft while ${run.status}`);
+  }
+  const pkg = normalizeArticlePackage(run.article_package);
+  const draftResult = await PostsRepository.createDraft({
+    ...run.article_package,
+    featured_image: pkg.featured_image,
+    featured_image_alt: pkg.featured_image?.alt,
+    inline_images: pkg.inline_images,
+  });
+  const completed = await ArticleWorkflowRepository.complete(run.id, draftResult as Record<string, unknown>);
+  revalidateEditorialSurfaces((draftResult as { draft?: { id?: string }; draft_id?: string })?.draft?.id
+    || (draftResult as { draft_id?: string })?.draft_id);
+  return {
+    status: "COMPLETED",
+    run_id: completed.id,
+    uploaded_assets: completed.assets,
+    draft: draftResult,
+    next_action: getArticleWorkflowNextAction(completed),
+  };
 }
 
 function createKingDragonHubMcpServer() {
   const server = new McpServer(
     {
       name: "KingDragonHub-MCP",
-      version: "7.31.0",
+      version: "7.32.0",
     },
     {
-      instructions: ARTICLE_ASSET_HARD_RULE.text,
+      instructions: `${ARTICLE_WORKFLOW_INSTRUCTIONS} ${ARTICLE_ASSET_HARD_RULE.text}`,
     }
   );
 
@@ -129,7 +234,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Call first every session. From ONE user write request, autonomously run ChatGPT Lane A1: image_gen cover then upload_generated_image_file with the native file attachment, then img-01..03 the same way, then create/update the draft. Do not call start_image_upload from ChatGPT. SVG-only generate_and_upload. No Hub OpenAI API, MCP base64, or FLUX.",
+      description: "Call first every session. Simple article commands use the resumable workflow: start_article_workflow after research, generate the returned image, then on each user 'Tiếp tục' call continue_article_workflow with the previous native image. Do not ask for technical IDs.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -137,25 +242,27 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.31.0",
+          mcp_version: "7.32.0",
           asset_policy: ARTICLE_ASSET_HARD_RULE.asset_policy,
           article_asset_hard_rule: ARTICLE_ASSET_HARD_RULE.text,
           image_pipeline: {
             hard_rule: true,
             no_openai_api_key: true,
             autonomous: true,
-            one_user_message: true,
+            resumable: true,
+            one_user_message: false,
             cover_exact: 1,
             inline_exact: 3,
             required_ids: ARTICLE_ASSET_HARD_RULE.required_ids,
-            lane_a1_chatgpt: "Native ChatGPT Images (not MCP) → pass the generated file attachment to upload_generated_image_file. ChatGPT supplies download_url + file_id. Sequence cover, img-01, img-02, img-03. Never parallel. Never extra user prompts.",
+            lane_a1_chatgpt: "start_article_workflow → native cover. Each 'Tiếp tục': continue_article_workflow receives the previous native file, uploads it, and returns the next image prompt. After img-03 it creates the draft. Never parallel.",
             lane_a2_external: "Browser/external client only → start_image_upload → HTTP POST original PNG bytes to put_url.",
             lane_b: "generate_and_upload_blog_image SVG only.",
-            if_no_image_gen: "image_gen is NOT an MCP tool. If you can draw in this chat, finish Lane A now.",
+            if_no_image_gen: "image_gen is NOT an MCP tool. Use native ChatGPT Images for the single image in next_action, then resume on the next user 'Tiếp tục'.",
             never: ARTICLE_ASSET_HARD_RULE.never,
           },
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
           chatgpt_media_tool: "upload_generated_image_file",
+          article_workflow_tools: ["start_article_workflow", "get_active_article_workflow", "continue_article_workflow"],
           external_media_tool: "start_image_upload",
           media_tools: ["upload_generated_image_file", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
           permissions: CHATGPT_MCP_PERMISSIONS,
@@ -511,6 +618,183 @@ function createKingDragonHubMcpServer() {
           return { content: [{ type: "text", text: JSON.stringify({ slot }) }] };
         } catch (err: unknown) {
           return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "start_article_workflow",
+      {
+        title: "Start Resumable Article",
+        description: "Use after researching and writing a complete article from a simple user request such as 'Hãy viết bài về...'. Stores the Article Package and exact 1+3 image plan. Then generate next_action.prompt as a native ChatGPT Image immediately; do not ask the user for IDs or image metadata.",
+        inputSchema: z.object({
+          topic: z.string().min(1).describe("The user's article topic in natural language."),
+          article_package: articleWorkflowPackageSchema.describe("Complete researched Article Package v7. Image URLs must still be null."),
+        }),
+        annotations: {
+          readOnlyHint: false,
+          destructiveHint: false,
+          openWorldHint: false,
+        },
+      },
+      async (input) => {
+        try {
+          const prepared = createArticleWorkflowRun(input);
+          const run = await ArticleWorkflowRepository.create(prepared);
+          const nextAction = getArticleWorkflowNextAction(run);
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                status: run.status === "AWAITING_IMAGE_UPLOAD" ? "AWAITING_IMAGE_GENERATION" : run.status,
+                run_id: run.id,
+                topic: run.topic,
+                next_action: nextAction,
+                user_instruction: nextAction.action === "GENERATE_IMAGE"
+                  ? "Generate the returned image now. On the next user 'Tiếp tục', pass that native image to continue_article_workflow."
+                  : "The idempotent workflow already exists; follow next_action without restarting research or images.",
+              }),
+            }],
+          };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "get_active_article_workflow",
+      {
+        title: "Get Active Article Workflow",
+        description: "Use when the user says 'Tiếp tục', 'Tiếp tục nhé', 'Làm tiếp', or asks for article progress. Returns the pending image or draft action. Do not ask the user for run_id.",
+        inputSchema: z.object({}),
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          openWorldHint: false,
+        },
+      },
+      async () => {
+        try {
+          const run = await ArticleWorkflowRepository.getActive();
+          return {
+            content: [{ type: "text", text: JSON.stringify(run ? {
+              status: run.status,
+              run_id: run.id,
+              topic: run.topic,
+              uploaded_image_ids: Object.keys(run.assets),
+              next_action: getArticleWorkflowNextAction(run),
+              last_error: run.last_error || null,
+            } : {
+              status: "NO_ACTIVE_WORKFLOW",
+              next_action: "Ask the user which article they want to create.",
+            }) }],
+          };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "continue_article_workflow",
+      {
+        title: "Continue Article With Previous Image",
+        description: "PRIMARY command for 'Tiếp tục'. If an image was generated in the previous assistant response, pass that native file as `file`; the server infers cover/img-01/img-02/img-03, uploads it, and returns the next image prompt. Generate that next image as the final action. If READY_TO_DRAFT, omit file and the server retries draft creation.",
+        inputSchema: z.object({
+          run_id: z.string().optional().describe("Optional. Omit to resume the single active workflow."),
+          file: z.object({
+            download_url: z.string().url(),
+            file_id: z.string().min(1),
+            mime_type: z.string().optional(),
+            file_name: z.string().optional(),
+          }).strict().optional().describe("Native image file from the immediately previous assistant response."),
+        }),
+        annotations: {
+          readOnlyHint: false,
+          destructiveHint: false,
+          openWorldHint: true,
+        },
+        _meta: {
+          "openai/fileParams": ["file"],
+          "openai/toolInvocation/invoking": "Continuing article workflow…",
+          "openai/toolInvocation/invoked": "Article workflow advanced",
+        },
+      },
+      async (input) => {
+        let run: ArticleWorkflowRun | null = null;
+        try {
+          run = await ArticleWorkflowRepository.getActive(input.run_id);
+          if (!run) throw new Error("ARTICLE_WORKFLOW_NOT_FOUND: no active article workflow");
+
+          if (run.status === "COMPLETED") {
+            return { content: [{ type: "text", text: JSON.stringify({
+              status: "COMPLETED",
+              run_id: run.id,
+              uploaded_assets: run.assets,
+              draft: run.draft_result,
+              next_action: getArticleWorkflowNextAction(run),
+            }) }] };
+          }
+          if (run.status === "READY_TO_DRAFT") {
+            return { content: [{ type: "text", text: JSON.stringify(await finalizeArticleWorkflow(run)) }] };
+          }
+
+          const nextAction = getArticleWorkflowNextAction(run);
+          if (nextAction.action !== "GENERATE_IMAGE") {
+            throw new Error(`ARTICLE_WORKFLOW_STATE_CONFLICT: unexpected ${nextAction.action}`);
+          }
+          if (!input.file) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({
+                status: "AWAITING_NATIVE_FILE",
+                run_id: run.id,
+                expected_image_id: nextAction.image_id,
+                next_action: nextAction,
+                instruction: "Use the native image from the previous assistant response as file. If it is unavailable, regenerate only this pending image.",
+              }) }],
+            };
+          }
+
+          const uploaded = await uploadGeneratedImageFile({
+            file: input.file,
+            idempotency_key: run.idempotency_key,
+            article_key: String(run.article_package.slug || run.topic),
+            image_id: nextAction.image_id,
+            purpose: nextAction.purpose,
+            prompt: nextAction.prompt,
+            alt: nextAction.alt,
+            aspect: nextAction.aspect,
+            filename: nextAction.filename,
+          });
+          const advanced = applyArticleWorkflowAsset(run, {
+            image_id: nextAction.image_id,
+            raw_url: uploaded.raw_url,
+            width: uploaded.width,
+            height: uploaded.height,
+            mime_type: uploaded.mime_type,
+            file_bytes: uploaded.file_bytes,
+            sha256: uploaded.sha256,
+          });
+          const saved = await ArticleWorkflowRepository.saveProgress(run, advanced);
+
+          if (saved.status === "READY_TO_DRAFT") {
+            return { content: [{ type: "text", text: JSON.stringify(await finalizeArticleWorkflow(saved)) }] };
+          }
+          return {
+            content: [{ type: "text", text: JSON.stringify({
+              status: "IMAGE_UPLOADED",
+              run_id: saved.id,
+              uploaded,
+              uploaded_image_ids: Object.keys(saved.assets),
+              next_action: getArticleWorkflowNextAction(saved),
+              user_instruction: "Generate next_action.prompt now as the final action. The user only needs to say 'Tiếp tục nhé'.",
+            }) }],
+          };
+        } catch (err: unknown) {
+          const message = errorMessage(err);
+          if (run) await ArticleWorkflowRepository.rememberError(run.id, message);
+          return { content: [{ type: "text", text: JSON.stringify({ error: message, run_id: run?.id }) }], isError: true };
         }
       }
     );
