@@ -21,11 +21,13 @@ import { revalidateEditorialSurfaces } from "@/lib/content/editorial-revalidate"
 import {
   ARTICLE_WORKFLOW_INSTRUCTIONS,
   applyArticleWorkflowAsset,
+  applyArticleWorkflowImageFailure,
   createArticleWorkflowRun,
   getArticleWorkflowNextAction,
   type ArticleWorkflowRun,
 } from "@/lib/content/article-workflow";
 import { ArticleWorkflowRepository } from "@/lib/content/article-workflow.repository";
+import { sendArticleWorkflowPausedEmail } from "@/lib/notifications/email";
 
 const editorialSlotSchema = z.object({
   id: z.string().optional().describe("Existing slot id when revising a week."),
@@ -136,7 +138,7 @@ function errorMessage(error: unknown): string {
 }
 
 async function finalizeArticleWorkflow(run: ArticleWorkflowRun) {
-  if (run.status !== "READY_TO_DRAFT") {
+  if (run.status !== "READY_TO_DRAFT" && run.status !== "READY_TO_DRAFT_INCOMPLETE") {
     throw new Error(`ARTICLE_WORKFLOW_STATE_CONFLICT: cannot create draft while ${run.status}`);
   }
   const pkg = normalizeArticlePackage(run.article_package);
@@ -145,6 +147,7 @@ async function finalizeArticleWorkflow(run: ArticleWorkflowRun) {
     featured_image: pkg.featured_image,
     featured_image_alt: pkg.featured_image?.alt,
     inline_images: pkg.inline_images,
+    _workflow_media_status: run.status === "READY_TO_DRAFT_INCOMPLETE" ? "INCOMPLETE" : "COMPLETE",
   });
   const completed = await ArticleWorkflowRepository.complete(run.id, draftResult as Record<string, unknown>);
   revalidateEditorialSurfaces((draftResult as { draft?: { id?: string }; draft_id?: string })?.draft?.id
@@ -162,7 +165,7 @@ function createKingDragonHubMcpServer() {
   const server = new McpServer(
     {
       name: "KingDragonHub-MCP",
-      version: "7.32.0",
+      version: "7.33.0",
     },
     {
       instructions: `${ARTICLE_WORKFLOW_INSTRUCTIONS} ${ARTICLE_ASSET_HARD_RULE.text}`,
@@ -242,7 +245,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.32.0",
+          mcp_version: "7.33.0",
           asset_policy: ARTICLE_ASSET_HARD_RULE.asset_policy,
           article_asset_hard_rule: ARTICLE_ASSET_HARD_RULE.text,
           image_pipeline: {
@@ -262,7 +265,7 @@ function createKingDragonHubMcpServer() {
           },
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
           chatgpt_media_tool: "upload_generated_image_file",
-          article_workflow_tools: ["start_article_workflow", "get_active_article_workflow", "continue_article_workflow"],
+          article_workflow_tools: ["start_article_workflow", "get_active_article_workflow", "continue_article_workflow", "report_article_image_failure"],
           external_media_tool: "start_image_upload",
           media_tools: ["upload_generated_image_file", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
           permissions: CHATGPT_MCP_PERMISSIONS,
@@ -736,7 +739,7 @@ function createKingDragonHubMcpServer() {
               next_action: getArticleWorkflowNextAction(run),
             }) }] };
           }
-          if (run.status === "READY_TO_DRAFT") {
+          if (run.status === "READY_TO_DRAFT" || run.status === "READY_TO_DRAFT_INCOMPLETE") {
             return { content: [{ type: "text", text: JSON.stringify(await finalizeArticleWorkflow(run)) }] };
           }
 
@@ -793,8 +796,56 @@ function createKingDragonHubMcpServer() {
           };
         } catch (err: unknown) {
           const message = errorMessage(err);
-          if (run) await ArticleWorkflowRepository.rememberError(run.id, message);
+          if (run) {
+            await ArticleWorkflowRepository.rememberError(run.id, message);
+            if (run.status === "READY_TO_DRAFT" || run.status === "READY_TO_DRAFT_INCOMPLETE") {
+              await sendArticleWorkflowPausedEmail({ topic: run.topic, error: message });
+            }
+          }
           return { content: [{ type: "text", text: JSON.stringify({ error: message, run_id: run?.id }) }], isError: true };
+        }
+      }
+    );
+
+    server.registerTool(
+      "report_article_image_failure",
+      {
+        title: "Report Article Image Failure",
+        description: "Call when the pending ChatGPT Image cannot be generated or its native upload failed. First report retries the same image. Second report marks it MISSING, stores a detailed holder, and advances. After all four slots, the server creates a MEDIA_INCOMPLETE draft.",
+        inputSchema: z.object({
+          run_id: z.string().optional().describe("Optional. Omit to use the single active workflow."),
+          failure_code: z.string().min(1).default("IMAGE_GENERATION_FAILED"),
+          failure_reason: z.string().min(1).describe("Concise technical or user-visible failure reason."),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+      },
+      async (input) => {
+        try {
+          const run = await ArticleWorkflowRepository.getActive(input.run_id);
+          if (!run) throw new Error("ARTICLE_WORKFLOW_NOT_FOUND: no active article workflow");
+          if (run.status === "READY_TO_DRAFT" || run.status === "READY_TO_DRAFT_INCOMPLETE") {
+            return { content: [{ type: "text", text: JSON.stringify(await finalizeArticleWorkflow(run)) }] };
+          }
+          const next = applyArticleWorkflowImageFailure(run, input);
+          const saved = await ArticleWorkflowRepository.saveImageFailure(run, next);
+          if (saved.status === "READY_TO_DRAFT_INCOMPLETE") {
+            return { content: [{ type: "text", text: JSON.stringify(await finalizeArticleWorkflow(saved)) }] };
+          }
+          const pending = getArticleWorkflowNextAction(saved);
+          const failure = saved.image_failures[run.image_plan[run.current_index].image_id];
+          return { content: [{ type: "text", text: JSON.stringify({
+            status: failure?.status === "MISSING" ? "IMAGE_HOLDER_CREATED" : "RETRY_IMAGE",
+            run_id: saved.id,
+            failed_image_id: run.image_plan[run.current_index].image_id,
+            attempt_count: failure?.attempt_count,
+            max_attempts: failure?.max_attempts,
+            next_action: pending,
+            user_instruction: pending.action === "GENERATE_IMAGE"
+              ? "Generate next_action.prompt now. If it fails again, call report_article_image_failure again."
+              : "Continue the workflow.",
+          }) }] };
+        } catch (err: unknown) {
+          return { content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }], isError: true };
         }
       }
     );

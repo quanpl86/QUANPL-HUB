@@ -91,6 +91,25 @@ test("B03 null URL removes placeholder cleanly", async () => {
   assert.ok(result.warnings.some((issue) => issue.code === "MEDIA_URL_MISSING"));
 });
 
+test("B03b missing workflow image becomes a detailed holder", async () => {
+  const result = await compileArticleHtml(pkg({
+    content_markdown: "## Mục\n\n{{IMAGE:img-01}}\n",
+    inline_images: [{
+      id: "img-01",
+      purpose: "explainer",
+      prompt: "Lớp học STEM hiện đại, không chữ",
+      alt: "Học sinh thực hành STEM",
+      url: null,
+      status: "missing",
+      failure_reason: "Native upload failed twice",
+    }],
+  }));
+  assert.match(result.html, /kd-image-holder/);
+  assert.match(result.html, /ẢNH CẦN BỔ SUNG/);
+  assert.match(result.html, /Native upload failed twice/);
+  assert.match(result.html, /1280×720/);
+});
+
 test("B04 after_heading_id fallback inserts after the matching heading", async () => {
   const heading = "Quy trình 7 bước triển khai";
   const result = await compileArticleHtml(pkg({

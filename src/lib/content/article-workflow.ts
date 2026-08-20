@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { ARTICLE_ASSET_HARD_RULE } from "./article-asset-rule.ts";
 
-export const ARTICLE_WORKFLOW_VERSION = "article-workflow/1.0";
+export const ARTICLE_WORKFLOW_VERSION = "article-workflow/2.0";
 export const ARTICLE_WORKFLOW_SEQUENCE = ARTICLE_ASSET_HARD_RULE.sequence;
 export type ArticleWorkflowJson = Record<string, unknown>;
 
@@ -9,8 +9,12 @@ export type ArticleWorkflowImageId = (typeof ARTICLE_WORKFLOW_SEQUENCE)[number];
 export type ArticleWorkflowStatus =
   | "AWAITING_IMAGE_UPLOAD"
   | "READY_TO_DRAFT"
+  | "READY_TO_DRAFT_INCOMPLETE"
   | "COMPLETED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "FAILED";
+
+export type ArticleWorkflowMediaStatus = "PENDING" | "COMPLETE" | "INCOMPLETE";
 
 export type ArticleWorkflowImageSpec = {
   image_id: ArticleWorkflowImageId;
@@ -31,16 +35,27 @@ export type ArticleWorkflowAsset = {
   sha256: string;
 };
 
+export type ArticleWorkflowImageFailure = {
+  image_id: ArticleWorkflowImageId;
+  attempt_count: number;
+  max_attempts: number;
+  failure_code: string;
+  failure_reason: string;
+  status: "PENDING" | "MISSING";
+};
+
 export type ArticleWorkflowRun = {
   id: string;
   workflow_version: typeof ARTICLE_WORKFLOW_VERSION;
   topic: string;
   idempotency_key: string;
   status: ArticleWorkflowStatus;
+  media_status: ArticleWorkflowMediaStatus;
   current_index: number;
   article_package: ArticleWorkflowJson;
   image_plan: ArticleWorkflowImageSpec[];
   assets: Partial<Record<ArticleWorkflowImageId, ArticleWorkflowAsset>>;
+  image_failures: Partial<Record<ArticleWorkflowImageId, ArticleWorkflowImageFailure>>;
   draft_result?: ArticleWorkflowJson | null;
   last_error?: string | null;
   created_at?: string;
@@ -117,10 +132,12 @@ export function createArticleWorkflowRun(input: {
     topic,
     idempotency_key: idempotencyKey,
     status: "AWAITING_IMAGE_UPLOAD",
+    media_status: "PENDING",
     current_index: 0,
     article_package: structuredClone(input.article_package),
     image_plan: buildArticleWorkflowImagePlan(input.article_package),
     assets: {},
+    image_failures: {},
     draft_result: null,
     last_error: null,
   };
@@ -133,7 +150,7 @@ export function getArticleWorkflowNextAction(run: ArticleWorkflowRun): ArticleWo
   if (run.status === "CANCELLED") {
     return { action: "CANCELLED", run_id: run.id };
   }
-  if (run.status === "READY_TO_DRAFT" || run.current_index >= run.image_plan.length) {
+  if (run.status === "READY_TO_DRAFT" || run.status === "READY_TO_DRAFT_INCOMPLETE" || run.current_index >= run.image_plan.length) {
     return { action: "CREATE_DRAFT", run_id: run.id };
   }
   const spec = run.image_plan[run.current_index];
@@ -166,20 +183,85 @@ export function applyArticleWorkflowAsset(
   }
 
   const nextIndex = run.current_index + 1;
+  const hasMissing = Object.values(run.image_failures).some((failure) => failure?.status === "MISSING");
   return {
     ...run,
     current_index: nextIndex,
-    status: nextIndex === run.image_plan.length ? "READY_TO_DRAFT" : "AWAITING_IMAGE_UPLOAD",
+    status: nextIndex === run.image_plan.length
+      ? (hasMissing
+        ? "READY_TO_DRAFT_INCOMPLETE"
+        : "READY_TO_DRAFT")
+      : "AWAITING_IMAGE_UPLOAD",
+    media_status: nextIndex === run.image_plan.length ? (hasMissing ? "INCOMPLETE" : "COMPLETE") : run.media_status,
     article_package: articlePackage,
     assets: { ...run.assets, [asset.image_id]: asset },
     last_error: null,
   };
 }
 
+export function applyArticleWorkflowImageFailure(
+  run: ArticleWorkflowRun,
+  input: { failure_code: string; failure_reason: string; max_attempts?: number }
+): ArticleWorkflowRun {
+  if (run.status !== "AWAITING_IMAGE_UPLOAD") {
+    throw new Error(`ARTICLE_WORKFLOW_STATE_CONFLICT: cannot report image failure while ${run.status}`);
+  }
+  const expected = run.image_plan[run.current_index];
+  if (!expected) throw new Error("ARTICLE_WORKFLOW_STATE_CONFLICT: no pending image");
+  const previous = run.image_failures[expected.image_id];
+  const maxAttempts = input.max_attempts ?? previous?.max_attempts ?? 2;
+  const attemptCount = (previous?.attempt_count ?? 0) + 1;
+  const missing = attemptCount >= maxAttempts;
+  const failure: ArticleWorkflowImageFailure = {
+    image_id: expected.image_id,
+    attempt_count: attemptCount,
+    max_attempts: maxAttempts,
+    failure_code: requiredText(input.failure_code, "failure_code"),
+    failure_reason: requiredText(input.failure_reason, "failure_reason"),
+    status: missing ? "MISSING" : "PENDING",
+  };
+  if (!missing) {
+    return {
+      ...run,
+      image_failures: { ...run.image_failures, [expected.image_id]: failure },
+      last_error: failure.failure_reason,
+    };
+  }
+
+  const articlePackage = structuredClone(run.article_package);
+  const missingPatch = {
+    status: "missing",
+    failure_code: failure.failure_code,
+    failure_reason: failure.failure_reason,
+  };
+  if (expected.image_id === "cover") {
+    articlePackage.featured_image = { ...(record(articlePackage.featured_image) || {}), ...missingPatch, url: null };
+    articlePackage.featured_image_url = null;
+  } else {
+    const inline = Array.isArray(articlePackage.inline_images) ? articlePackage.inline_images : [];
+    articlePackage.inline_images = inline.map((value) => {
+      const image = record(value) || {};
+      return image.id === expected.image_id ? { ...image, ...missingPatch, url: null } : image;
+    });
+  }
+  articlePackage.media_status = "INCOMPLETE";
+  const nextIndex = run.current_index + 1;
+  return {
+    ...run,
+    current_index: nextIndex,
+    status: nextIndex === run.image_plan.length ? "READY_TO_DRAFT_INCOMPLETE" : "AWAITING_IMAGE_UPLOAD",
+    media_status: "INCOMPLETE",
+    article_package: articlePackage,
+    image_failures: { ...run.image_failures, [expected.image_id]: failure },
+    last_error: failure.failure_reason,
+  };
+}
+
 export const ARTICLE_WORKFLOW_INSTRUCTIONS = [
-  "ARTICLE_WORKFLOW_V1.",
+  "ARTICLE_WORKFLOW_V2.",
   "When the user asks to write an article, research and prepare the complete Article Package, call start_article_workflow, then immediately generate the returned cover as the final action.",
   "When the user says Tiếp tục, Tiếp tục nhé, Làm tiếp, or equivalent, call continue_article_workflow with the native image file from the previous assistant response; never ask for technical IDs.",
   "After each upload, generate the returned next image as the final action. After img-03, continue_article_workflow creates the draft automatically.",
+  "If image generation or upload fails, call report_article_image_failure. Retry the same image once; after the second failure the server creates a detailed image holder and advances. Never silently omit an image.",
   "Never parallelize images. Never use base64 or start_image_upload from ChatGPT.",
 ].join(" ");

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { EditorialPolicyRepository } from "../editorial/editorial-policy.repository";
-import { sendDraftEmailNotification } from "../notifications/email";
+import { sendArticleWorkflowEmail, sendDraftEmailNotification } from "../notifications/email";
 import {
   buildArticlePackageSnapshot,
   dedupeIssues,
@@ -288,8 +288,10 @@ export class PostsRepository {
     }
 
     const pkg = normalizeArticlePackage(draftData);
+    const allowMissingMedia = draftData._workflow_media_status === "INCOMPLETE";
     const mediaCheck = validateArticlePackage(pkg, {
       requireV7Fields: process.env.MCP_REQUIRE_V7_FIELDS === "true",
+      allowMissingMedia,
     });
     if (mediaCheck.errors.length > 0) {
       throw new Error(`QUALITY_GATE_FAILED: ${formatPackageErrors(mediaCheck.errors)}`);
@@ -318,7 +320,7 @@ export class PostsRepository {
       primary_keyword: draftData.seo?.primary_keyword,
       faq_count: pkg.aio.faq.length,
     });
-    if (seoReport.score < SEO_SCORE_MIN) {
+    if (seoReport.score < SEO_SCORE_MIN && !allowMissingMedia) {
       throw new Error(formatSeoGateError(seoReport));
     }
 
@@ -341,6 +343,18 @@ export class PostsRepository {
       ...buildArticlePackageSnapshot(pkg, warnings),
       category: taxonomy.category,
       tags: taxonomy.tags,
+      media_status: allowMissingMedia ? "INCOMPLETE" : "COMPLETE",
+      missing_images: allowMissingMedia
+        ? [pkg.featured_image, ...pkg.inline_images]
+            .filter((image) => image?.status === "missing")
+            .map((image) => ({
+              image_id: image && "id" in image ? String(image.id) : "cover",
+              prompt: image?.prompt,
+              alt: image?.alt,
+              failure_code: image?.failure_code,
+              failure_reason: image?.failure_reason,
+            }))
+        : [],
     };
 
     // 4. Chuẩn bị dữ liệu và Hard-Lock Governance
@@ -613,7 +627,24 @@ async function handleDraftSuccess(
     }).eq("id", taskId);
   }
 
-  await sendDraftEmailNotification(data.title, data.id, "created");
+  if (draftData._workflow_media_status === "COMPLETE" || draftData._workflow_media_status === "INCOMPLETE") {
+    const pkg = normalizeArticlePackage(draftData);
+    await sendArticleWorkflowEmail({
+      topic: data.title,
+      draftId: data.id,
+      mediaStatus: draftData._workflow_media_status,
+      missingImages: [pkg.featured_image, ...pkg.inline_images]
+        .filter((image) => image?.status === "missing")
+        .map((image) => ({
+          image_id: image && "id" in image ? String(image.id) : "cover",
+          prompt: image?.prompt || "",
+          alt: image?.alt || "",
+          failure_reason: image?.failure_reason,
+        })),
+    });
+  } else {
+    await sendDraftEmailNotification(data.title, data.id, "created");
+  }
 
   return {
     success: true,

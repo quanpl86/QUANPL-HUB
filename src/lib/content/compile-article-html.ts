@@ -36,6 +36,17 @@ function renderFigure(image: InlineImage): string {
 </figure>`;
 }
 
+function renderImageHolder(image: InlineImage): string {
+  return `<aside class="kd-image-holder" data-image-id="${escapeHtml(image.id)}" data-media-status="missing">
+  <p><strong>ẢNH CẦN BỔ SUNG — ${escapeHtml(image.id)}</strong></p>
+  <p><strong>Vị trí:</strong> ${escapeHtml(image.position?.after_heading_id || image.position?.placeholder || `{{IMAGE:${image.id}}}`)}</p>
+  <p><strong>Mô tả:</strong> ${escapeHtml(image.alt)}</p>
+  <p><strong>Prompt gợi ý:</strong> ${escapeHtml(image.prompt)}</p>
+  <p><strong>Yêu cầu:</strong> 16:9, tối thiểu 1280×720, không chữ nếu là ảnh minh họa cảnh.</p>
+  <p><strong>Lỗi gần nhất:</strong> ${escapeHtml(image.failure_reason || image.failure_code || "Không tạo hoặc tải được ảnh")}</p>
+</aside>`;
+}
+
 function renderTakeaways(pkg: NormalizedArticlePackage): string {
   const points = [...pkg.aio.key_takeaways];
   if (pkg.aio.tldr?.trim() && !points.some((point) => point.includes(pkg.aio.tldr.trim()))) {
@@ -109,9 +120,11 @@ function replacePlaceholders(
       warnings.push({
         code: "MEDIA_URL_MISSING",
         image_id: id,
-        message: `{{IMAGE:${id}}} removed because url is null`,
+        message: image.status === "missing"
+          ? `{{IMAGE:${id}}} rendered as a detailed image holder`
+          : `{{IMAGE:${id}}} removed because url is null`,
       });
-      return "";
+      return image.status === "missing" ? renderImageHolder(image) : "";
     }
     return renderFigure(image);
   });
@@ -156,6 +169,13 @@ function applyHeadingFallbacks(
         image_id: image.id,
         message: `inline image "${image.id}" heading fallback skipped because url is null`,
       });
+      if (image.status === "missing") {
+        const inserted = insertAfterHeading(nextHtml, headingId, renderImageHolder(image));
+        if (inserted) {
+          usedIds.add(image.id);
+          nextHtml = inserted;
+        }
+      }
       continue;
     }
 

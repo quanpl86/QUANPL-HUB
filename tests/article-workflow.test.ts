@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   applyArticleWorkflowAsset,
+  applyArticleWorkflowImageFailure,
   createArticleWorkflowRun,
   getArticleWorkflowNextAction,
   type ArticleWorkflowImageId,
@@ -85,4 +86,25 @@ test("rejects out-of-order and incomplete image plans", () => {
     () => createArticleWorkflowRun({ topic: "STEM", article_package: incomplete }),
     /must include img-03/
   );
+});
+
+test("retries once, then marks a failed image missing and advances", () => {
+  let run = createArticleWorkflowRun({ topic: "STEM", article_package: articlePackage() });
+  run = applyArticleWorkflowImageFailure(run, {
+    failure_code: "IMAGE_GENERATION_FAILED",
+    failure_reason: "provider timeout",
+  });
+  assert.equal(run.current_index, 0);
+  assert.equal(run.image_failures.cover?.attempt_count, 1);
+  assert.equal(run.image_failures.cover?.status, "PENDING");
+  run = applyArticleWorkflowImageFailure(run, {
+    failure_code: "IMAGE_GENERATION_FAILED",
+    failure_reason: "provider timeout again",
+  });
+  assert.equal(run.current_index, 1);
+  assert.equal(run.media_status, "INCOMPLETE");
+  assert.equal(run.image_failures.cover?.status, "MISSING");
+  assert.equal((run.article_package.featured_image as { status: string }).status, "missing");
+  const next = getArticleWorkflowNextAction(run);
+  assert.equal(next.action === "GENERATE_IMAGE" ? next.image_id : null, "img-01");
 });

@@ -22,6 +22,9 @@ export type FeaturedImage = {
   caption?: string;
   suggested_filename?: string;
   url?: string | null;
+  status?: "pending" | "uploaded" | "missing";
+  failure_code?: string;
+  failure_reason?: string;
 };
 
 export type InlineImage = {
@@ -36,6 +39,9 @@ export type InlineImage = {
   caption?: string;
   suggested_filename?: string;
   url?: string | null;
+  status?: "pending" | "uploaded" | "missing";
+  failure_code?: string;
+  failure_reason?: string;
 };
 
 export type SearchIntentV7 = {
@@ -142,6 +148,9 @@ export function normalizeFeaturedImage(
       caption: asString(rec.caption),
       suggested_filename: asString(rec.suggested_filename),
       url: asNullableString(rec.url) ?? null,
+      status: asString(rec.status) as FeaturedImage["status"],
+      failure_code: asString(rec.failure_code),
+      failure_reason: asString(rec.failure_reason),
     },
   };
 }
@@ -166,6 +175,9 @@ export function normalizeInlineImages(raw: unknown): InlineImage[] {
       caption: asString(rec.caption),
       suggested_filename: asString(rec.suggested_filename),
       url: asNullableString(rec.url) ?? null,
+      status: asString(rec.status) as InlineImage["status"],
+      failure_code: asString(rec.failure_code),
+      failure_reason: asString(rec.failure_reason),
     };
   });
 }
@@ -234,7 +246,7 @@ export function normalizeArticlePackage(draftData: any): NormalizedArticlePackag
 
 export function validateArticlePackage(
   pkg: NormalizedArticlePackage,
-  options: { requireV7Fields?: boolean } = {}
+  options: { requireV7Fields?: boolean; allowMissingMedia?: boolean } = {}
 ): { errors: PackageIssue[]; warnings: PackageIssue[] } {
   const errors: PackageIssue[] = [];
   const warnings: PackageIssue[] = [];
@@ -275,11 +287,13 @@ export function validateArticlePackage(
   }
 
   if (!hasPersistentImageUrl(pkg.featured_image?.url)) {
-    errors.push({
+    const issue = {
       code: "COVER_URL_MISSING",
       image_id: "featured_image",
       message: "featured_image.url is required. Create the cover with ChatGPT Images, then pass its native file attachment to upload_generated_image_file.",
-    });
+    };
+    if (options.allowMissingMedia && pkg.featured_image?.status === "missing") warnings.push(issue);
+    else errors.push(issue);
   }
 
   if (pkg.inline_images.length > ARTICLE_INLINE_IMAGE_MAX) {
@@ -326,11 +340,13 @@ export function validateArticlePackage(
     }
 
     if (!hasPersistentImageUrl(image.url)) {
-      errors.push({
+      const issue = {
         code: "INLINE_URL_MISSING",
         image_id: image.id,
         message: `inline image "${image.id}" url is required. ChatGPT Images: pass the native file attachment to upload_generated_image_file. Structured labels: generate_and_upload_blog_image SVG.`,
-      });
+      };
+      if (options.allowMissingMedia && image.status === "missing") warnings.push(issue);
+      else errors.push(issue);
     } else {
       const hasPlaceholder = pkg.content_markdown.includes(`{{IMAGE:${image.id}}}`);
       const hasHeading = Boolean(image.position?.after_heading_id?.trim());
@@ -363,7 +379,7 @@ export function validateArticlePackage(
     || pkg.inline_images.length !== ARTICLE_INLINE_IMAGE_MIN
     || missingIds.length
   ) {
-    errors.push({
+    const issue = {
       code: "IMAGE_SET_INCOMPLETE",
       message: JSON.stringify({
         error: "IMAGE_SET_INCOMPLETE",
@@ -371,7 +387,9 @@ export function validateArticlePackage(
         received: { cover: coverReady ? 1 : 0, inline: readyInline.length },
         missing: [...(coverReady ? [] : ["cover"]), ...missingIds],
       }),
-    });
+    };
+    if (options.allowMissingMedia) warnings.push(issue);
+    else errors.push(issue);
   }
 
   return { errors, warnings };

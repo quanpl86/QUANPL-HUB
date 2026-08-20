@@ -102,9 +102,15 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   const tagsRaw = formData.get('tags') as string;
   const tags = tagsRaw ? tagsRaw.split(',').map(k => k.trim()).filter(Boolean) : [];
 
-  const { data: existingPost } = await supabase.from('posts').select('slug, seo_keywords').eq('id', id).single();
+  const { data: existingPost } = await supabase.from('posts').select('slug, seo_keywords, article_package').eq('id', id).single();
   const existingSeoKeywords = existingPost?.seo_keywords || {};
   const slug = existingPost?.slug;
+  if (isPublished && existingPost?.article_package?.media_status === 'INCOMPLETE') {
+    return {
+      success: false,
+      error: 'MEDIA_INCOMPLETE: Bài còn image holder. Hãy bổ sung đủ cover và ảnh trong bài trước khi công khai.',
+    };
+  }
 
   const { error } = await supabase
     .from('posts')
@@ -233,4 +239,3 @@ export async function createAIDraft(data: {
   revalidatePath('/admin/posts');
   return { success: true, slug: post.slug, id: post.id };
 }
-

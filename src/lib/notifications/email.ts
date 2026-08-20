@@ -104,6 +104,61 @@ export async function sendDraftEmailNotification(
   });
 }
 
+export async function sendArticleWorkflowEmail(input: {
+  topic: string;
+  draftId?: string | null;
+  mediaStatus: "COMPLETE" | "INCOMPLETE";
+  missingImages?: Array<{ image_id: string; prompt: string; alt: string; failure_reason?: string }>;
+}) {
+  await queueMail(async () => {
+    const mail = mailer();
+    if (!mail) {
+      console.warn("[Email] Missing GMAIL_USER or GMAIL_APP_PASSWORD, skipping workflow email.");
+      return;
+    }
+    const incomplete = input.mediaStatus === "INCOMPLETE";
+    const reviewUrl = input.draftId ? `${dashboardBase()}/admin/posts/edit/${input.draftId}` : null;
+    const missing = (input.missingImages || []).map((image) => `<li style="margin-bottom:12px">
+      <strong>${escapeHtml(image.image_id)} — ${escapeHtml(image.alt)}</strong><br/>
+      Prompt: ${escapeHtml(image.prompt)}<br/>
+      Lỗi: ${escapeHtml(image.failure_reason || "Không tạo hoặc tải được ảnh")}
+    </li>`).join("");
+    await mail.transporter.sendMail({
+      from: `"KING DRAGON AI" <${mail.user}>`,
+      to: mail.to,
+      subject: incomplete
+        ? `[CẦN BỔ SUNG ẢNH] Draft đã tạo: ${input.topic}`
+        : `[HOÀN TẤT] Draft và 4 ảnh đã tạo: ${input.topic}`,
+      html: wrapEmail(`
+        <p>${incomplete
+          ? "Draft đã được tạo nhưng còn ảnh lỗi hoặc thiếu. Bài đang ở trạng thái MEDIA_INCOMPLETE và không được phép publish."
+          : "ChatGPT đã hoàn thành nội dung, cover và ba ảnh trong bài."}</p>
+        <p><strong>Chủ đề:</strong> ${escapeHtml(input.topic)}</p>
+        ${missing ? `<p><strong>Ảnh cần xử lý:</strong></p><ul>${missing}</ul>` : ""}
+        ${reviewUrl ? `<p style="text-align:center;margin-top:30px"><a href="${reviewUrl}" style="background:#ff6a00;color:white;text-decoration:none;padding:12px 24px;border-radius:4px;font-weight:bold">Mở bản nháp</a></p>` : ""}
+        <p>MCP lưu progress trên server. Có thể mở một ChatGPT có kết nối KingDragonHub và nói: <strong>Tiếp tục bài đang dở</strong>.</p>
+      `),
+    });
+  });
+}
+
+export async function sendArticleWorkflowPausedEmail(input: { topic: string; error: string }) {
+  await queueMail(async () => {
+    const mail = mailer();
+    if (!mail) return;
+    await mail.transporter.sendMail({
+      from: `"KING DRAGON AI" <${mail.user}>`,
+      to: mail.to,
+      subject: `[ẢNH ĐÃ XONG, DRAFT ĐANG LỖI] ${input.topic}`,
+      html: wrapEmail(`
+        <p>Bốn image slot đã xử lý xong nhưng hệ thống chưa tạo được draft.</p>
+        <p><strong>Lỗi:</strong> ${escapeHtml(input.error)}</p>
+        <p>Progress vẫn được lưu trên MCP. Mở ChatGPT có kết nối KingDragonHub và nói: <strong>Tiếp tục bài đang dở</strong>.</p>
+      `),
+    });
+  });
+}
+
 export async function sendEditorialWeekReviewEmail(week: WeekEmail, kind: "proposed" | "revised") {
   await queueMail(async () => {
     const mail = mailer();
