@@ -41,7 +41,7 @@ export function sniffImage(bytes: Buffer): ImageSniff {
 
 const PNG_IEND = Buffer.from([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82]);
 const TRUNCATED_HINT =
-  "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Call start_image_upload then HTTP POST original PNG bytes to put_url.";
+  "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Pass the native ChatGPT file attachment to upload_generated_image_file.";
 
 export function assertCompleteRaster(bytes: Buffer): void {
   if (bytes.length < 32) throw new Error(TRUNCATED_HINT);

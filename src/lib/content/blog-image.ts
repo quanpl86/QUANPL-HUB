@@ -302,7 +302,7 @@ async function fetchGeneratedImage(
   const chain = imageGeneratorChain();
   if (!chain.length) {
     throw new Error(
-      "IMAGE_GENERATE_FAILED: NO_HQ_PROVIDER. Hub has no OpenAI/Gemini/Stability key, and Flux cannot meet ≥1536×864. Create the image with ChatGPT Images in this chat (one at a time), then start_image_upload and POST the original PNG to put_url. Do not upscale Flux 1024×576."
+      "IMAGE_GENERATE_FAILED: NO_HQ_PROVIDER. Hub does not generate scene images. Create the image with ChatGPT Images, then pass its native file attachment to upload_generated_image_file. Do not use base64, start_image_upload from ChatGPT, or upscale Flux."
     );
   }
   const attempts: ProviderAttempt[] = [];
@@ -333,7 +333,7 @@ export function decodeImageBase64(raw: string): Buffer {
   const bytes = Buffer.from(b64, "base64");
   if (bytes.length < 32) {
     throw new Error(
-      "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Call start_image_upload then HTTP POST original PNG bytes to put_url."
+      "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Pass the native ChatGPT file attachment to upload_generated_image_file."
     );
   }
   if (bytes.length > 10 * 1024 * 1024) throw new Error("IMAGE_UPLOAD_FAILED: image_base64 exceeds 10MB");
@@ -343,7 +343,7 @@ export function decodeImageBase64(raw: string): Buffer {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes("BASE64_TRUNCATED") || message.includes("IMAGE_FORMAT_UNKNOWN")) {
       throw new Error(
-        "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Call start_image_upload then HTTP POST original PNG bytes to put_url."
+        "IMAGE_UPLOAD_FAILED: BASE64_TRUNCATED. ChatGPT MCP cuts large image_base64 before Hub. Do NOT compress/resize. Pass the native ChatGPT file attachment to upload_generated_image_file."
       );
     }
     throw error;
@@ -363,7 +363,7 @@ async function fetchSourceImage(url: string): Promise<{ bytes: Buffer; generator
   });
   if (!response.ok) {
     throw new Error(
-      `IMAGE_UPLOAD_FAILED: source_url ${response.status}. If this is a ChatGPT file URL, call start_image_upload and POST the original PNG bytes instead.`
+      `IMAGE_UPLOAD_FAILED: ChatGPT file download_url returned ${response.status}. Regenerate or reattach the same image and retry upload_generated_image_file.`
     );
   }
   const bytes = Buffer.from(await response.arrayBuffer());
@@ -578,6 +578,18 @@ export type ChatGptFileParam = {
   file_name?: string;
 };
 
+export function chatGptFileDownloadUrl(file: ChatGptFileParam): string {
+  if (!file.file_id.trim()) throw new Error("IMAGE_UPLOAD_FAILED: ChatGPT file_id is required");
+  const url = new URL(file.download_url);
+  if (url.protocol !== "https:" || url.username || url.password) {
+    throw new Error("IMAGE_UPLOAD_FAILED: ChatGPT download_url must be an HTTPS URL without credentials");
+  }
+  if (file.mime_type && !file.mime_type.startsWith("image/")) {
+    throw new Error(`IMAGE_UPLOAD_FAILED: expected image file, received ${file.mime_type}`);
+  }
+  return url.toString();
+}
+
 export async function uploadGeneratedImageFile(
   input: BlogImageGenerateInput & {
     file?: string | ChatGptFileParam;
@@ -586,7 +598,9 @@ export async function uploadGeneratedImageFile(
 ) {
   const attached = input.file;
   const fromString = typeof attached === "string" && attached.trim() ? decodeImageBase64(attached) : undefined;
-  const fromChatGptUrl = attached && typeof attached === "object" ? attached.download_url : undefined;
+  const fromChatGptUrl = attached && typeof attached === "object"
+    ? chatGptFileDownloadUrl(attached)
+    : undefined;
   return uploadBlogImage({
     ...input,
     image_bytes: input.image_bytes || fromString,

@@ -278,7 +278,7 @@ export function validateArticlePackage(
     errors.push({
       code: "COVER_URL_MISSING",
       image_id: "featured_image",
-      message: "featured_image.url is required. Create the cover with ChatGPT Images, then start_image_upload and POST the PNG to put_url.",
+      message: "featured_image.url is required. Create the cover with ChatGPT Images, then pass its native file attachment to upload_generated_image_file.",
     });
   }
 
@@ -329,7 +329,7 @@ export function validateArticlePackage(
       errors.push({
         code: "INLINE_URL_MISSING",
         image_id: image.id,
-        message: `inline image "${image.id}" url is required. ChatGPT Images: start_image_upload then POST put_url. Structured labels: generate_and_upload_blog_image SVG.`,
+        message: `inline image "${image.id}" url is required. ChatGPT Images: pass the native file attachment to upload_generated_image_file. Structured labels: generate_and_upload_blog_image SVG.`,
       });
     } else {
       const hasPlaceholder = pkg.content_markdown.includes(`{{IMAGE:${image.id}}}`);

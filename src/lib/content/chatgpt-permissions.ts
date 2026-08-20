@@ -3,7 +3,7 @@ export const CHATGPT_MCP_PERMISSIONS = {
   github_repo: "quanpl86/imgBlog",
   github_path: "public/editor-assets/",
   allow: [
-    "start_image_upload + HTTP POST PNG gốc lên Hub/GitHub (tránh MCP cắt base64)",
+    "upload_generated_image_file — nhận native ChatGPT file param (download_url + file_id), QA và lưu PNG gốc lên GitHub",
     "upload_github_image — ghi PNG gốc lên GitHub imgBlog (token Hub, không cần GitHub login riêng)",
     "upload_blog_image / generate_and_upload_blog_image — QA rồi lưu bản versioned trên GitHub",
     "create_blog_draft / update_blog_draft",
@@ -12,6 +12,7 @@ export const CHATGPT_MCP_PERMISSIONS = {
     "đọc inventory, taxonomy, policy, lịch tuần, draft",
   ],
   deny: [
+    "gọi start_image_upload từ ChatGPT; tool này chỉ dành cho external client có HTTP binary upload",
     "publish / đăng bài",
     "duyệt tuần / duyệt bài",
     "xóa bài / xóa tuần",

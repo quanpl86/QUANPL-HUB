@@ -10,6 +10,7 @@ import {
   openaiImageSize,
   slugAssetPart,
   decodeImageBase64,
+  chatGptFileDownloadUrl,
 } from "../src/lib/content/blog-image.ts";
 import {
   assertInfographicContract,
@@ -18,6 +19,7 @@ import {
 } from "../src/lib/content/blog-infographic.ts";
 import { assertCompleteRaster, assertImageQa, minRasterBytes, sniffImage } from "../src/lib/content/image-qa.ts";
 import { IMAGE_GENERATION_STANDARD, resolveTextPolicy } from "../src/lib/content/image-generation-standard.ts";
+import { ARTICLE_ASSET_HARD_RULE } from "../src/lib/content/article-asset-rule.ts";
 
 test("rejects photorealistic child prompts", () => {
   assert.throws(
@@ -188,11 +190,48 @@ test("accepts a full-size PNG cover", () => {
 });
 
 test("image generation standard forbids compressing to fit the tool call", () => {
-  assert.equal(IMAGE_GENERATION_STANDARD.version, "2.2");
+  assert.equal(IMAGE_GENERATION_STANDARD.version, "2.3");
   assert.equal(IMAGE_GENERATION_STANDARD.hard_rule, true);
   assert.equal(IMAGE_GENERATION_STANDARD.no_openai_api_key, true);
-  assert.match(IMAGE_GENERATION_STANDARD.lanes.A_scene, /ChatGPT Images/);
+  assert.match(IMAGE_GENERATION_STANDARD.lanes.A_scene, /upload_generated_image_file/);
+  assert.match(IMAGE_GENERATION_STANDARD.external_client.scene, /start_image_upload/);
   assert.match(IMAGE_GENERATION_STANDARD.lanes.B_svg, /SVG/);
+});
+
+test("ChatGPT file params require an HTTPS image attachment", () => {
+  assert.equal(
+    chatGptFileDownloadUrl({
+      download_url: "https://files.openai.com/generated/cover.png?sig=test",
+      file_id: "file_00000000000000000000000000000001",
+      mime_type: "image/png",
+      file_name: "cover.png",
+    }),
+    "https://files.openai.com/generated/cover.png?sig=test"
+  );
+  assert.throws(
+    () => chatGptFileDownloadUrl({ download_url: "https://files.openai.com/a.png", file_id: " " }),
+    /file_id is required/
+  );
+  assert.throws(
+    () => chatGptFileDownloadUrl({ download_url: "http://files.openai.com/a.png", file_id: "file_1" }),
+    /must be an HTTPS URL/
+  );
+  assert.throws(
+    () => chatGptFileDownloadUrl({ download_url: "https://user:pass@files.openai.com/a.png", file_id: "file_1" }),
+    /without credentials/
+  );
+  assert.throws(
+    () => chatGptFileDownloadUrl({ download_url: "https://files.openai.com/a.txt", file_id: "file_1", mime_type: "text/plain" }),
+    /expected image file/
+  );
+});
+
+test("article hard rule uses native ChatGPT file params and reserves upload tickets for external clients", () => {
+  assert.equal(ARTICLE_ASSET_HARD_RULE.version, "v2");
+  assert.equal(ARTICLE_ASSET_HARD_RULE.upload_tool, "upload_generated_image_file");
+  assert.equal(ARTICLE_ASSET_HARD_RULE.external_upload_tool, "start_image_upload");
+  assert.match(ARTICLE_ASSET_HARD_RULE.text, /download_url \+ file_id/);
+  assert.match(ARTICLE_ASSET_HARD_RULE.text, /external-client only/);
 });
 
 test("GitHub uploads are locked to the asset path", () => {

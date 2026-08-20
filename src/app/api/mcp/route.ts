@@ -57,7 +57,7 @@ function createKingDragonHubMcpServer() {
   const server = new McpServer(
     {
       name: "KingDragonHub-MCP",
-      version: "7.30.0",
+      version: "7.31.0",
     },
     {
       instructions: ARTICLE_ASSET_HARD_RULE.text,
@@ -129,7 +129,7 @@ function createKingDragonHubMcpServer() {
   server.registerTool(
     "get_article_package_contract",
     {
-      description: "Call first every session. From ONE user write request, autonomously run Lane A: image_gen cover then start_image_upload POST put_url, then img-01..03 the same way, then create_blog_draft. Do not ask the user for extra cover/upload prompts. SVG-only generate_and_upload. No Hub OpenAI API, no MCP image_base64, no FLUX.",
+      description: "Call first every session. From ONE user write request, autonomously run ChatGPT Lane A1: image_gen cover then upload_generated_image_file with the native file attachment, then img-01..03 the same way, then create/update the draft. Do not call start_image_upload from ChatGPT. SVG-only generate_and_upload. No Hub OpenAI API, MCP base64, or FLUX.",
       inputSchema: z.object({})
     },
     async () => ({
@@ -137,7 +137,7 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.30.0",
+          mcp_version: "7.31.0",
           asset_policy: ARTICLE_ASSET_HARD_RULE.asset_policy,
           article_asset_hard_rule: ARTICLE_ASSET_HARD_RULE.text,
           image_pipeline: {
@@ -148,14 +148,16 @@ function createKingDragonHubMcpServer() {
             cover_exact: 1,
             inline_exact: 3,
             required_ids: ARTICLE_ASSET_HARD_RULE.required_ids,
-            lane_a: "Native ChatGPT Images (not MCP) → upload_generated_image_file with the generated file. Sequence cover, img-01, img-02, img-03. Never parallel. Never extra user prompts.",
+            lane_a1_chatgpt: "Native ChatGPT Images (not MCP) → pass the generated file attachment to upload_generated_image_file. ChatGPT supplies download_url + file_id. Sequence cover, img-01, img-02, img-03. Never parallel. Never extra user prompts.",
+            lane_a2_external: "Browser/external client only → start_image_upload → HTTP POST original PNG bytes to put_url.",
             lane_b: "generate_and_upload_blog_image SVG only.",
             if_no_image_gen: "image_gen is NOT an MCP tool. If you can draw in this chat, finish Lane A now.",
             never: ARTICLE_ASSET_HARD_RULE.never,
           },
           when_writing_article: EDITORIAL_COMMANDS.when_writing,
-          media_tool: "upload_generated_image_file",
-          media_tools: ["upload_generated_image_file", "start_image_upload", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
+          chatgpt_media_tool: "upload_generated_image_file",
+          external_media_tool: "start_image_upload",
+          media_tools: ["upload_generated_image_file", "upload_github_image", "upload_blog_image", "generate_and_upload_blog_image"],
           permissions: CHATGPT_MCP_PERMISSIONS,
           taxonomy_tool: "get_blog_categories",
           command_tool: "get_editorial_commands",
@@ -173,7 +175,6 @@ function createKingDragonHubMcpServer() {
             "list_editorial_articles",
             "get_editorial_draft",
             "upload_generated_image_file",
-            "start_image_upload",
             "upload_github_image",
             "upload_blog_image",
             "update_blog_draft",
@@ -567,14 +568,14 @@ function createKingDragonHubMcpServer() {
       "upload_generated_image_file",
       {
         title: "Upload ChatGPT Image",
-        description: "Call immediately after each native ChatGPT Image in this chat. Pass that generated image as `file` (ChatGPT fills download_url + file_id). Hub fetches original bytes, QAs, stores on GitHub. Returns raw_url. Sequence: cover, img-01, img-02, img-03. Retry the SAME image_id on failure. Never skip to the next image. Never create_blog_draft until four RAW URLs exist.",
+        description: "PRIMARY CHATGPT LANE A1. Call immediately after each native ChatGPT Image. Pass the generated image as `file`; ChatGPT fills download_url + file_id. Hub downloads original bytes from download_url, QAs, and stores them on GitHub. Capture raw_url for the draft. Sequence cover, img-01, img-02, img-03. Retry the SAME image_id on failure. Never call start_image_upload from ChatGPT and never draft before four RAW URLs exist.",
         inputSchema: z.object({
           file: z.object({
-            download_url: z.string(),
-            file_id: z.string(),
+            download_url: z.string().url(),
+            file_id: z.string().min(1),
             mime_type: z.string().optional(),
             file_name: z.string().optional(),
-          }).describe("The ChatGPT Images file just generated in this chat."),
+          }).strict().describe("Native ChatGPT file parameter. Do not pass a path or file_id string."),
           idempotency_key: z.string(),
           article_key: z.string().optional(),
           image_id: z.string().describe("cover, img-01, img-02, or img-03"),
@@ -592,6 +593,19 @@ function createKingDragonHubMcpServer() {
           filename: z.string().optional(),
           prompt: z.string().optional(),
         }),
+        outputSchema: z.object({
+          status: z.literal("PASS"),
+          image_id: z.string(),
+          purpose: z.string(),
+          raw_url: z.string().url(),
+          url: z.string().url(),
+          width: z.number(),
+          height: z.number(),
+          mime_type: z.string(),
+          file_bytes: z.number(),
+          sha256: z.string(),
+          stored_as_received: z.boolean(),
+        }),
         annotations: {
           readOnlyHint: false,
           destructiveHint: false,
@@ -606,7 +620,10 @@ function createKingDragonHubMcpServer() {
       async (input) => {
         try {
           const result = await uploadGeneratedImageFile(input);
-          return { content: [{ type: "text", text: JSON.stringify(result) }] };
+          return {
+            structuredContent: result,
+            content: [{ type: "text", text: JSON.stringify(result) }],
+          };
         } catch (err: unknown) {
           return {
             content: [{ type: "text", text: JSON.stringify({ error: errorMessage(err) }) }],
@@ -619,7 +636,8 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "start_image_upload",
       {
-        description: "HARD step after each ChatGPT Image in this chat. Returns put_url + Authorization. HTTP POST original PNG BYTES (not base64) to put_url. Hub stores on GitHub as-is. Do this for cover then img-01, img-02, img-03 one at a time. Never send image_base64 through MCP.",
+        title: "Start External Binary Upload",
+        description: "EXTERNAL CLIENT LANE A2 ONLY. Reserve this tool for browsers or clients that can HTTP POST original PNG bytes to put_url. ChatGPT must not call this tool; ChatGPT must use upload_generated_image_file with a native file attachment.",
         inputSchema: z.object({
           idempotency_key: z.string(),
           article_key: z.string().optional(),
@@ -685,7 +703,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "upload_blog_image",
       {
-        description: "Store an image on KingDragonHub. Do NOT pass original ChatGPT Images as image_base64 — the connector truncates them (BASE64_TRUNCATED). For in-chat images: start_image_upload then HTTP POST bytes to put_url. image_base64 is only for tiny files that fit. Cover ≥1536×864. Never WebP 800×450. SVG workflow/rubric: generate_and_upload_blog_image.",
+        description: "Store an image on KingDragonHub for non-native/external integrations. ChatGPT-native Images must use upload_generated_image_file; never pass them as image_base64. Cover ≥1536×864. Never WebP 800×450. SVG workflow/rubric: generate_and_upload_blog_image.",
         inputSchema: z.object({
           idempotency_key: z.string(),
           article_key: z.string().optional(),
@@ -727,7 +745,7 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "generate_and_upload_blog_image",
       {
-        description: "LANE B SVG ONLY: workflow/rubric/timeline/table/comparison/framework with exact Vietnamese required_labels. Server rejects article_cover and scene purposes. Covers/scenes are LANE A: ChatGPT Images in this chat → start_image_upload → POST PNG bytes.",
+        description: "LANE B SVG ONLY: workflow/rubric/timeline/table/comparison/framework with exact Vietnamese required_labels. Server rejects article_cover and scene purposes. Covers/scenes are ChatGPT Lane A1: ChatGPT Images → native file attachment → upload_generated_image_file.",
         inputSchema: z.object({
           idempotency_key: z.string().describe("Same key as the draft. Does NOT reuse the file path — each call versions the URL."),
           article_key: z.string().optional().describe("Article slug used in the filename."),
@@ -806,7 +824,7 @@ function createKingDragonHubMcpServer() {
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
             url: z.string().nullable(),
-          }).describe("Cover spec. url MUST be GitHub RAW from start_image_upload (ChatGPT Images POST put_url) or generate_and_upload_blog_image SVG."),
+          }).describe("Cover spec. url MUST be GitHub RAW returned by upload_generated_image_file for a native ChatGPT Image."),
           featured_image_url: z.string().nullable().describe("Same persistent cover URL as featured_image.url."),
           featured_image_alt: z.string().optional(),
           inline_images: z.array(z.object({

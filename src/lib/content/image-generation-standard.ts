@@ -1,8 +1,8 @@
 export const IMAGE_GENERATION_STANDARD = {
-  version: "2.2",
+  version: "2.3",
   hard_rule: true,
   no_openai_api_key: true,
-  rule: "HARD. Lane A scenes: ChatGPT Images in this chat (Plus, no API key) → start_image_upload → HTTP POST original PNG bytes to put_url → GitHub RAW. Lane B structured Vietnamese text: generate_and_upload_blog_image SVG. Never Hub OpenAI Images API. Never MCP image_base64. Never FLUX.",
+  rule: "HARD. Lane A1 ChatGPT scenes: ChatGPT Images → native file attachment → upload_generated_image_file → GitHub RAW. Lane A2 external clients only: start_image_upload → HTTP POST PNG bytes. Lane B structured Vietnamese text: generate_and_upload_blog_image SVG. Never Hub OpenAI Images API, MCP image_base64, or FLUX.",
   quality: {
     cover_min: "1536x864",
     inline_min: "1280x720",
@@ -20,9 +20,12 @@ export const IMAGE_GENERATION_STANDARD = {
     B_svg: "HARD for workflow / rubric / timeline / table / comparison / framework with exact Vietnamese labels: generate_and_upload_blog_image SVG only.",
   },
   primary: {
-    scene: "chatgpt_images_in_chat_then_start_image_upload",
+    scene: "chatgpt_images_in_chat_then_native_file_param",
     structured_text: "svg",
     server_fallback: [],
+  },
+  external_client: {
+    scene: "start_image_upload_then_http_post_binary",
   },
   routing: {
     article_cover: { engine: "chatgpt_images_in_chat", text_policy: "no_text", aspect: "16:9" },
@@ -52,15 +55,15 @@ export const IMAGE_GENERATION_STANDARD = {
     one_user_message: true,
     steps: [
       "From ONE user write request, finish the whole job in this session. Do not ask the user to type cover prompts or upload prompts.",
-      "image_gen cover (16:9 ≥1536×864, no text) → start_image_upload → POST PNG bytes to put_url.",
-      "Then img-01, img-02, img-03 the same way, never parallel.",
+      "image_gen cover (16:9 ≥1536×864, no text) → pass the generated file attachment to upload_generated_image_file.",
+      "Then img-01, img-02, img-03 the same way, one at a time. Reuse each returned raw_url in the article package.",
       "Lane B SVG if needed. Then create_blog_draft / update_blog_draft.",
     ],
   },
   agent_must: [
-    "AUTOMATION: one user sentence is enough. Keep calling image_gen, start_image_upload, and HTTP POST until 4 RAW URLs exist, then draft.",
+    "AUTOMATION: one user sentence is enough. Keep calling image_gen and upload_generated_image_file until 4 RAW URLs exist, then draft.",
     "HARD: scene pixels from ChatGPT Images in this chat. No Hub OpenAI API key.",
-    "HARD: after each image, start_image_upload → POST binary PNG to put_url.",
+    "HARD: after each image, pass the native file attachment to upload_generated_image_file. ChatGPT must not call start_image_upload.",
     "HARD: generate_and_upload_blog_image is SVG-only. Never for article_cover.",
     "ChatGPT Images is native in-chat, not an MCP tool. Absence of a tool named image_gen is not a stop. If you can draw here, finish Lane A in this turn.",
     "Never wait for a second user message between cover and body images.",

@@ -1,6 +1,6 @@
 export const EDITORIAL_COMMANDS = {
   language: "vi-VN",
-  rule: "Người dùng nói ngắn MỘT LẦN. GPT tự chạy hết trong phiên: check → viết → image_gen từng ảnh → start_image_upload → POST put_url → create_blog_draft. Không hỏi user gửi thêm prompt cover/upload. Không publish.",
+  rule: "Người dùng nói ngắn MỘT LẦN. GPT tự chạy hết trong phiên: check → viết → image_gen từng ảnh → upload_generated_image_file(file attachment) → create_blog_draft. Không hỏi user gửi thêm prompt cover/upload. Không publish.",
   when_writing: {
     automatic: true,
     hard_rule: true,
@@ -137,7 +137,7 @@ export const EDITORIAL_COMMANDS = {
       do: [
         "get_editorial_guidelines, get_blog_inventory, get_blog_categories, list_editorial_articles",
         "Nếu đã có nháp unpublished cùng chủ đề: tự chạy hết Lane A rồi update_blog_draft. Không hỏi user thêm. Không tạo bài trùng.",
-        "Nếu chưa có nháp: tự chạy hết Lane A (4 ảnh tuần tự + POST put_url) rồi create_blog_draft calendar_id=null. Không hỏi user gõ prompt cover/upload.",
+        "Nếu chưa có nháp: tự chạy hết Lane A1 (4 ảnh tuần tự + native file params) rồi create_blog_draft calendar_id=null. Không hỏi user gõ prompt cover/upload.",
       ],
       never: [
         "propose_editorial_week",
@@ -159,7 +159,7 @@ export const EDITORIAL_COMMANDS = {
         "get_due_editorial_slots",
         "blocked[]: chỉ báo, không viết",
         "upcoming[]: chỉ báo, không viết",
-        "due[]: when_writing (cover + ≥3 ảnh body ChatGPT Images, POST put_url), rồi create_blog_draft với đúng calendar_id",
+        "due[]: when_writing (cover + 3 ảnh body ChatGPT Images, upload bằng native file params), rồi create_blog_draft với đúng calendar_id",
         "revise[]: xem command fix_rejected_draft / check_gpt_articles",
       ],
       never: ["calendar_id=null khi viết từ lịch", "viết upcoming hoặc blocked"],
@@ -174,7 +174,7 @@ export const EDITORIAL_COMMANDS = {
       do: [
         "get_editorial_week hoặc get_due_editorial_slots",
         "Chỉ 1 slot user nêu, phải nằm due[] hoặc đã Cho viết ngay",
-        "when_writing: cover + ≥3 ảnh body ChatGPT Images, POST put_url, rồi create_blog_draft với calendar_id của slot đó",
+        "when_writing: cover + 3 ảnh body ChatGPT Images, upload_generated_image_file, rồi create_blog_draft với calendar_id của slot đó",
       ],
       never: ["viết thêm bài khác", "calendar_id=null"],
     },
@@ -209,10 +209,10 @@ export const EDITORIAL_COMMANDS = {
         "tạo trực tiếp",
       ],
       do: [
-        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này, rồi start_image_upload và HTTP POST bytes PNG gốc tới put_url. KHÔNG nhét image_base64 vào MCP (connector cắt)",
+        "Cover/minh họa: tạo bằng ChatGPT Images trong chat này, rồi truyền file attachment vào upload_generated_image_file. ChatGPT host tự điền download_url + file_id.",
         "ĐƯỢC upload lên GitHub quanpl86/imgBlog (token Hub). Cover ≥1536×864",
         "KHÔNG nén WebP, KHÔNG resize 800×450, KHÔNG dùng FLUX 1024×576 làm cover",
-        "Nếu base64 quá lớn: generate_and_upload_blog_image để Hub tạo PNG — không được nén cho vừa tool",
+        "Không dùng base64, không dùng start_image_upload từ ChatGPT. start_image_upload chỉ dành cho browser/external client có khả năng POST binary.",
         "Rubric/workflow/timeline/bảng: generate_and_upload_blog_image + required_labels, SVG",
         "Chỉ khi user bắt Hub tự gen (không ảnh trong chat): generate_and_upload_blog_image không base64 — server fallback, có thể 429",
         "Gắn URL MỚI vào package. Không tái sử dụng URL cũ.",

@@ -141,7 +141,7 @@ export class EditorialArticlesRepository {
         ? "PLAN_LOCKED: published. Do not call update_blog_draft."
         : status === "revise"
           ? "Admin returned this draft. Follow revision_request and comments. Regen images if fix_cover or fix_inline_images. Then update_blog_draft(calendar_id). Do not create_blog_draft."
-          : "Unpublished draft in review. can_update=true. If the user asked to write this topic again or upgrade images (ChatGPT Images cover + ≥3 body via start_image_upload POST put_url), update_blog_draft(calendar_id). Do not create a second draft. Do not wait for admin reject.",
+          : "Unpublished draft in review. can_update=true. If the user asked to write this topic again or upgrade images (ChatGPT Images cover + 3 body via upload_generated_image_file native file params), update_blog_draft(calendar_id). Do not create a second draft. Do not wait for admin reject.",
     };
   }
 }

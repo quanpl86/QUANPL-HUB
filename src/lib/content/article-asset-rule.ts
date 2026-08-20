@@ -1,5 +1,5 @@
 export const ARTICLE_ASSET_HARD_RULE = {
-  version: "v1",
+  version: "v2",
   mode: "exact" as const,
   cover_exact: 1,
   inline_exact: 3,
@@ -26,6 +26,7 @@ export const ARTICLE_ASSET_HARD_RULE = {
   },
   sequence: ["cover", "img-01", "img-02", "img-03"] as const,
   upload_tool: "upload_generated_image_file",
+  external_upload_tool: "start_image_upload",
   svg_tool: "generate_and_upload_blog_image",
   never: [
     "Hub OpenAI Images API",
@@ -37,5 +38,5 @@ export const ARTICLE_ASSET_HARD_RULE = {
     "ask user for extra prompts between states",
     "stop because image_gen is missing from the MCP tool list",
   ],
-  text: "ARTICLE_ASSET_HARD_RULE_V1. EXACTLY 1 cover + 3 inline (img-01, img-02, img-03). Native ChatGPT Images in this chat (not an MCP tool). Sequence cover→upload, img-01→upload, img-02→upload, img-03→upload. Never parallel. Upload with upload_generated_image_file. Never Hub OpenAI API, FLUX, MCP image_base64, SVG cover. One user write sentence. Do not create_blog_draft until 4 GitHub RAW URLs exist.",
+  text: "ARTICLE_ASSET_HARD_RULE_V2. ChatGPT lane: create native ChatGPT Image, then pass its file attachment to upload_generated_image_file; the host supplies download_url + file_id. Sequence cover→upload, img-01→upload, img-02→upload, img-03→upload. Never parallel. Never use base64, Hub OpenAI API, FLUX, start_image_upload, or SVG for scenes. start_image_upload is external-client only. Do not create/update a draft until 4 GitHub RAW URLs exist.",
 } as const;
