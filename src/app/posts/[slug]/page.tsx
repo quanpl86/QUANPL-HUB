@@ -11,7 +11,7 @@ import { renderMathInHtml } from '@/lib/math-renderer';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 
 interface PostPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 // 1. Tự động tạo Metadata cho SEO (Dynamic Metadata)
