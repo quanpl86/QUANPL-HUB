@@ -12,25 +12,25 @@ export const DEFAULT_ARTICLE_MODE: ArticleMode = "gpt_scenes";
 export const ARTICLE_MODE_CONFIG = {
   text_only: {
     label_vi: "Chỉ nội dung, không ảnh",
-    prompt_hint: "Hãy viết bài không ảnh về…",
+    prompt_hint: "Hãy viết bài không ảnh về [chủ đề].",
     route: "research → create_blog_draft(article_mode=text_only)",
     media: "Không tạo cover, không tạo ảnh nội dung, không chèn {{IMAGE:*}}.",
   },
   gpt_scenes: {
     label_vi: "Ảnh minh họa tạo bởi ChatGPT",
-    prompt_hint: "Hãy viết bài có ảnh GPT về…",
+    prompt_hint: "Hãy viết bài có ảnh GPT về [chủ đề].",
     route: "research → start_article_workflow → ChatGPT Images tuần tự cover, img-01, img-02, img-03 → draft",
     media: "Đúng 1 cover và 3 ảnh nội dung, dùng native file attachment, không base64.",
   },
   structured_graphics: {
     label_vi: "Flow, chart, table hoặc framework có text",
-    prompt_hint: "Hãy viết bài có biểu đồ/flow về…",
+    prompt_hint: "Hãy viết bài có flow/chart/table về [chủ đề].",
     route: "research → generate_and_upload_blog_image tuần tự img-01..img-03 → create_blog_draft(article_mode=structured_graphics)",
     media: "Không bắt buộc cover; đúng 3 SVG thông tin có frame và nhãn tiếng Việt chính xác.",
   },
   image_placeholders: {
     label_vi: "Giữ chỗ và brief ảnh chi tiết",
-    prompt_hint: "Hãy viết bài để placeholder ảnh về…",
+    prompt_hint: "Hãy viết bài để placeholder ảnh về [chủ đề].",
     route: "research → create_blog_draft(article_mode=image_placeholders)",
     media: "Không tạo ảnh. Cover có brief chi tiết trong prompt và alt; đúng 3 vị trí {{IMAGE:img-01..03}} hiển thị holder kèm brief.",
   },

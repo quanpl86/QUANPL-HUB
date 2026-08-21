@@ -12,6 +12,7 @@ import {
 import { EditorialCommentRepository } from "../src/lib/content/editorial-comments.ts";
 import { EDITORIAL_COMMANDS } from "../src/lib/content/editorial-commands.ts";
 import { EDITORIAL_PROMPT_KIT } from "../src/lib/content/editorial-prompt-kit.ts";
+import { ARTICLE_MODE_CONFIG } from "../src/lib/content/article-modes.ts";
 import {
   DEFAULT_REVISION_CONSTRAINTS,
   applySlotAliases,
@@ -66,6 +67,22 @@ test("admin prompt kit has all editorial job groups", () => {
   assert.match(titles, /theo tuần/);
   assert.match(titles, /bị trả/);
   assert.ok(EDITORIAL_PROMPT_KIT.every((section) => section.items.length > 0));
+});
+
+test("admin prompt kit exposes all four current article-mode prompts", () => {
+  const prompts = EDITORIAL_PROMPT_KIT.flatMap((section) => section.items.map((item) => item.text));
+  const expected = Object.values(ARTICLE_MODE_CONFIG).map((mode) => mode.prompt_hint);
+  assert.deepEqual(expected, [
+    "Hãy viết bài không ảnh về [chủ đề].",
+    "Hãy viết bài có ảnh GPT về [chủ đề].",
+    "Hãy viết bài có flow/chart/table về [chủ đề].",
+    "Hãy viết bài để placeholder ảnh về [chủ đề].",
+  ]);
+  for (const prompt of expected) {
+    assert.equal(prompts.filter((item) => item === prompt).length, 1, `prompt missing or duplicated: ${prompt}`);
+  }
+  assert.ok(prompts.includes("Tiếp tục nhé."));
+  assert.equal(new Set(prompts).size, prompts.length, "prompt kit contains duplicate copy text");
 });
 
 test("propose rejects an empty calendar", async () => {
