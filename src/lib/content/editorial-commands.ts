@@ -1,12 +1,18 @@
 export const EDITORIAL_COMMANDS = {
   language: "vi-VN",
-  rule: "Người dùng chỉ cần nói 'Hãy viết bài về…', sau đó 'Tiếp tục nhé'. GPT research → start_article_workflow → tạo cover; mỗi lần Tiếp tục thì continue_article_workflow upload ảnh trước và trả prompt ảnh kế. Sau img-03 tự tạo draft. Không hỏi ID kỹ thuật. Không publish.",
+  rule: "Định tuyến theo 4 article_mode. Nếu user chỉ nói 'Hãy viết bài về…' thì mặc định gpt_scenes. Các cụm 'không ảnh', 'có ảnh GPT', 'flow/chart/table/biểu đồ', 'placeholder/giữ chỗ ảnh' chọn đúng lane tương ứng. Không hỏi ID kỹ thuật. Không publish.",
   when_writing: {
     automatic: true,
     hard_rule: true,
     resumable: true,
     one_user_message: false,
     do_not_ask_for_technical_fields: true,
+    modes: {
+      text_only: "Research rồi create_blog_draft ngay; featured_image=null, inline_images=[], không có {{IMAGE:*}}.",
+      gpt_scenes: "Workflow resumable cover + img-01..03 bằng native ChatGPT Images.",
+      structured_graphics: "Tạo tuần tự 3 SVG bằng generate_and_upload_blog_image với required_labels chính xác, rồi create_blog_draft; không bắt buộc cover.",
+      image_placeholders: "Không gọi tool ảnh. Tạo draft với cover brief chi tiết trong alt/prompt và 3 holder img-01..03 có mô tả chi tiết.",
+    },
     lane_a: "start_article_workflow → cover. Mỗi lần user nói Tiếp tục: continue_article_workflow(file ảnh trước) → ảnh kế tiếp. Sau img-03 tự tạo draft.",
     cover: "16:9 ≥1536×864 không chữ. GPT tự đặt prompt ảnh.",
     body_exact: 3,
@@ -23,7 +29,7 @@ export const EDITORIAL_COMMANDS = {
       "FLUX",
       "image_base64 MCP",
       "nén WebP",
-      "gửi draft khi còn thiếu URL ảnh",
+      "gửi draft thiếu URL ảnh trừ article_mode=image_placeholders hoặc workflow lỗi đã chuyển MEDIA_INCOMPLETE",
     ],
   },
   status_vi: {
@@ -137,8 +143,9 @@ export const EDITORIAL_COMMANDS = {
       ],
       do: [
         "get_editorial_guidelines, get_blog_inventory, get_blog_categories, list_editorial_articles",
+        "Xác định article_mode từ câu người dùng. Nếu không nêu media thì mặc định gpt_scenes.",
         "Nếu đã có nháp unpublished cùng chủ đề: tự chạy hết Lane A rồi update_blog_draft. Không hỏi user thêm. Không tạo bài trùng.",
-        "Nếu chưa có nháp: tự chạy hết Lane A1 (4 ảnh tuần tự + native file params) rồi create_blog_draft calendar_id=null. Không hỏi user gõ prompt cover/upload.",
+        "text_only hoặc image_placeholders: research rồi create_blog_draft ngay. structured_graphics: tạo 3 SVG tuần tự rồi draft. gpt_scenes: start_article_workflow và tiếp tục bằng native file.",
       ],
       never: [
         "propose_editorial_week",

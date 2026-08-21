@@ -288,7 +288,8 @@ export class PostsRepository {
     }
 
     const pkg = normalizeArticlePackage(draftData);
-    const allowMissingMedia = draftData._workflow_media_status === "INCOMPLETE";
+    const allowMissingMedia = draftData._workflow_media_status === "INCOMPLETE"
+      || pkg.article_mode === "image_placeholders";
     const mediaCheck = validateArticlePackage(pkg, {
       requireV7Fields: process.env.MCP_REQUIRE_V7_FIELDS === "true",
       allowMissingMedia,
@@ -319,6 +320,8 @@ export class PostsRepository {
       content_markdown: pkg.content_markdown,
       primary_keyword: draftData.seo?.primary_keyword,
       faq_count: pkg.aio.faq.length,
+      require_cover: pkg.article_mode === "gpt_scenes",
+      require_inline_media: pkg.article_mode !== "text_only",
     });
     if (seoReport.score < SEO_SCORE_MIN && !allowMissingMedia) {
       throw new Error(formatSeoGateError(seoReport));
@@ -343,7 +346,11 @@ export class PostsRepository {
       ...buildArticlePackageSnapshot(pkg, warnings),
       category: taxonomy.category,
       tags: taxonomy.tags,
-      media_status: allowMissingMedia ? "INCOMPLETE" : "COMPLETE",
+      media_status: pkg.article_mode === "text_only"
+        ? "NOT_REQUIRED"
+        : allowMissingMedia
+          ? "INCOMPLETE"
+          : "COMPLETE",
       missing_images: allowMissingMedia
         ? [pkg.featured_image, ...pkg.inline_images]
             .filter((image) => image?.status === "missing")
@@ -536,6 +543,8 @@ async function prepareValidatedDraft(supabase: any, draftData: any, seoMin = SEO
     content_markdown: pkg.content_markdown,
     primary_keyword: draftData.seo?.primary_keyword,
     faq_count: pkg.aio.faq.length,
+    require_cover: pkg.article_mode === "gpt_scenes",
+    require_inline_media: pkg.article_mode !== "text_only",
   });
   if (seoReport.score < seoMin) {
     throw new Error(

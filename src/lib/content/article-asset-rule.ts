@@ -1,5 +1,5 @@
 export const ARTICLE_ASSET_HARD_RULE = {
-  version: "v4",
+  version: "v5",
   mode: "exact" as const,
   cover_exact: 1,
   inline_exact: 3,
@@ -34,8 +34,8 @@ export const ARTICLE_ASSET_HARD_RULE = {
     "MCP image_base64",
     "SVG for cover/scene",
     "WebP thumbnail",
-    "direct create_blog_draft before 4 RAW URLs; only workflow V2 may create MEDIA_INCOMPLETE holders",
+    "gpt_scenes: direct create_blog_draft before 4 RAW URLs; only resumable workflow may create MEDIA_INCOMPLETE holders",
     "stop because image_gen is missing from the MCP tool list",
   ],
-  text: "ARTICLE_ASSET_HARD_RULE_V4. Resumable ChatGPT lane: start_article_workflow returns the cover prompt. On each user 'Tiếp tục', continue_article_workflow receives the previous native image file; the host supplies download_url + file_id. Sequence cover→img-01→img-02→img-03; never parallel. If generation/upload fails, call report_article_image_failure: retry once, then create a detailed holder and advance. After img-03 the workflow creates either a COMPLETE draft or a non-publishable MEDIA_INCOMPLETE draft. Never use base64, Hub OpenAI API, FLUX, start_image_upload, or SVG for scenes; start_image_upload is external-client only.",
+  text: "ARTICLE_ASSET_HARD_RULE_V5 applies only when article_mode=gpt_scenes. Resumable ChatGPT lane: start_article_workflow returns the cover prompt. On each user 'Tiếp tục', continue_article_workflow receives the previous native image file; the host supplies download_url + file_id. Sequence cover→img-01→img-02→img-03; never parallel. If generation/upload fails, call report_article_image_failure: retry once, then create a detailed holder and advance. After img-03 the workflow creates either a COMPLETE draft or a non-publishable MEDIA_INCOMPLETE draft. Never use base64, Hub OpenAI API, FLUX, start_image_upload, or SVG for scenes; start_image_upload is external-client only. Other article modes follow ARTICLE_MODE_ROUTING_V1.",
 } as const;

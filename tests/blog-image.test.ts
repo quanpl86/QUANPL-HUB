@@ -227,7 +227,8 @@ test("ChatGPT file params require an HTTPS image attachment", () => {
 });
 
 test("article hard rule uses native ChatGPT file params and reserves upload tickets for external clients", () => {
-  assert.equal(ARTICLE_ASSET_HARD_RULE.version, "v4");
+  assert.equal(ARTICLE_ASSET_HARD_RULE.version, "v5");
+  assert.match(ARTICLE_ASSET_HARD_RULE.text, /only when article_mode=gpt_scenes/);
   assert.equal(ARTICLE_ASSET_HARD_RULE.upload_tool, "upload_generated_image_file");
   assert.equal(ARTICLE_ASSET_HARD_RULE.external_upload_tool, "start_image_upload");
   assert.match(ARTICLE_ASSET_HARD_RULE.text, /download_url \+ file_id/);

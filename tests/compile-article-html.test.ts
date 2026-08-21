@@ -110,6 +110,25 @@ test("B03b missing workflow image becomes a detailed holder", async () => {
   assert.match(result.html, /1280×720/);
 });
 
+test("image_placeholders mode renders editorial holders without generated assets", async () => {
+  const result = await compileArticleHtml(pkg({
+    article_mode: "image_placeholders",
+    content_markdown: "## Mục\n\n{{IMAGE:img-01}}\n",
+    inline_images: [{
+      id: "img-01",
+      purpose: "workflow",
+      prompt: "Sơ đồ quy trình ba bước có khung rõ ràng và nhãn tiếng Việt chính xác",
+      alt: "Sơ đồ ba bước triển khai hoạt động học tập trong lớp học",
+      url: null,
+      status: "missing",
+      failure_reason: "EDITORIAL_PLACEHOLDER",
+    }],
+  }));
+  assert.match(result.html, /kd-image-holder/);
+  assert.match(result.html, /Sơ đồ quy trình ba bước/);
+  assert.match(result.html, /EDITORIAL_PLACEHOLDER/);
+});
+
 test("B04 after_heading_id fallback inserts after the matching heading", async () => {
   const heading = "Quy trình 7 bước triển khai";
   const result = await compileArticleHtml(pkg({

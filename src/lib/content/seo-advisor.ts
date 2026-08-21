@@ -27,6 +27,8 @@ export type SeoAdvisorInput = {
   content_markdown?: string | null;
   primary_keyword?: string | null;
   faq_count?: number;
+  require_cover?: boolean;
+  require_inline_media?: boolean;
 };
 
 const TARGET_SCORE = 95;
@@ -58,6 +60,8 @@ export function analyzeSystemSeo(input: SeoAdvisorInput): SeoReport {
   const content = input.content || "";
   const markdown = input.content_markdown || "";
   const keyword = input.primary_keyword?.trim() || "";
+  const requireCover = input.require_cover !== false;
+  const requireInlineMedia = input.require_inline_media !== false;
 
   const checks: SeoCheck[] = [
     {
@@ -108,8 +112,10 @@ export function analyzeSystemSeo(input: SeoAdvisorInput): SeoReport {
     {
       id: "cover_image",
       label: "Tài nguyên hình ảnh",
-      status: hasHttpsUrl(input.image_url) ? "success" : "error",
-      message: hasHttpsUrl(input.image_url)
+      status: !requireCover || hasHttpsUrl(input.image_url) ? "success" : "error",
+      message: !requireCover
+        ? "Chế độ bài viết này không yêu cầu ảnh bìa."
+        : hasHttpsUrl(input.image_url)
         ? "Đã phát hiện hình ảnh đại diện chất lượng."
         : "Thiếu ảnh đại diện. Bài viết có hình ảnh tăng 80% khả năng được click.",
       suggestion: "Luôn thêm ảnh đại diện sắc nét, liên quan đến nội dung bài viết.",
@@ -117,8 +123,10 @@ export function analyzeSystemSeo(input: SeoAdvisorInput): SeoReport {
     {
       id: "cover_alt",
       label: "Alt text ảnh bìa",
-      status: input.image_alt?.trim() ? "success" : "error",
-      message: input.image_alt?.trim()
+      status: !requireCover || input.image_alt?.trim() ? "success" : "error",
+      message: !requireCover
+        ? "Chế độ bài viết này không yêu cầu alt ảnh bìa."
+        : input.image_alt?.trim()
         ? "Ảnh bìa đã có mô tả alt."
         : "Thiếu alt text ảnh bìa.",
       suggestion: "Viết alt tiếng Việt, mô tả đúng nội dung ảnh bìa và chứa từ khóa chính khi tự nhiên.",
@@ -126,8 +134,10 @@ export function analyzeSystemSeo(input: SeoAdvisorInput): SeoReport {
     {
       id: "inline_alt",
       label: "Alt Text Nội dung",
-      status: content.includes("alt=") || markdown.includes("{{IMAGE:") ? "success" : "warning",
-      message: content.includes("alt=") || markdown.includes("{{IMAGE:")
+      status: !requireInlineMedia || content.includes("alt=") || markdown.includes("{{IMAGE:") ? "success" : "warning",
+      message: !requireInlineMedia
+        ? "Chế độ bài viết này không yêu cầu ảnh nội dung."
+        : content.includes("alt=") || markdown.includes("{{IMAGE:")
         ? "Các hình ảnh trong bài viết đã có thuộc tính mô tả (alt)."
         : "Một số hình ảnh trong nội dung có thể thiếu mô tả (alt).",
       suggestion: "Đảm bảo mọi hình ảnh chèn trong bài viết đều có thẻ Alt.",

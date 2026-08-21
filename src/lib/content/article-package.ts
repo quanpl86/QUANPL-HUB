@@ -1,4 +1,5 @@
 import { ARTICLE_ASSET_HARD_RULE } from "./article-asset-rule.ts";
+import { normalizeArticleMode, type ArticleMode } from "./article-modes.ts";
 
 export const ARTICLE_PACKAGE_SCHEMA_VERSION = "article-package/7.0";
 export const ARTICLE_INLINE_IMAGE_MIN = ARTICLE_ASSET_HARD_RULE.inline_exact;
@@ -11,6 +12,10 @@ export const INLINE_IMAGE_PURPOSES = [
   "comparison",
   "case_study",
   "explainer",
+  "rubric",
+  "timeline",
+  "table",
+  "framework",
 ] as const;
 
 export type InlineImagePurpose = (typeof INLINE_IMAGE_PURPOSES)[number];
@@ -55,6 +60,7 @@ export type NormalizedArticlePackage = {
   idempotency_key: string;
   policy_version: string;
   policy_hash: string;
+  article_mode: ArticleMode;
   title: string;
   slug: string;
   excerpt: string;
@@ -99,6 +105,7 @@ export type PackageIssue = {
 };
 
 const INLINE_ID_RE = /^[A-Za-z0-9_-]+$/;
+const IMAGE_PLACEHOLDER_RE = /\{\{IMAGE:[A-Za-z0-9_-]+\}\}/;
 const INLINE_PURPOSE_SET = new Set<string>(INLINE_IMAGE_PURPOSES);
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -202,6 +209,7 @@ export function normalizeArticlePackage(draftData: any): NormalizedArticlePackag
     idempotency_key: String(draftData?.idempotency_key ?? ""),
     policy_version: String(draftData?.policy_version ?? ""),
     policy_hash: String(draftData?.policy_hash ?? ""),
+    article_mode: normalizeArticleMode(draftData?.article_mode),
     title: String(draftData?.title ?? ""),
     slug: String(draftData?.slug ?? ""),
     excerpt: String(draftData?.excerpt ?? ""),
@@ -251,9 +259,25 @@ export function validateArticlePackage(
   const errors: PackageIssue[] = [];
   const warnings: PackageIssue[] = [];
   const requireV7 = options.requireV7Fields === true;
+  const mode = pkg.article_mode;
+
+  if (mode === "text_only") {
+    if (pkg.featured_image || pkg.inline_images.length > 0 || IMAGE_PLACEHOLDER_RE.test(pkg.content_markdown)) {
+      errors.push({
+        code: "TEXT_ONLY_HAS_MEDIA",
+        message: "text_only requires featured_image=null, inline_images=[], and no {{IMAGE:*}} placeholders",
+      });
+    }
+    return { errors, warnings };
+  }
 
   if (pkg.featured_image_source === "missing") {
-    if (requireV7) {
+    if (mode === "structured_graphics") {
+      warnings.push({
+        code: "COVER_NOT_REQUIRED",
+        message: "structured_graphics does not require a cover image",
+      });
+    } else if (requireV7 || mode === "image_placeholders") {
       errors.push({
         code: "COVER_SPEC_MISSING",
         message: "featured_image spec is required",
@@ -292,7 +316,8 @@ export function validateArticlePackage(
       image_id: "featured_image",
       message: "featured_image.url is required. Create the cover with ChatGPT Images, then pass its native file attachment to upload_generated_image_file.",
     };
-    if (options.allowMissingMedia && pkg.featured_image?.status === "missing") warnings.push(issue);
+    if (mode === "structured_graphics") warnings.push(issue);
+    else if ((options.allowMissingMedia || mode === "image_placeholders") && pkg.featured_image?.status === "missing") warnings.push(issue);
     else errors.push(issue);
   }
 
@@ -345,7 +370,7 @@ export function validateArticlePackage(
         image_id: image.id,
         message: `inline image "${image.id}" url is required. ChatGPT Images: pass the native file attachment to upload_generated_image_file. Structured labels: generate_and_upload_blog_image SVG.`,
       };
-      if (options.allowMissingMedia && image.status === "missing") warnings.push(issue);
+      if ((options.allowMissingMedia || mode === "image_placeholders") && image.status === "missing") warnings.push(issue);
       else errors.push(issue);
     } else {
       const hasPlaceholder = pkg.content_markdown.includes(`{{IMAGE:${image.id}}}`);
@@ -373,6 +398,58 @@ export function validateArticlePackage(
     return !match || !hasPersistentImageUrl(match.url);
   });
   const coverReady = hasPersistentImageUrl(pkg.featured_image?.url);
+  if (mode === "structured_graphics") {
+    const invalidPurpose = pkg.inline_images.some((image) =>
+      !["concept_diagram", "workflow", "comparison", "explainer", "rubric", "timeline", "table", "framework"].includes(image.purpose)
+    );
+    if (invalidPurpose) {
+      errors.push({
+        code: "STRUCTURED_PURPOSE_INVALID",
+        message: "structured_graphics only accepts concept_diagram, workflow, comparison, explainer, rubric, timeline, table, or framework",
+      });
+    }
+    if (readyInline.length !== ARTICLE_INLINE_IMAGE_MIN || pkg.inline_images.length !== ARTICLE_INLINE_IMAGE_MIN || missingIds.length) {
+      errors.push({
+        code: "STRUCTURED_IMAGE_SET_INCOMPLETE",
+        message: `structured_graphics requires exactly ${ARTICLE_INLINE_IMAGE_MIN} persistent inline SVG/HTTPS assets with ids img-01..img-03`,
+      });
+    }
+    return { errors, warnings };
+  }
+
+  if (mode === "image_placeholders") {
+    const holderIds = pkg.inline_images.filter((image) => image.status === "missing").map((image) => image.id);
+    if (
+      pkg.featured_image?.status !== "missing"
+      || pkg.featured_image.prompt.trim().length < 40
+      || pkg.featured_image.alt.trim().length < 20
+    ) {
+      errors.push({
+        code: "PLACEHOLDER_COVER_BRIEF_INCOMPLETE",
+        message: "image_placeholders requires a missing cover with a detailed prompt (>=40 chars) and alt (>=20 chars)",
+      });
+    }
+    const exactIds = ARTICLE_REQUIRED_INLINE_IDS.every((id) => holderIds.includes(id));
+    const detailedHolders = pkg.inline_images.every((image) =>
+      image.prompt.trim().length >= 40
+      && image.alt.trim().length >= 20
+      && (pkg.content_markdown.includes(`{{IMAGE:${image.id}}}`) || Boolean(image.position?.after_heading_id?.trim()))
+    );
+    if (
+      pkg.inline_images.length !== ARTICLE_INLINE_IMAGE_MIN
+      || missingIds.length !== ARTICLE_INLINE_IMAGE_MIN
+      || holderIds.length !== ARTICLE_INLINE_IMAGE_MIN
+      || !exactIds
+      || !detailedHolders
+    ) {
+      errors.push({
+        code: "PLACEHOLDER_IMAGE_SET_INCOMPLETE",
+        message: "image_placeholders requires exactly img-01, img-02, img-03 with url=null, status=missing, detailed prompt/alt, and placement",
+      });
+    }
+    return { errors, warnings };
+  }
+
   if (
     !coverReady
     || readyInline.length !== ARTICLE_INLINE_IMAGE_MIN
@@ -411,6 +488,7 @@ export function buildArticlePackageSnapshot(
 ) {
   return {
     schema_version: pkg.schema_version,
+    article_mode: pkg.article_mode,
     featured_image: pkg.featured_image,
     inline_images: pkg.inline_images,
     seo: pkg.seo,

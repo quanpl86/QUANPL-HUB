@@ -28,6 +28,11 @@ import {
 } from "@/lib/content/article-workflow";
 import { ArticleWorkflowRepository } from "@/lib/content/article-workflow.repository";
 import { sendArticleWorkflowPausedEmail } from "@/lib/notifications/email";
+import {
+  ARTICLE_MODE_CONFIG,
+  ARTICLE_MODE_ROUTING_INSTRUCTIONS,
+  ARTICLE_MODES,
+} from "@/lib/content/article-modes";
 
 const editorialSlotSchema = z.object({
   id: z.string().optional().describe("Existing slot id when revising a week."),
@@ -61,6 +66,7 @@ const editorialSlotSchema = z.object({
 
 const articleWorkflowPackageSchema = z.object({
   schema_version: z.literal("article-package/7.0"),
+  article_mode: z.literal("gpt_scenes").optional().default("gpt_scenes"),
   task_id: z.string().optional().nullable(),
   calendar_id: z.string().optional().nullable(),
   idempotency_key: z.string().min(1),
@@ -87,7 +93,7 @@ const articleWorkflowPackageSchema = z.object({
   featured_image_alt: z.string().optional(),
   inline_images: z.array(z.object({
     id: z.enum(["img-01", "img-02", "img-03"]),
-    purpose: z.enum(["concept_diagram", "workflow", "comparison", "case_study", "explainer"]),
+    purpose: z.enum(["concept_diagram", "workflow", "comparison", "case_study", "explainer", "rubric", "timeline", "table", "framework"]),
     position: z.object({
       placeholder: z.string().optional(),
       after_heading_id: z.string().optional(),
@@ -165,10 +171,10 @@ function createKingDragonHubMcpServer() {
   const server = new McpServer(
     {
       name: "KingDragonHub-MCP",
-      version: "7.34.0",
+      version: "7.35.0",
     },
     {
-      instructions: `${ARTICLE_WORKFLOW_INSTRUCTIONS} ${ARTICLE_ASSET_HARD_RULE.text}`,
+      instructions: `${ARTICLE_MODE_ROUTING_INSTRUCTIONS} ${ARTICLE_WORKFLOW_INSTRUCTIONS} ${ARTICLE_ASSET_HARD_RULE.text}`,
     }
   );
 
@@ -235,6 +241,32 @@ function createKingDragonHubMcpServer() {
   );
 
   server.registerTool(
+    "get_article_modes",
+    {
+      description: "Return the four supported article modes and short Vietnamese prompt examples. Call when the user's media intent is unclear; do not ask for technical fields.",
+      inputSchema: z.object({}),
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async () => ({
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          default_mode: "gpt_scenes",
+          modes: ARTICLE_MODE_CONFIG,
+          short_prompts: Object.entries(ARTICLE_MODE_CONFIG).map(([article_mode, config]) => ({
+            article_mode,
+            prompt: config.prompt_hint,
+          })),
+        }, null, 2),
+      }],
+    })
+  );
+
+  server.registerTool(
     "get_article_package_contract",
     {
       description: "Call first every session. Simple article commands use the resumable workflow: start_article_workflow after research, generate the returned image, then on each user 'Tiếp tục' call continue_article_workflow with the previous native image. Do not ask for technical IDs.",
@@ -245,7 +277,9 @@ function createKingDragonHubMcpServer() {
         type: "text",
         text: JSON.stringify({
           mcp_server: "KingDragonHub-MCP",
-          mcp_version: "7.34.0",
+          mcp_version: "7.35.0",
+          default_article_mode: "gpt_scenes",
+          article_modes: ARTICLE_MODE_CONFIG,
           asset_policy: ARTICLE_ASSET_HARD_RULE.asset_policy,
           article_asset_hard_rule: ARTICLE_ASSET_HARD_RULE.text,
           image_pipeline: {
@@ -254,8 +288,8 @@ function createKingDragonHubMcpServer() {
             autonomous: true,
             resumable: true,
             one_user_message: false,
-            cover_exact: 1,
-            inline_exact: 3,
+            gpt_scenes_cover_exact: 1,
+            gpt_scenes_inline_exact: 3,
             required_ids: ARTICLE_ASSET_HARD_RULE.required_ids,
             lane_a1_chatgpt: "start_article_workflow → native cover. Each 'Tiếp tục': continue_article_workflow receives the previous native file, uploads it, and returns the next image prompt. After img-03 it creates the draft. Never parallel.",
             lane_a2_external: "Browser/external client only → start_image_upload → HTTP POST original PNG bytes to put_url.",
@@ -302,8 +336,7 @@ function createKingDragonHubMcpServer() {
           schema_version: "article-package/7.0",
           create_blog_draft_required_fields: [
             "schema_version",
-            "featured_image",
-            "featured_image_url",
+            "article_mode",
             "inline_images",
             "aio.direct_answer",
             "seo.search_intent",
@@ -311,16 +344,24 @@ function createKingDragonHubMcpServer() {
           ],
           featured_image: {
             type: "object",
-            required: ["purpose", "prompt", "alt", "url"],
+            mode_rules: {
+              text_only: "null",
+              gpt_scenes: "required with persistent GitHub RAW url",
+              structured_graphics: "null unless the user separately requests a cover",
+              image_placeholders: "required detailed prompt + alt, url=null, status=missing",
+            },
             purpose: "article_cover",
-            url_required: true,
           },
           inline_images: {
             type: "array",
-            exact_items_with_url: ARTICLE_INLINE_IMAGE_MIN,
+            mode_rules: {
+              text_only: "empty array",
+              gpt_scenes: `exactly ${ARTICLE_INLINE_IMAGE_MIN} native ChatGPT Image RAW URLs`,
+              structured_graphics: `exactly ${ARTICLE_INLINE_IMAGE_MIN} generated SVG/HTTPS URLs`,
+              image_placeholders: `exactly ${ARTICLE_INLINE_IMAGE_MIN} detailed missing holders with null URLs`,
+            },
             required_ids: ["img-01", "img-02", "img-03"],
             item_required: ["id", "purpose", "prompt", "alt", "url"],
-            url_required: true,
           },
         }, null, 2),
       }],
@@ -1147,9 +1188,10 @@ function createKingDragonHubMcpServer() {
     server.registerTool(
       "create_blog_draft",
       {
-        description: "Final gate. EXACTLY 1 cover URL + EXACTLY 3 inline GitHub RAW URLs (img-01, img-02, img-03) and {{IMAGE:img-01}}..{{IMAGE:img-03}} in markdown. Server returns IMAGE_SET_INCOMPLETE otherwise. SEO >= 95. Never publish. Free-write: calendar_id=null.",
+        description: "Create a review draft after research. Set article_mode explicitly: text_only=no media; gpt_scenes=use start_article_workflow instead; structured_graphics=exactly 3 persisted SVG assets; image_placeholders=no image tools and exactly 3 detailed holders. SEO >=95. Never publish.",
         inputSchema: z.object({
           schema_version: z.string().describe("Must be article-package/7.0"),
+          article_mode: z.enum(ARTICLE_MODES).describe("Required lane. Never silently change it. Plain 'Hãy viết bài về…' defaults to gpt_scenes and must use start_article_workflow."),
           task_id: z.string().optional().nullable(),
           calendar_id: z.string().optional().nullable().describe("Approved due slot id from get_due_editorial_slots. Required in schedule mode. Leave null for free-write mode."),
           idempotency_key: z.string(),
@@ -1171,12 +1213,13 @@ function createKingDragonHubMcpServer() {
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
             url: z.string().nullable(),
-          }).describe("Cover spec. url MUST be GitHub RAW returned by upload_generated_image_file for a native ChatGPT Image."),
-          featured_image_url: z.string().nullable().describe("Same persistent cover URL as featured_image.url."),
+            status: z.enum(["pending", "uploaded", "missing"]).optional(),
+          }).nullable().optional().describe("gpt_scenes: required uploaded cover. image_placeholders: required detailed brief with url=null. text_only/structured_graphics: null."),
+          featured_image_url: z.string().nullable().optional().describe("Persistent cover URL when the selected mode has a cover."),
           featured_image_alt: z.string().optional(),
           inline_images: z.array(z.object({
             id: z.string(),
-            purpose: z.enum(["concept_diagram", "workflow", "comparison", "case_study", "explainer"]),
+            purpose: z.enum(["concept_diagram", "workflow", "comparison", "case_study", "explainer", "rubric", "timeline", "table", "framework"]),
             position: z.object({
               placeholder: z.string().optional(),
               after_heading_id: z.string().optional(),
@@ -1186,7 +1229,9 @@ function createKingDragonHubMcpServer() {
             caption: z.string().optional(),
             suggested_filename: z.string().optional(),
             url: z.string().nullable(),
-          })).describe("At least 2 informational inline images with HTTPS urls. Each id must appear as {{IMAGE:id}} in content_markdown. Max 4. decoration is forbidden."),
+            status: z.enum(["pending", "uploaded", "missing"]).optional(),
+            failure_reason: z.string().optional(),
+          })).describe("text_only: []. Other modes: exactly img-01..img-03. structured_graphics needs HTTPS URLs; image_placeholders needs url=null plus detailed prompt/alt/position."),
           seo: z.object({
             title: z.string(),
             description: z.string(),
@@ -1230,9 +1275,30 @@ function createKingDragonHubMcpServer() {
       },
       async (draftData) => {
         try {
-          const pkg = normalizeArticlePackage(draftData);
+          const prepared = draftData.article_mode === "image_placeholders"
+            ? {
+                ...draftData,
+                featured_image: draftData.featured_image
+                  ? {
+                      ...draftData.featured_image,
+                      url: null,
+                      status: "missing" as const,
+                      failure_reason: "EDITORIAL_PLACEHOLDER: reviewer must source or generate this cover",
+                    }
+                  : null,
+                featured_image_url: null,
+                inline_images: draftData.inline_images.map((image) => ({
+                  ...image,
+                  url: null,
+                  status: "missing" as const,
+                  failure_reason: image.failure_reason || "EDITORIAL_PLACEHOLDER: reviewer must source or generate this image",
+                })),
+                _workflow_media_status: "INCOMPLETE",
+              }
+            : draftData;
+          const pkg = normalizeArticlePackage(prepared);
           const result = await PostsRepository.createDraft({
-            ...draftData,
+            ...prepared,
             featured_image: pkg.featured_image,
             featured_image_alt: pkg.featured_image?.alt,
             inline_images: pkg.inline_images,

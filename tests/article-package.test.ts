@@ -228,3 +228,62 @@ test("more than 3 inline images is rejected", () => {
   })));
   assert.ok(check.errors.some((issue) => issue.code === "INLINE_IMAGE_LIMIT"));
 });
+
+test("article mode text_only accepts a package without media", () => {
+  const check = validateArticlePackage(normalizeArticlePackage(baseDraft({
+    article_mode: "text_only",
+    featured_image: null,
+    featured_image_url: null,
+    inline_images: [],
+    content_markdown: "## Nội dung\n\nBài viết thuần văn bản.",
+  })));
+  assert.deepEqual(check.errors, []);
+});
+
+test("article mode text_only rejects image placeholders", () => {
+  const check = validateArticlePackage(normalizeArticlePackage(baseDraft({
+    article_mode: "text_only",
+    featured_image: null,
+    inline_images: [],
+    content_markdown: "## Nội dung\n\n{{IMAGE:img-01}}",
+  })));
+  assert.ok(check.errors.some((issue) => issue.code === "TEXT_ONLY_HAS_MEDIA"));
+});
+
+test("article mode structured_graphics accepts 3 persisted graphics without cover", () => {
+  const check = validateArticlePackage(normalizeArticlePackage(baseDraft({
+    article_mode: "structured_graphics",
+    featured_image: null,
+    featured_image_url: null,
+    inline_images: threeInlineImages().map((image, index) => ({
+      ...image,
+      purpose: (["workflow", "comparison", "concept_diagram"] as const)[index],
+    })),
+  })));
+  assert.deepEqual(check.errors, []);
+});
+
+test("article mode image_placeholders requires and accepts detailed briefs", () => {
+  const inline = ["img-01", "img-02", "img-03"].map((id, index) => ({
+    id,
+    purpose: "explainer",
+    prompt: `Minh họa chi tiết số ${index + 1} với chủ thể, bối cảnh, bố cục, ánh sáng và màu sắc giáo dục rõ ràng`,
+    alt: `Mô tả chi tiết ảnh giữ chỗ số ${index + 1} trong bài viết giáo dục`,
+    caption: `Ảnh minh họa số ${index + 1}`,
+    url: null,
+    status: "missing",
+  }));
+  const check = validateArticlePackage(normalizeArticlePackage(baseDraft({
+    article_mode: "image_placeholders",
+    featured_image: {
+      purpose: "article_cover",
+      prompt: "Ảnh bìa giáo dục chi tiết, lớp học hiện đại, bố cục rộng 16:9, ánh sáng tự nhiên, không chữ",
+      alt: "Ảnh bìa mô tả lớp học hiện đại và hoạt động học tập chủ động",
+      url: null,
+      status: "missing",
+    },
+    inline_images: inline,
+  })));
+  assert.deepEqual(check.errors, []);
+  assert.ok(check.warnings.some((issue) => issue.code === "COVER_URL_MISSING"));
+});

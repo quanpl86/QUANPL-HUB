@@ -105,12 +105,26 @@ export async function updatePost(id: any, formData: FormData, content: string) {
   const { data: existingPost } = await supabase.from('posts').select('slug, seo_keywords, article_package').eq('id', id).single();
   const existingSeoKeywords = existingPost?.seo_keywords || {};
   const slug = existingPost?.slug;
-  if (isPublished && existingPost?.article_package?.media_status === 'INCOMPLETE') {
+  const mediaWasIncomplete = ['INCOMPLETE', 'PLACEHOLDERS'].includes(existingPost?.article_package?.media_status);
+  const inlineImageCount = (content.match(/<img\b/gi) || []).length;
+  const mediaResolvedByReviewer = Boolean(imageUrl?.trim())
+    && !content.includes('kd-image-holder')
+    && inlineImageCount >= 3;
+  if (isPublished && mediaWasIncomplete && !mediaResolvedByReviewer) {
     return {
       success: false,
-      error: 'MEDIA_INCOMPLETE: Bài còn image holder. Hãy bổ sung đủ cover và ảnh trong bài trước khi công khai.',
+      error: 'MEDIA_INCOMPLETE: Cần ảnh bìa, tối thiểu 3 ảnh nội dung và không còn image holder trước khi công khai.',
     };
   }
+
+  const nextArticlePackage = mediaWasIncomplete && mediaResolvedByReviewer
+    ? {
+        ...(existingPost?.article_package || {}),
+        media_status: 'COMPLETE',
+        missing_images: [],
+        resolved_by_reviewer_at: new Date().toISOString(),
+      }
+    : existingPost?.article_package;
 
   const { error } = await supabase
     .from('posts')
@@ -126,6 +140,7 @@ export async function updatePost(id: any, formData: FormData, content: string) {
       meta_description: metaDescription,
       keywords,
       tags,
+      article_package: nextArticlePackage,
       seo_keywords: { ...(typeof existingSeoKeywords === 'object' ? existingSeoKeywords : {}), image_alt: imageAlt },
       updated_at: new Date().toISOString()
     })
