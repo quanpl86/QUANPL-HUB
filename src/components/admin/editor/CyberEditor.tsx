@@ -340,7 +340,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
     Youtube.configure({ width: 840, height: 480 }),
     CyberImage, FontSize,
     Placeholder.configure({
-      placeholder: mode === 'matrix' ? 'Nhấn / để triệu hồi lệnh ma trận...' : 'ĐANG TRUYỀN TẢI: Bắt đầu nhập nội dung...',
+      placeholder: mode === 'matrix' ? 'Nhấn / để mở lệnh nâng cao...' : 'Bắt đầu nhập nội dung...',
     }),
     ScratchEmbed, SketchfabEmbed,
     WorkflowTimeline, KnowledgeCallout, ChartBlock, DrawingBoard, KeyTakeaways, FAQBlock,
@@ -568,9 +568,9 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
       <div className={`flex justify-center items-center ${isFullView ? 'sticky top-0 z-[110] bg-cyber-black/90 backdrop-blur-md py-4 mb-2 shrink-0' : 'relative py-4 mb-4 border-b border-white/5'}`}>
         <div className="inline-flex bg-cyber-black/90 border border-brand-orange/20 p-1 backdrop-blur-xl shadow-[0_0_30px_rgba(255,87,34,0.1)]">
           {[
-            { id: 'agent', label: 'AI AGENT', icon: Cpu },
-            { id: 'matrix', label: 'MA TRẬN', icon: Command },
-            { id: 'simple', label: 'ĐƠN GIẢN', icon: Type },
+            { id: 'agent', label: 'AI hỗ trợ', icon: Cpu },
+            { id: 'matrix', label: 'Nâng cao', icon: Command },
+            { id: 'simple', label: 'Cơ bản', icon: Type },
           ].map((m) => (
             <button
               key={m.id}
@@ -607,7 +607,7 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
           <div className="flex flex-wrap items-center gap-1">
             {/* Group 1: History & Magic */}
               <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => openPrompt('import_ai', 'NHẬP NỘI DUNG TỪ AI', 'Dán toàn bộ văn bản Markdown từ AI vào đây...')} className="p-2 text-brand-orange hover:bg-brand-orange/10 font-bold px-4 flex items-center gap-2 border border-brand-orange/20 mr-2 rounded-sm" title="Import toàn bộ Markdown từ AI"><Wand2 size={16} /> MAGIC IMPORT</button>
+              <button type="button" onClick={() => openPrompt('import_ai', 'NHẬP NỘI DUNG TỪ AI', 'Dán toàn bộ văn bản Markdown từ AI vào đây...')} className="p-2 text-brand-orange hover:bg-brand-orange/10 font-bold px-4 flex items-center gap-2 border border-brand-orange/20 mr-2 rounded-sm" title="Nhập toàn bộ Markdown từ AI"><Wand2 size={16} /> Nhập từ AI</button>
               <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Hoàn tác"><Undo size={16} /></button>
               <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Làm lại"><Redo size={16} /></button>
             </div>
@@ -883,10 +883,10 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
         {/* Status Bar */}
         <div className="border-t border-brand-orange/10 px-6 py-2.5 bg-cyber-black/80 flex justify-between items-center font-mono text-[9px] text-muted-foreground uppercase tracking-[0.2em] backdrop-blur-md shrink-0">
           <div className="flex gap-6 items-center">
-            <span className="flex items-center gap-2"><Zap size={10} className="text-brand-orange" /> GIAO THỨC: {mode}</span>
+            <span className="flex items-center gap-2"><Zap size={10} className="text-brand-orange" /> Chế độ: {mode}</span>
           </div>
           <div className="flex gap-6 items-center">
-            <span className="text-brand-orange">{editor.storage.characterCount.characters()} KÝ TỰ</span>
+            <span className="text-brand-orange">{editor.storage.characterCount.characters()} ký tự</span>
             <span className="text-brand-orange/20">|</span>
             <span className="text-brand-orange">{editor.storage.characterCount.words()} TỪ</span>
           </div>

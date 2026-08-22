@@ -11,7 +11,7 @@ export default async function EditorialReviewPage() {
   }
 
   return (
-    <div className="min-h-screen dragon-grid">
+    <div className="editorial-review-page">
       <EditorialReviewDesk initialWeeks={weeks} />
     </div>
   );

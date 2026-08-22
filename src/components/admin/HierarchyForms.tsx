@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useTransition } from 'react';
-import { CyberButton } from '@/components/ui/CyberButton';
 import { toast } from 'sonner';
 
 interface FormProps {
@@ -20,39 +19,37 @@ export function FieldForm({ action }: FormProps) {
     startTransition(async () => {
       try {
         await action(formData);
-        toast.success('MA_TRẬN_ỔN_ĐỊNH: Lĩnh vực đã được triển khai thành công');
+        toast.success('Đã thêm lĩnh vực.');
         (document.getElementById('field-form') as HTMLFormElement)?.reset();
       } catch {
-        toast.error('LỖI_HỆ_THỐNG: Triển khai thất bại');
+        toast.error('Không thể thêm lĩnh vực. Vui lòng thử lại.');
       }
     });
   };
 
   return (
-    <form id="field-form" action={handleSubmit} className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Tên Lĩnh Vực</label>
+    <form id="field-form" action={handleSubmit} className="admin-form">
+      <div className="admin-field">
+        <label>Tên lĩnh vực</label>
         <input 
           name="name" 
           required 
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold placeholder:text-muted/70"
           placeholder="VD: Kỹ thuật & Công nghệ"
         />
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Mô Tả</label>
+      <div className="admin-field">
+        <label>Mô tả</label>
         <textarea 
           name="description" 
           rows={3}
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold placeholder:text-muted/70"
           placeholder="Phạm vi rộng của lĩnh vực này..."
         />
       </div>
-      <CyberButton variant="primary" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? 'ĐANG TRIỂN KHAI...' : 'Triển Khai Lĩnh Vực'}
-      </CyberButton>
+      <button className="admin-button admin-button--primary w-full" disabled={isPending}>
+        {isPending ? 'Đang thêm...' : 'Thêm lĩnh vực'}
+      </button>
     </form>
   );
 }
@@ -64,22 +61,21 @@ export function SubjectForm({ action, fields }: FormProps & { fields: HierarchyO
     startTransition(async () => {
       try {
         await action(formData);
-        toast.success('MA_TRẬN_ỔN_ĐỊNH: Chủ đề đã được đăng ký');
+        toast.success('Đã thêm chủ đề.');
         (document.getElementById('subject-form') as HTMLFormElement)?.reset();
       } catch {
-        toast.error('LỖI_HỆ_THỐNG: Đăng ký thất bại');
+        toast.error('Không thể thêm chủ đề. Vui lòng thử lại.');
       }
     });
   };
 
   return (
-    <form id="subject-form" action={handleSubmit} className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Lĩnh Vực Cha</label>
+    <form id="subject-form" action={handleSubmit} className="admin-form">
+      <div className="admin-field">
+        <label>Lĩnh vực</label>
         <select 
           name="field_id" 
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold"
         >
           <option value="">-- Không có lĩnh vực --</option>
           {fields?.map(f => (
@@ -87,29 +83,27 @@ export function SubjectForm({ action, fields }: FormProps & { fields: HierarchyO
           ))}
         </select>
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Tên Chủ Đề</label>
+      <div className="admin-field">
+        <label>Tên chủ đề</label>
         <input 
           name="name" 
           required 
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold placeholder:text-muted/70"
           placeholder="VD: Robot"
         />
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Mô Tả</label>
+      <div className="admin-field">
+        <label>Mô tả</label>
         <textarea 
           name="description" 
           rows={3}
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold placeholder:text-muted/70"
           placeholder="Trọng tâm của chủ đề..."
         />
       </div>
-      <CyberButton variant="primary" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? 'ĐANG TRIỂN KHAI...' : 'Triển Khai Chủ Đề'}
-      </CyberButton>
+      <button className="admin-button admin-button--primary w-full" disabled={isPending}>
+        {isPending ? 'Đang thêm...' : 'Thêm chủ đề'}
+      </button>
     </form>
   );
 }
@@ -121,22 +115,21 @@ export function CategoryForm({ action, subjects }: FormProps & { subjects: Hiera
     startTransition(async () => {
       try {
         await action(formData);
-        toast.success('MA_TRẬN_ỔN_ĐỊNH: Danh mục đã được đăng ký');
+        toast.success('Đã thêm danh mục.');
         (document.getElementById('category-form') as HTMLFormElement)?.reset();
       } catch {
-        toast.error('LỖI_HỆ_THỐNG: Đăng ký thất bại');
+        toast.error('Không thể thêm danh mục. Vui lòng thử lại.');
       }
     });
   };
 
   return (
-    <form id="category-form" action={handleSubmit} className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Chủ Đề Cha</label>
+    <form id="category-form" action={handleSubmit} className="admin-form">
+      <div className="admin-field">
+        <label>Chủ đề</label>
         <select 
           name="subject_id" 
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold"
         >
           <option value="">-- Không có chủ đề --</option>
           {subjects?.map(s => (
@@ -144,29 +137,27 @@ export function CategoryForm({ action, subjects }: FormProps & { subjects: Hiera
           ))}
         </select>
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Tên Danh Mục</label>
+      <div className="admin-field">
+        <label>Tên danh mục</label>
         <input 
           name="name" 
           required 
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold placeholder:text-muted/70"
           placeholder="VD: Lập trình Arduino"
         />
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="tech-mono text-brand-orange font-bold">Mô Tả</label>
+      <div className="admin-field">
+        <label>Mô tả</label>
         <textarea 
           name="description" 
           rows={3}
           disabled={isPending}
-          className="bg-white dark:bg-cyber-gray border-2 border-brand-orange/50 p-3 tech-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground disabled:opacity-50 cyber-cut-sm font-bold placeholder:text-muted/70"
           placeholder="Mục đích ngắn gọn của danh mục này..."
         />
       </div>
-      <CyberButton variant="primary" className="mt-2 w-full" disabled={isPending}>
-        {isPending ? 'ĐANG TRIỂN KHAI...' : 'Triển Khai Danh Mục'}
-      </CyberButton>
+      <button className="admin-button admin-button--primary w-full" disabled={isPending}>
+        {isPending ? 'Đang thêm...' : 'Thêm danh mục'}
+      </button>
     </form>
   );
 }

@@ -3,17 +3,17 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { CyberButton } from '@/components/ui/CyberButton';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <div className="relative min-h-[90vh] dragon-grid bg-cyber-gray overflow-hidden">
+    <div className="relative min-h-[90vh] overflow-hidden bg-background font-[family-name:var(--font-inter)] dragon-grid">
       {/* Background Aura */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-orange/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-      <div className="container mx-auto px-6 py-20 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="container relative z-10 mx-auto px-6 py-20 md:py-24">
+        <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
           
           {/* Left Side: Mascot as Guide */}
           <motion.div
@@ -30,7 +30,7 @@ export default function AboutPage() {
               <div className="relative w-full h-full p-8 transition-transform duration-500 group-hover:scale-105">
                 <Image
                   src="/images/mascot.png"
-                  alt="King Dragon Mascot"
+                  alt="Linh vật King Dragon của KingDragonHub"
                   fill
                   sizes="(max-width: 768px) 288px, 450px"
                   className="object-contain drop-shadow-[0_0_30px_rgba(249,115,22,0.3)]"
@@ -40,7 +40,7 @@ export default function AboutPage() {
 
               {/* Tag */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-brand-orange text-cyber-black tech-mono px-4 py-1.5 cyber-cut-sm shadow-[4px_4px_0px_rgba(0,0,0,0.5)]">
-                PROTOCOL: KD-GUIDE_V1
+                KING DRAGON · NGƯỜI ĐỒNG HÀNH
               </div>
             </div>
           </motion.div>
@@ -50,57 +50,54 @@ export default function AboutPage() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col gap-8"
+            className="flex flex-col gap-7"
           >
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-orange/10 border border-brand-orange/30 text-brand-orange tech-mono mb-4">
-                <span className="w-1.5 h-1.5 bg-brand-orange animate-pulse"></span>
-                Về Chúng Tôi
-              </div>
-              <h1 className="cyber-h1 mb-6">
-                CHÀO MỪNG ĐẾN VỚI <br />
-                <span className="cyber-text-gradient">KING DRAGON HUB</span>
+              <p className="editorial-kicker"><span className="h-1.5 w-1.5 rounded-full bg-brand-orange" />Về KingDragonHub</p>
+              <h1 className="mt-4 max-w-3xl text-[clamp(2.75rem,4.4vw,4.25rem)] font-semibold uppercase leading-[1.01] tracking-[-0.05em] text-foreground">
+                <span className="block xl:whitespace-nowrap">CHÀO MỪNG ĐẾN VỚI</span>
+                <span className="block text-brand-orange xl:whitespace-nowrap">KING DRAGON HUB</span>
               </h1>
             </div>
 
-            <div className="space-y-6 body-lg text-muted">
+            <div className="space-y-5 text-base leading-7 text-foreground/68 md:text-lg md:leading-8">
               <p>
-                Xin chào! Tôi là <strong className="text-brand-orange">King Dragon</strong> — người dẫn đường của bạn trong không gian ma trận tri thức này. 
+                <strong className="text-foreground">KingDragonHub</strong> là một hệ sinh thái tri thức tập trung vào AI, STEM, Robot và Công nghệ Giáo dục.
               </p>
               <p>
-                <strong className="text-foreground">KING DRAGON HUB</strong> không chỉ là một blog công nghệ thông thường. Đây là một hệ sinh thái được xây dựng để kết nối những nhà khai phá, những người luôn khao khát chinh phục đỉnh cao của Lập trình, AI, Robotics và Phát triển bản thân.
+                Nền tảng được xây dựng cho giáo viên, người phát triển chương trình, học sinh, đội Robot và những người muốn ứng dụng công nghệ vào học tập và sáng tạo.
               </p>
-              <p>
-                Với triết lý <strong className="text-foreground">Neo-Brutalist</strong> — thô mộc nhưng dứt khoát, chúng tôi tin rằng kiến thức cần được trình bày một cách trực diện, sâu sắc và có bản sắc riêng. Mỗi bài viết tại đây là một node dữ liệu quan trọng trong hành trình nâng cấp tư duy của bạn.
-              </p>
+              <div className="rounded-xl border border-brand-orange/20 bg-brand-orange/[0.05] p-5 text-base leading-7 text-foreground/70">
+                <strong className="text-brand-orange">King Dragon</strong> là người đồng hành giúp bạn khám phá hệ thống, trong khi nội dung luôn giữ giọng điệu chuyên môn, trực diện và có thể áp dụng.
+              </div>
+              <div className="border-l-2 border-brand-orange/60 pl-5">
+                <h2 className="text-sm font-semibold text-foreground">Triết lý thiết kế</h2>
+                <p className="mt-2 text-base leading-7 text-foreground/65">Ngôn ngữ Neo-Brutalist tạo nên bản sắc thị giác dứt khoát; phần đọc và tương tác được ưu tiên sự rõ ràng, khả năng tiếp cận và chiều sâu nội dung.</p>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Link href="/blog">
-                <CyberButton variant="primary">
-                  Khám phá Ma trận ngay
-                </CyberButton>
+              <Link href="/blog" className="primary-editorial-cta">
+                Khám phá kho tri thức <ArrowRight size={17} />
               </Link>
-              <Link href="/">
-                <CyberButton variant="outline">
-                  Quay lại Trung tâm
-                </CyberButton>
+              <Link href="/" className="secondary-editorial-cta">
+                Về trang chủ
               </Link>
             </div>
 
             {/* Stats / Tech Info */}
-            <div className="mt-8 pt-8 border-t border-brand-orange/10 grid grid-cols-3 gap-4">
+            <div className="mt-8 grid grid-cols-1 gap-5 border-t border-brand-orange/10 pt-8 sm:grid-cols-3 sm:gap-4">
               <div className="flex flex-col">
-                <span className="cyber-h3 !text-brand-orange">99+</span>
-                <span className="tech-mono text-muted !text-[9px]">Dữ liệu bài viết</span>
+                <span className="text-2xl font-semibold text-brand-orange">AI</span>
+                <span className="mt-1 text-xs leading-5 text-foreground/55">Hỗ trợ nghiên cứu & biên tập</span>
               </div>
               <div className="flex flex-col">
-                <span className="cyber-h3 !text-brand-orange">AI</span>
-                <span className="tech-mono text-muted !text-[9px]">Tối ưu hóa</span>
+                <span className="text-2xl font-semibold text-brand-orange">STEM</span>
+                <span className="mt-1 text-xs leading-5 text-foreground/55">Tham chiếu chuẩn giáo dục</span>
               </div>
               <div className="flex flex-col">
-                <span className="cyber-h3 !text-brand-orange">STEM</span>
-                <span className="tech-mono text-muted !text-[9px]">Tiêu chuẩn quốc tế</span>
+                <span className="text-2xl font-semibold text-brand-orange">4 · 10 · 17</span>
+                <span className="mt-1 text-xs leading-5 text-foreground/55">Lĩnh vực · Chủ đề · Danh mục</span>
               </div>
             </div>
           </motion.div>

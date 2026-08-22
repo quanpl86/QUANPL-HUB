@@ -27,10 +27,10 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL('https://kingdragonhub.com'),
   title: {
-    default: 'KING DRAGON HUB | Đỉnh Cao Trí Tuệ & Công Nghệ',
+    default: 'KING DRAGON HUB | Tri thức thực chiến về AI, STEM và EdTech',
     template: '%s | KING DRAGON HUB'
   },
-  description: 'Nền tảng chia sẻ kiến thức chuyên sâu về Lập trình, AI, Robotics và Phát triển bản thân. Matrix thông tin dành cho những nhà khai phá.',
+  description: 'Nghiên cứu, công cụ và kinh nghiệm thực hành về AI, STEM, Robotics và Công nghệ Giáo dục.',
   keywords: [
     'Giáo dục STEM', 'Trí tuệ nhân tạo (AI) trong giáo dục', 'Phương pháp giảng dạy STEM',
     'Triển khai khóa học', 'Thiết kế giáo án STEM', 'Tư duy máy tính (Computational Thinking)',
@@ -44,13 +44,13 @@ export const metadata: Metadata = {
     locale: 'vi_VN',
     url: 'https://kingdragonhub.com',
     title: 'KING DRAGON HUB',
-    description: 'Matrix thông tin dành cho những nhà khai phá.',
+    description: 'Tri thức thực chiến về AI, STEM và Công nghệ Giáo dục.',
     siteName: 'KING DRAGON HUB',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'KING DRAGON HUB',
-    description: 'Matrix thông tin dành cho những nhà khai phá.',
+    description: 'Tri thức thực chiến về AI, STEM và Công nghệ Giáo dục.',
   },
   robots: {
     index: true,
@@ -84,7 +84,7 @@ export default function RootLayout({
     name: 'KING DRAGON HUB',
     url: 'https://kingdragonhub.com',
     logo: 'https://kingdragonhub.com/icon.png',
-    description: 'Nền tảng chia sẻ kiến thức chuyên sâu về Lập trình, AI, Robotics và Phát triển bản thân. Matrix thông tin dành cho những nhà khai phá.',
+    description: 'Tri thức thực chiến về AI, STEM và Công nghệ Giáo dục.',
     sameAs: [
       'https://github.com/quanpl86'
     ]
@@ -97,7 +97,7 @@ export default function RootLayout({
     url: 'https://kingdragonhub.com',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://kingdragonhub.com/?q={search_term_string}',
+      target: 'https://kingdragonhub.com/blog?q={search_term_string}',
       'query-input': 'required name=search_term_string'
     }
   };

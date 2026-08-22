@@ -1,3 +1,5 @@
+import { getCoverPromptContract } from "./cover-prompt-standard.ts";
+
 export const IMAGE_GENERATION_STANDARD = {
   version: "3.0",
   hard_rule: true,
@@ -40,6 +42,7 @@ export const IMAGE_GENERATION_STANDARD = {
     table: { engine: "svg", text_policy: "exact_text" },
     framework: { engine: "svg", text_policy: "exact_text" },
   },
+  cover_prompt_standard: getCoverPromptContract(),
   sequence: ["cover", "img-01", "img-02", "img-03"],
   body_plan: {
     short: 3,

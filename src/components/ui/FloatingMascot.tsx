@@ -40,12 +40,14 @@ export const FloatingMascot = () => {
           {/* Tooltip */}
           <div className="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
             <div className="bg-brand-orange text-cyber-black font-orbitron text-[10px] font-bold px-4 py-2 cyber-cut-sm shadow-[4px_4px_0px_rgba(0,0,0,0.3)] whitespace-nowrap uppercase tracking-widest">
-              Bay về trung tâm
+              Lên đầu trang
             </div>
           </div>
 
           <button
             onClick={scrollToTop}
+            aria-label="Lên đầu trang"
+            title="Lên đầu trang"
             className="relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
           >
             {/* Background Glow */}
@@ -55,7 +57,7 @@ export const FloatingMascot = () => {
             <div className="relative w-full h-full p-1.5">
               <Image
                 src="/images/mascot.png"
-                alt="King Dragon Mascot"
+                alt=""
                 fill
                 sizes="(max-width: 768px) 48px, 56px"
                 className="object-contain"

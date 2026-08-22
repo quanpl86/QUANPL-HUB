@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useTransition, useState } from 'react';
-import { MessageSquare, Send, User, Mail, Reply, Heart } from 'lucide-react';
-import { submitComment, toggleCommentReaction } from '@/app/actions/interactions';
+import { useState, useTransition } from 'react';
+import { Heart, Mail, MessageSquare, Reply, Send, User } from 'lucide-react';
 import { toast } from 'sonner';
-import { CyberButton } from '@/components/ui/CyberButton';
+import { submitComment, toggleCommentReaction } from '@/app/actions/interactions';
 
 interface Comment {
   id: string;
@@ -12,7 +11,11 @@ interface Comment {
   content: string;
   created_at: string;
   parent_id: string | null;
-  comment_reactions?: { id: string, ip_address: string }[];
+  comment_reactions?: { id: string; ip_address: string }[];
+}
+
+interface CommentNode extends Comment {
+  replies: CommentNode[];
 }
 
 interface CommentSectionProps {
@@ -21,20 +24,33 @@ interface CommentSectionProps {
   currentUserIp: string;
 }
 
+function buildCommentTree(comments: Comment[], parentId: string | null = null): CommentNode[] {
+  return comments
+    .filter((comment) => comment.parent_id === parentId)
+    .map((comment) => ({
+      ...comment,
+      replies: buildCommentTree(comments, comment.id),
+    }));
+}
+
 export function CommentSection({ postId, initialComments, currentUserIp }: CommentSectionProps) {
   const [isPending, startTransition] = useTransition();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const commentTree = buildCommentTree(initialComments);
 
   const handleSubmit = async (formData: FormData) => {
+    const activeReplyId = replyingTo;
     startTransition(async () => {
       try {
         await submitComment(formData);
-        toast.success('Bình luận đã được gửi!');
+        toast.success('Bình luận đã được gửi và đang chờ duyệt.');
+        (document.getElementById('comment-form') as HTMLFormElement | null)?.reset();
+        if (activeReplyId) {
+          (document.getElementById(`reply-form-${activeReplyId}`) as HTMLFormElement | null)?.reset();
+        }
         setReplyingTo(null);
-        (document.getElementById('comment-form') as HTMLFormElement)?.reset();
-        (document.getElementById(`reply-form-${replyingTo}`) as HTMLFormElement)?.reset();
-      } catch (error) {
-        toast.error('LỖI_HỆ_THỐNG: Không thể gửi bình luận');
+      } catch {
+        toast.error('Không thể gửi bình luận. Vui lòng thử lại.');
       }
     });
   };
@@ -43,235 +59,139 @@ export function CommentSection({ postId, initialComments, currentUserIp }: Comme
     startTransition(async () => {
       try {
         await toggleCommentReaction(commentId);
-      } catch (error) {
-        toast.error('LỖI: Không thể thực hiện tương tác');
+      } catch {
+        toast.error('Không thể cập nhật lượt thích. Vui lòng thử lại.');
       }
     });
   };
 
-  // Hàm xây dựng cây bình luận
-  const buildCommentTree = (comments: Comment[], parentId: string | null = null): any[] => {
-    return comments
-      .filter(c => c.parent_id === parentId)
-      .map(c => ({
-        ...c,
-        replies: buildCommentTree(comments, c.id)
-      }));
-  };
-
-  const commentTree = buildCommentTree(initialComments);
-
-  const CommentItem = ({ comment, isReply = false }: { comment: any, isReply?: boolean }) => {
+  const CommentItem = ({ comment, isReply = false }: { comment: CommentNode; isReply?: boolean }) => {
     const reactions = comment.comment_reactions || [];
-    const hasReacted = reactions.some((r: any) => r.ip_address === currentUserIp);
-    const reactionCount = reactions.length;
+    const hasReacted = reactions.some((reaction) => reaction.ip_address === currentUserIp);
 
     return (
-      <div id={`comment-${comment.id}`} className={`relative ${isReply ? 'ml-4 md:ml-12 mt-4' : 'mt-8'} scroll-mt-32`}>
-        {/* Visual connector for replies */}
-        {isReply && (
-          <div className="absolute -left-3 md:-left-6 top-0 bottom-0 w-[1px] bg-brand-orange/20"></div>
-        )}
-        
-        <div className="bg-white/[0.02] border border-brand-orange/5 p-6 md:p-8 transition-all hover:bg-brand-orange/[0.01] hover:border-brand-orange/20 overflow-hidden rounded-sm backdrop-blur-sm group/item">
-          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center border border-brand-orange/20 flex-shrink-0">
-                <User className="w-5 h-5 text-brand-orange" />
-              </div>
+      <article id={`comment-${comment.id}`} className={`scroll-mt-32 ${isReply ? 'ml-4 mt-4 border-l border-brand-orange/20 pl-4 md:ml-10 md:pl-7' : 'mt-6'}`}>
+        <div className="rounded-2xl border border-foreground/10 bg-foreground/[0.02] p-5 transition hover:border-brand-orange/25 md:p-6">
+          <header className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-brand-orange/20 bg-brand-orange/[0.08] text-brand-orange">
+                <User size={18} aria-hidden="true" />
+              </span>
               <div className="min-w-0">
-                <h4 className="font-orbitron font-bold text-sm text-foreground tracking-wider">{comment.user_name}</h4>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
-                    {new Date(comment.created_at).toLocaleString('vi-VN')}
-                  </span>
-                  {isReply && (
-                    <span className="font-mono text-[8px] bg-brand-orange/10 text-brand-orange/70 px-1.5 py-0.5 rounded-sm uppercase tracking-tighter">Phản hồi</span>
-                  )}
-                </div>
+                <h3 className="truncate text-sm font-semibold text-foreground">{comment.user_name}</h3>
+                <p className="mt-1 text-xs text-foreground/45">
+                  {new Date(comment.created_at).toLocaleString('vi-VN')}{isReply ? ' · Phản hồi' : ''}
+                </p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => handleReaction(comment.id)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-sm border transition-all duration-300 ${
-                  hasReacted 
-                    ? 'border-brand-orange bg-brand-orange/10 text-brand-orange' 
-                    : 'border-white/5 bg-white/5 text-muted-foreground hover:border-brand-orange/40 hover:text-foreground'
-                }`}
-              >
-                <Heart className={`w-3.5 h-3.5 ${hasReacted ? 'fill-current' : ''}`} />
-                <span className="font-mono text-[11px] font-bold">{reactionCount}</span>
-              </button>
 
-              <button 
-                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-sm border transition-all duration-300 ${
-                  replyingTo === comment.id
-                    ? 'border-brand-orange bg-brand-orange/20 text-brand-orange'
-                    : 'border-white/5 bg-white/5 text-muted-foreground hover:border-brand-orange/40 hover:text-foreground'
-                }`}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleReaction(comment.id)}
+                aria-pressed={hasReacted}
+                aria-label={`${hasReacted ? 'Bỏ thích' : 'Thích'} bình luận của ${comment.user_name}`}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${hasReacted ? 'border-brand-orange bg-brand-orange/[0.08] text-brand-orange' : 'border-foreground/12 text-foreground/55 hover:border-brand-orange/40 hover:text-brand-orange'}`}
               >
-                <Reply className="w-3.5 h-3.5" />
-                <span className="font-mono text-[11px] font-bold uppercase tracking-widest">REP</span>
+                <Heart size={15} className={hasReacted ? 'fill-current' : ''} aria-hidden="true" />
+                {reactions.length}
+              </button>
+              <button
+                type="button"
+                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                aria-expanded={replyingTo === comment.id}
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-foreground/12 px-3 text-xs font-semibold text-foreground/60 transition hover:border-brand-orange/40 hover:text-brand-orange"
+              >
+                <Reply size={15} aria-hidden="true" />
+                Trả lời
               </button>
             </div>
-          </div>
+          </header>
 
-          <div className="relative">
-            <p className="font-sans text-foreground/80 leading-relaxed text-base pl-6 border-l-2 border-brand-orange/10 ml-5 py-1">
-              {comment.content}
-            </p>
-          </div>
+          <p className="mt-5 whitespace-pre-wrap text-base leading-7 text-foreground/75">{comment.content}</p>
 
           {replyingTo === comment.id && (
-            <div className="mt-8 ml-5 pl-6 border-l-2 border-brand-orange/30 animate-in fade-in slide-in-from-left-4 duration-500">
-              <form id={`reply-form-${comment.id}`} action={handleSubmit} className="space-y-6 bg-cyber-black/20 p-6 border border-white/5 rounded-sm">
-                <input type="hidden" name="post_id" value={postId} />
-                <input type="hidden" name="parent_id" value={comment.id} />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="relative group">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted group-focus-within:text-brand-orange transition-colors" />
-                    <input 
-                      name="user_name" 
-                      placeholder="Danh tính..."
-                      className="w-full bg-cyber-black/40 border border-brand-orange/10 p-2.5 pl-9 font-mono text-xs outline-none focus:border-brand-orange transition-all text-foreground"
-                    />
-                  </div>
-                  <div className="relative group">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted group-focus-within:text-brand-orange transition-colors" />
-                    <input 
-                      name="user_email" 
-                      type="email"
-                      placeholder="Email (không bắt buộc)..."
-                      className="w-full bg-cyber-black/40 border border-brand-orange/10 p-2.5 pl-9 font-mono text-xs outline-none focus:border-brand-orange transition-all text-foreground"
-                    />
-                  </div>
-                </div>
-
-                <textarea 
-                  name="content"
-                  required
-                  rows={3}
-                  autoFocus
-                  placeholder={`Phản hồi gửi tới ${comment.user_name}...`}
-                  className="w-full bg-cyber-black/40 border border-brand-orange/10 p-4 font-mono text-xs outline-none focus:border-brand-orange transition-all resize-none text-foreground"
-                />
-
-                <div className="flex justify-end gap-3 items-center">
-                  <button 
-                    type="button"
-                    onClick={() => setReplyingTo(null)}
-                    className="font-mono text-[10px] uppercase text-muted hover:text-red-400 transition-colors tracking-widest"
-                  >
-                    HỦY BỎ
-                  </button>
-                  <CyberButton variant="primary" className="px-8 py-2.5 h-auto text-[10px]" disabled={isPending}>
-                    GỬI PHẢN HỒI
-                  </CyberButton>
-                </div>
-              </form>
-            </div>
+            <form id={`reply-form-${comment.id}`} action={handleSubmit} className="mt-6 space-y-4 rounded-xl border border-brand-orange/15 bg-background p-5">
+              <input type="hidden" name="post_id" value={postId} />
+              <input type="hidden" name="parent_id" value={comment.id} />
+              <p className="text-sm font-semibold text-foreground">Trả lời {comment.user_name}</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="comment-field">
+                  <span className="sr-only">Tên của bạn</span>
+                  <User size={16} aria-hidden="true" />
+                  <input name="user_name" required placeholder="Tên của bạn" />
+                </label>
+                <label className="comment-field">
+                  <span className="sr-only">Email không bắt buộc</span>
+                  <Mail size={16} aria-hidden="true" />
+                  <input name="user_email" type="email" placeholder="Email (không bắt buộc)" />
+                </label>
+              </div>
+              <textarea name="content" required rows={3} autoFocus placeholder={`Viết phản hồi cho ${comment.user_name}...`} className="comment-textarea" />
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => setReplyingTo(null)} className="secondary-editorial-cta px-5 py-2.5">Hủy</button>
+                <button type="submit" disabled={isPending} className="primary-editorial-cta px-5 py-2.5">
+                  <Send size={16} aria-hidden="true" />{isPending ? 'Đang gửi...' : 'Gửi phản hồi'}
+                </button>
+              </div>
+            </form>
           )}
         </div>
 
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="space-y-2">
-            {comment.replies.map((reply: any) => (
-              <CommentItem key={reply.id} comment={reply} isReply={true} />
-            ))}
-          </div>
-        )}
-      </div>
+        {comment.replies.map((reply) => <CommentItem key={reply.id} comment={reply} isReply />)}
+      </article>
     );
   };
 
   return (
-    <section className="mt-24 pt-16 border-t border-brand-orange/10">
-      <div className="flex items-center gap-4 mb-12">
-        <MessageSquare className="text-brand-orange w-8 h-8" />
-        <h2 className="font-orbitron font-bold text-3xl uppercase tracking-[0.2em] text-foreground">
-          Ma trận <span className="text-brand-orange">Thảo luận</span>
-        </h2>
-      </div>
-
-      <div className="max-w-4xl mx-auto space-y-16">
-        {/* Form chính - Đưa lên trên và mở rộng */}
-        <div className="bg-black/[0.02] dark:bg-white/[0.02] border border-brand-orange/10 p-8 md:p-10 backdrop-blur-md rounded-sm relative overflow-hidden group">
-          {/* Decorative accents */}
-          <div className="absolute top-0 left-0 w-2 h-2 bg-brand-orange"></div>
-          <div className="absolute bottom-0 right-0 w-2 h-2 bg-brand-orange"></div>
-          
-          <h3 className="font-orbitron font-bold text-sm mb-10 uppercase tracking-[0.3em] text-brand-orange/90 flex items-center gap-4">
-            <span className="w-12 h-[1px] bg-brand-orange/30"></span>
-            Khởi tạo luồng mới
-          </h3>
-
-          <form id="comment-form" action={handleSubmit} className="space-y-8">
-            <input type="hidden" name="post_id" value={postId} />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="relative group/input">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted transition-colors group-focus-within/input:text-brand-orange" />
-                <input 
-                  name="user_name"
-                  placeholder="Định danh của bạn..."
-                  className="w-full bg-black/[0.03] dark:bg-white/[0.05] border border-brand-orange/10 p-4 pl-12 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground"
-                />
-              </div>
-              <div className="relative group/input">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted transition-colors group-focus-within/input:text-brand-orange" />
-                <input 
-                  name="user_email"
-                  type="email"
-                  placeholder="Email liên kết (không bắt buộc)..."
-                  className="w-full bg-black/[0.03] dark:bg-white/[0.05] border border-brand-orange/10 p-4 pl-12 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground"
-                />
-              </div>
-            </div>
-
-            <div className="relative">
-              <textarea 
-                name="content"
-                required
-                rows={5}
-                placeholder="Truyền tải ý kiến của bạn vào ma trận..."
-                className="w-full bg-black/[0.03] dark:bg-white/[0.05] border border-brand-orange/10 p-6 font-mono text-sm focus:border-brand-orange outline-none transition-all text-foreground resize-y min-h-[150px]"
-              />
-              <div className="absolute bottom-4 right-4 font-mono text-[8px] text-brand-orange/30 uppercase tracking-widest pointer-events-none">
-                input_stream_ready
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <CyberButton variant="primary" className="px-12 py-5 group min-w-[250px]" disabled={isPending}>
-                <Send className={`w-5 h-5 mr-3 transition-transform ${isPending ? 'animate-pulse' : 'group-hover:translate-x-1 group-hover:-translate-y-1'}`} />
-                {isPending ? 'ĐANG ĐƯA TIN...' : 'PHÁT HÀNH BÌNH LUẬN'}
-              </CyberButton>
-            </div>
-          </form>
+    <section className="mt-24 border-t border-foreground/10 pt-16" aria-labelledby="discussion-title">
+      <div className="mx-auto max-w-4xl">
+        <div className="flex items-center gap-3">
+          <MessageSquare className="text-brand-orange" size={27} aria-hidden="true" />
+          <h2 id="discussion-title" className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">Thảo luận</h2>
         </div>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-foreground/60">
+          Bạn nghĩ gì về chủ đề này? Hãy chia sẻ góc nhìn, câu hỏi hoặc kinh nghiệm của bạn.
+        </p>
 
-        {/* Danh sách bình luận - Xếp bên dưới */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="h-[1px] flex-1 bg-brand-orange/10"></div>
-            <span className="font-orbitron text-[10px] text-muted-foreground uppercase tracking-[0.5em]">Tất cả tương tác</span>
-            <div className="h-[1px] flex-1 bg-brand-orange/10"></div>
+        <form id="comment-form" action={handleSubmit} className="mt-9 space-y-5 rounded-2xl border border-foreground/10 bg-foreground/[0.02] p-6 md:p-8">
+          <input type="hidden" name="post_id" value={postId} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-foreground">Tên của bạn</span>
+              <span className="comment-field"><User size={17} aria-hidden="true" /><input name="user_name" required placeholder="Nhập tên của bạn" /></span>
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-semibold text-foreground">Email <span className="font-normal text-foreground/45">(không bắt buộc)</span></span>
+              <span className="comment-field"><Mail size={17} aria-hidden="true" /><input name="user_email" type="email" placeholder="you@example.com" /></span>
+            </label>
+          </div>
+          <label className="block space-y-2">
+            <span className="text-sm font-semibold text-foreground">Bình luận</span>
+            <textarea name="content" required rows={5} placeholder="Viết bình luận của bạn..." className="comment-textarea min-h-[150px]" />
+          </label>
+          <div className="flex justify-end">
+            <button type="submit" disabled={isPending} className="primary-editorial-cta min-w-[170px] justify-center">
+              <Send size={17} aria-hidden="true" />{isPending ? 'Đang gửi...' : 'Gửi bình luận'}
+            </button>
+          </div>
+        </form>
+
+        <div className="mt-14">
+          <div className="flex items-center justify-between gap-5 border-b border-foreground/10 pb-4">
+            <h3 className="text-xl font-semibold text-foreground">Bình luận</h3>
+            <span className="text-sm text-foreground/45">{initialComments.length} bình luận</span>
           </div>
 
           {initialComments.length === 0 ? (
-            <div className="text-center py-24 border border-dashed border-brand-orange/10 opacity-40 font-mono text-xs uppercase tracking-[0.4em]">
-              // CHƯA_CÓ_DỮ_LIỆU_TRUYỀN_TẢI //
+            <div className="mt-6 rounded-2xl border border-dashed border-foreground/15 px-6 py-14 text-center">
+              <MessageSquare className="mx-auto text-brand-orange/60" size={28} aria-hidden="true" />
+              <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-foreground/55">
+                Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ góc nhìn về bài viết này.
+              </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {commentTree.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} />
-              ))}
-            </div>
+            <div>{commentTree.map((comment) => <CommentItem key={comment.id} comment={comment} />)}</div>
           )}
         </div>
       </div>

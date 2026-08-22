@@ -138,7 +138,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     );
   }
 
-  if (!post) return <div className="text-center py-20 uppercase font-mono tracking-widest text-red-500">// LỖI: KHÔNG_TÌM_THẤY_BÀI_VIẾT //</div>;
+  if (!post) return <div className="text-center py-20 font-mono text-red-500">Không tìm thấy bài viết.</div>;
 
   return (
     <div className={`transition-all duration-500 ${isZenMode ? 'fixed inset-0 z-[100] bg-cyber-black overflow-y-auto p-12' : 'max-w-[1400px] mx-auto'}`}>
@@ -147,8 +147,9 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
           <Link href="/admin/posts" className="flex items-center gap-2 text-muted hover:text-brand-orange transition-colors mb-4 font-mono text-[10px] uppercase">
             <ArrowLeft size={14} /> Quay lại danh sách
           </Link>
-          <h1 className="cyber-h1 text-3xl mb-2">CHỈNH SỬA <span className="cyber-text-gradient">BÀI VIẾT</span></h1>
-          <p className="font-mono text-muted text-xs uppercase tracking-widest">// ID: {id} | {post.slug} //</p>
+          <span className="admin-eyebrow">Biên tập nội dung</span>
+          <h1 className="cyber-h1 text-3xl mb-2">Chỉnh sửa <span className="cyber-text-gradient">bài viết</span></h1>
+          <p className="font-mono text-muted text-xs">{post.slug}</p>
         </div>
 
         <div className="flex gap-4">
@@ -159,7 +160,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
             onClick={() => setIsZenMode(!isZenMode)}
           >
             <Maximize size={16} />
-            {isZenMode ? 'THOÁT TẬP TRUNG' : 'CHẾ ĐỘ TẬP TRUNG'}
+            {isZenMode ? 'Thoát tập trung' : 'Chế độ tập trung'}
           </CyberButton>
           <CyberButton 
             type="button" 
@@ -168,7 +169,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
             onClick={() => setIsPreviewOpen(true)}
           >
             <Eye size={16} />
-            XEM TRƯỚC
+            Xem trước
           </CyberButton>
         </div>
       </div>

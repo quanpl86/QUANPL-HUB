@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { ARTICLE_ASSET_HARD_RULE } from "./article-asset-rule.ts";
+import { buildCoverPrompt } from "./cover-prompt-standard.ts";
 
 export const ARTICLE_WORKFLOW_VERSION = "article-workflow/2.0";
 export const ARTICLE_WORKFLOW_SEQUENCE = ARTICLE_ASSET_HARD_RULE.sequence;
@@ -95,7 +96,7 @@ export function buildArticleWorkflowImagePlan(articlePackage: unknown): ArticleW
   const plan: ArticleWorkflowImageSpec[] = [{
     image_id: "cover",
     purpose: "article_cover",
-    prompt: requiredText(cover.prompt, "featured_image.prompt"),
+    prompt: buildCoverPrompt(requiredText(cover.prompt, "featured_image.prompt")),
     alt: requiredText(cover.alt, "featured_image.alt"),
     aspect: "16:9",
     filename: typeof cover.suggested_filename === "string" ? cover.suggested_filename : undefined,

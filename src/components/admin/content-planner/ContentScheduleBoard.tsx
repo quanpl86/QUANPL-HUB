@@ -1437,7 +1437,7 @@ ${post.content}`);
       });
 
       if (!result.success) {
-        toast.error(result.error || 'Không lưu được Prompt Pack lên Supabase.');
+        toast.error(result.error || 'Không thể lưu bộ hướng dẫn.');
         return;
       }
 
@@ -1450,7 +1450,7 @@ ${post.content}`);
 
     const promptPack = composePromptPack(promptRule, promptBrief, promptContext);
     await navigator.clipboard.writeText(promptPack);
-    toast.success('Đã lưu Supabase và copy Prompt Pack.');
+    toast.success('Đã lưu và sao chép bộ hướng dẫn.');
   };
 
   const copySection = async (label: string, value: string) => {
@@ -1478,15 +1478,15 @@ ${post.content}`);
           <p className="font-orbitron text-3xl font-black mt-3">{stats.total}</p>
         </div>
         <div className="border border-brand-orange/25 bg-brand-orange/[0.04] p-5 cyber-cut-sm">
-          <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest">Draft</p>
+          <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest">Bản nháp</p>
           <p className="font-orbitron text-3xl font-black mt-3">{stats.draft}</p>
         </div>
         <div className="border border-brand-orange/35 bg-brand-orange/[0.08] p-5 cyber-cut-sm">
-          <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest">In Progress</p>
+          <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest">Đang thực hiện</p>
           <p className="font-orbitron text-3xl font-black mt-3">{stats.inProgress}</p>
         </div>
         <div className="border border-green-500/35 bg-green-500/[0.06] p-5 cyber-cut-sm">
-          <p className="tech-mono text-green-700 dark:text-green-400 text-[10px] uppercase tracking-widest">Done</p>
+          <p className="tech-mono text-green-700 dark:text-green-400 text-[10px] uppercase tracking-widest">Hoàn thành</p>
           <p className="font-orbitron text-3xl font-black mt-3">{stats.done}</p>
         </div>
       </section>
@@ -1495,7 +1495,7 @@ ${post.content}`);
         <div className="border border-brand-orange/30 bg-cyber-black/5 p-6 cyber-cut">
           <div className="flex items-start justify-between gap-4 border-b border-brand-orange/25 pb-4 mb-5">
             <div>
-              <h2 className="font-orbitron text-xl font-black uppercase">Nhập kế hoạch bài post</h2>
+              <h2 className="font-orbitron text-xl font-black">Nhập kế hoạch bài viết</h2>
               <p className="body-sm text-muted mt-2">
                 Dán danh sách đánh số như ví dụ của bạn. Hệ thống sẽ nhận diện title, mô tả, mục tiêu và đối tượng.
               </p>
@@ -1505,7 +1505,7 @@ ${post.content}`);
 
           <div className="grid gap-4">
             <label className="grid gap-2">
-              <span className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest font-bold">Ngày bắt đầu release</span>
+              <span className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest font-bold">Ngày bắt đầu</span>
               <input
                 type="date"
                 value={startDate}
@@ -1518,7 +1518,7 @@ ${post.content}`);
               value={rawPlan}
               onChange={(event) => setRawPlan(event.target.value)}
               rows={12}
-              placeholder="Dán kế hoạch 12 bài post ở đây..."
+              placeholder="Dán kế hoạch bài viết tại đây..."
               className="min-h-[280px] border-2 border-brand-orange/35 bg-white dark:bg-cyber-gray p-4 tech-mono text-xs leading-6 text-foreground outline-none focus:border-brand-orange placeholder:text-muted/60"
             />
 
@@ -1537,7 +1537,7 @@ ${post.content}`);
                 className="inline-flex items-center gap-2 bg-brand-orange px-5 py-3 font-orbitron text-xs font-black uppercase text-white transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] shadow-[4px_4px_0px_#0f172a]"
               >
                 <ClipboardList size={16} />
-                Parse vào lịch
+                Thêm vào lịch
               </button>
               <button
                 type="button"
@@ -1555,7 +1555,7 @@ ${post.content}`);
                 className="inline-flex items-center gap-2 border border-red-500/35 px-5 py-3 font-orbitron text-xs font-black uppercase text-red-600 disabled:opacity-40"
               >
                 <RotateCcw size={16} />
-                Reset
+                Xóa kế hoạch
               </button>
             </div>
           </div>
@@ -1564,9 +1564,9 @@ ${post.content}`);
         <div className="border border-brand-orange/30 bg-cyber-black/5 p-6 cyber-cut">
           <div className="flex items-start justify-between gap-4 border-b border-brand-orange/25 pb-4 mb-5">
             <div>
-              <h2 className="font-orbitron text-xl font-black uppercase">Thêm nhanh một post</h2>
+              <h2 className="font-orbitron text-xl font-black">Thêm nhanh bài viết</h2>
               <p className="body-sm text-muted mt-2">
-                Dùng cho ý tưởng phát sinh chưa có đủ mô tả. Post mới sẽ vào trạng thái draft.
+                Dùng cho ý tưởng phát sinh chưa có đủ mô tả. Bài mới sẽ ở trạng thái bản nháp.
               </p>
             </div>
             <Plus className="text-brand-orange shrink-0" size={24} />
@@ -1576,7 +1576,7 @@ ${post.content}`);
             <input
               value={manualTitle}
               onChange={(event) => setManualTitle(event.target.value)}
-              placeholder="Tên bài post mới..."
+              placeholder="Tên bài viết mới..."
               className="flex-1 border-2 border-brand-orange/35 bg-white dark:bg-cyber-gray p-3 tech-mono text-sm text-foreground outline-none focus:border-brand-orange placeholder:text-muted/60"
             />
             <button
@@ -1600,7 +1600,7 @@ ${post.content}`);
           <div className="mt-6 border border-brand-orange/25 bg-white/65 dark:bg-cyber-black/35 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest font-bold">Instruction Library</p>
+                <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest font-bold">Thư viện hướng dẫn</p>
                 <p className="body-sm text-muted mt-2">
                   Chọn instruction phù hợp để AI Agent viết bài. Có thể xem trước, thêm, sửa hoặc xóa instruction.
                 </p>
@@ -1609,7 +1609,7 @@ ${post.content}`);
             </div>
 
             <label className="mt-4 grid gap-2">
-              <span className="tech-mono text-brand-orange text-[9px] uppercase tracking-widest">Instruction đang chọn</span>
+              <span className="tech-mono text-brand-orange text-[9px] uppercase tracking-widest">Hướng dẫn đang chọn</span>
               <select
                 value={selectedInstructionId}
                 onChange={(event) => setSelectedInstructionId(event.target.value)}
@@ -1625,7 +1625,7 @@ ${post.content}`);
 
             {selectedInstruction && (
               <div className="mt-3 border border-brand-orange/15 bg-brand-orange/[0.04] p-3">
-                <p className="body-sm text-muted line-clamp-2">{selectedInstruction.description || 'Chưa có mô tả instruction.'}</p>
+                  <p className="body-sm text-muted line-clamp-2">{selectedInstruction.description || 'Chưa có mô tả hướng dẫn.'}</p>
                 <p className="tech-mono mt-2 text-[9px] uppercase tracking-widest text-muted">
                   {selectedInstruction.content.length.toLocaleString('vi-VN')} ký tự
                 </p>
@@ -1671,7 +1671,7 @@ ${post.content}`);
           <div className="mt-6 border border-brand-orange/25 bg-white/65 dark:bg-cyber-black/35 p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest font-bold">Context bài viết trước</p>
+                <p className="tech-mono text-brand-orange text-[10px] uppercase tracking-widest font-bold">Nội dung tham chiếu</p>
                 <p className="body-sm text-muted mt-2">
                   Dán nội dung bài pillar hoặc bài trước đó để AI Agent có tham chiếu khi viết bài cluster.
                 </p>
@@ -1741,7 +1741,7 @@ ${post.content}`);
               <div className="mt-3 border border-brand-orange/15 bg-brand-orange/[0.04] p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="tech-mono text-[9px] uppercase tracking-widest text-muted">
-                    Đang dùng làm context
+                    Đang dùng làm tham chiếu
                   </span>
                   <span className={`tech-mono text-[9px] uppercase tracking-widest ${
                     selectedReferencePost.isPublished ? 'text-green-700 dark:text-green-400' : 'text-brand-orange'
@@ -1762,7 +1762,7 @@ ${post.content}`);
             {initialReferencePosts.length === 0 && (
               <div className="mt-4 border border-dashed border-brand-orange/25 p-4">
                 <p className="tech-mono text-[10px] uppercase tracking-widest text-muted">
-                  Chưa có bài viết nào trong Supabase để chọn làm context.
+                  Chưa có bài viết nào để chọn làm tham chiếu.
                 </p>
               </div>
             )}
@@ -1790,7 +1790,7 @@ ${post.content}`);
                   <Icon size={18} className={status === 'done' ? 'text-green-600 dark:text-green-400' : 'text-brand-orange'} />
                   <h2 className="font-orbitron text-sm font-black uppercase tracking-widest">{meta.label}</h2>
                 </div>
-                <span className="tech-mono text-[10px] text-muted">{columnItems.length} post</span>
+                <span className="tech-mono text-[10px] text-muted">{columnItems.length} bài</span>
               </div>
 
               <div className="grid gap-4">

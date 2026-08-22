@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CollapsibleTags } from './CollapsibleTags';
+import { getVietnameseTaxonomyLabel } from '@/config/knowledge-taxonomy';
 
 interface Post {
   id: string;
@@ -10,8 +11,8 @@ interface Post {
   excerpt: string;
   image_url: string;
   created_at: string;
-  profiles: any;
-  categories: any;
+  profiles: { full_name?: string | null } | { full_name?: string | null }[] | null;
+  categories: { name?: string | null; slug?: string | null } | { name?: string | null; slug?: string | null }[] | null;
   tags?: string[];
 }
 
@@ -32,7 +33,8 @@ export function RelatedArticles({ posts }: RelatedArticlesProps) {
           const authorName = (Array.isArray(post.profiles) ? post.profiles[0]?.full_name : post.profiles?.full_name) || 'KING DRAGON Admin';
           
           // Extract Category
-          const categoryName = (Array.isArray(post.categories) ? post.categories[0]?.name : post.categories?.name) || 'KNOWLEDGE';
+          const category = Array.isArray(post.categories) ? post.categories[0] : post.categories;
+          const categoryName = getVietnameseTaxonomyLabel(category?.name, category?.slug);
           
           return (
             <Link key={post.id} href={`/posts/${post.slug}`} className="group flex flex-col h-full bg-transparent hover:bg-white/[0.02] transition-colors duration-300">
@@ -47,7 +49,7 @@ export function RelatedArticles({ posts }: RelatedArticlesProps) {
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-muted tech-mono text-xs">NO_IMAGE_DATA</div>
+                  <div className="absolute inset-0 flex items-center justify-center text-xs text-foreground/45">Chưa có ảnh</div>
                 )}
               </div>
               
@@ -58,11 +60,11 @@ export function RelatedArticles({ posts }: RelatedArticlesProps) {
                 </h3>
                 
                 <div className="text-foreground/70 text-sm mb-4">
-                  {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {new Date(post.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 </div>
                 
                 <div className="text-foreground text-sm font-semibold mb-4">
-                  By {authorName}
+                  Tác giả: {authorName}
                 </div>
                 
                 <p className="text-foreground/70 text-[0.95rem] line-clamp-3 mb-8 flex-1">

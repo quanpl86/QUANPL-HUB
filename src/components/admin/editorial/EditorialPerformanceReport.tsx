@@ -31,7 +31,7 @@ function BucketChart({
   const rows = buckets.slice(0, 12);
   const max = Math.max(1, ...rows.map((row) => Number(row[valueKey]) || 0));
   return (
-    <div className="border border-brand-orange/20 p-4 space-y-3 bg-cyber-black/5">
+    <div className="editorial-report-card space-y-3">
       <p className="text-sm font-semibold">{title}</p>
       {rows.length === 0 ? (
         <p className="text-sm text-muted">Chưa có dữ liệu.</p>
@@ -49,9 +49,9 @@ export function EditorialPerformanceReport({ weeks }: { weeks: EditorialWeek[] }
   const { performance, chatgpt, range } = report;
 
   return (
-    <section className="space-y-4">
+    <section className="editorial-report space-y-5" aria-labelledby="editorial-report-title">
       <div>
-        <h2 className="font-orbitron text-sm font-bold uppercase tracking-widest">
+        <h2 id="editorial-report-title" className="text-base font-semibold">
           Báo cáo hiệu quả ChatGPT
         </h2>
         <p className="text-xs text-muted mt-1">
@@ -69,15 +69,15 @@ export function EditorialPerformanceReport({ weeks }: { weeks: EditorialWeek[] }
           [`${chatgpt.articles_rejected}`, 'Lần admin trả draft'],
           [`${chatgpt.first_pass_rate}%`, 'Tuần duyệt luôn (không GPT sửa lại)'],
         ].map(([value, hint]) => (
-          <div key={hint} className="border border-brand-orange/20 p-3">
-            <p className="font-orbitron text-sm font-bold">{value}</p>
-            <p className="text-[11px] text-muted mt-1">{hint}</p>
+          <div key={hint} className="editorial-kpi editorial-kpi--compact">
+            <p className="editorial-kpi__value">{value}</p>
+            <p className="editorial-kpi__label">{hint}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="border border-brand-orange/20 p-4 space-y-2">
+        <div className="editorial-report-card space-y-2">
           <p className="text-sm font-semibold">Kết quả việc</p>
           <p className="text-sm">Lập lịch — duyệt: {performance.planning.passed} · hủy: {performance.planning.failed} · đang xem: {performance.planning.in_review}</p>
           <p className="text-sm">Trung bình số bản (mọi lần bump): {performance.planning.avg_revisions}</p>

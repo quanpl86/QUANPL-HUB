@@ -222,7 +222,7 @@ const toolPrinciples = [
   'Chạy nhanh trên trình duyệt khi có thể',
   'Không làm mất file gốc',
   'Ưu tiên định dạng dùng được cho giáo dục và web',
-  'Có preview trước khi tải kết quả',
+  'Xem trước kết quả trước khi tải xuống',
 ];
 
 const roadmap = [
@@ -257,8 +257,8 @@ export default function UtilityHubPage() {
               Xưởng <span className="text-brand-orange">tiện ích sáng tạo</span>
             </h1>
             <p className="text-lg text-foreground/70 mt-6 max-w-3xl leading-relaxed">
-              Utility Hub sẽ là nơi tập hợp các công cụ xử lý ảnh, asset, học liệu và workflow nhỏ phục vụ STEM,
-              Robotics, AI content và hệ thống Second Brain.
+              Utility Hub tập hợp các công cụ xử lý ảnh, tài nguyên số, học liệu và quy trình nhỏ phục vụ STEM,
+              Robotics, nội dung AI và hệ thống Second Brain.
             </p>
             <div className="mt-8 flex flex-wrap gap-2">
               {roadmap.map((item) => (
@@ -280,7 +280,7 @@ export default function UtilityHubPage() {
         </div>
       </section>
 
-      <section className="py-16">
+      <section id="tool-catalog" className="scroll-mt-24 py-16">
         <div className="container mx-auto px-6">
           <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-foreground/[0.02] border border-foreground/10 rounded-2xl p-8">
             <div>
@@ -379,7 +379,7 @@ export default function UtilityHubPage() {
               <div className="inline-flex p-4 rounded-xl bg-background border border-brand-orange/20 shadow-sm text-brand-orange mb-6">
                 <Sparkles size={26} aria-hidden="true" />
               </div>
-              <h2 className="text-2xl font-bold font-[family-name:var(--font-inter)] text-foreground mb-6">Nguyên tắc thiết kế tool</h2>
+              <h2 className="text-2xl font-bold font-[family-name:var(--font-inter)] text-foreground mb-6">Nguyên tắc thiết kế công cụ</h2>
               <div className="space-y-4">
                 {toolPrinciples.map((principle) => (
                   <div key={principle} className="flex gap-3 text-foreground/80">
@@ -396,21 +396,30 @@ export default function UtilityHubPage() {
               <div className="inline-flex p-4 rounded-xl bg-background border border-foreground/10 shadow-sm text-foreground/70 mb-6">
                 <ImageUp size={26} aria-hidden="true" />
               </div>
-              <h2 className="text-2xl font-bold font-[family-name:var(--font-inter)] text-foreground mb-4">Module ưu tiên: Image Toolkit</h2>
+              <h2 className="text-2xl font-bold font-[family-name:var(--font-inter)] text-foreground mb-4">Công cụ nổi bật: Bộ công cụ xử lý ảnh</h2>
               <p className="text-sm text-foreground/70 leading-relaxed max-w-2xl">
-                Nhóm công cụ ảnh nên đi trước vì phục vụ trực tiếp cho bài viết, slide, học liệu, mascot, robotics field
-                và asset STEM. Khi triển khai code, nên bắt đầu bằng chuyển định dạng ảnh vì ít phụ thuộc AI nhất, sau đó
-                đến tách nền và vector hóa.
+                Chuyển định dạng, nén, tách nền và vector hóa hình ảnh ngay trong trình duyệt để chuẩn bị bài viết,
+                slide, học liệu và tài nguyên cho các dự án STEM hoặc Robotics.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/5 border border-foreground/10 text-xs font-bold uppercase tracking-wider text-foreground/60">
                   <FileImage size={14} aria-hidden="true" />
-                  AN TOÀN DỮ LIỆU ĐẦU VÀO
+                  Xử lý cục bộ khi có thể
                 </span>
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/5 border border-foreground/10 text-xs font-bold uppercase tracking-wider text-foreground/60">
                   <Sparkles size={14} aria-hidden="true" />
-                  XEM TRƯỚC KẾT QUẢ
+                  Xem trước kết quả
                 </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveFilter('Bộ công cụ xử lý ảnh');
+                    document.getElementById('tool-catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="primary-editorial-cta !min-h-0 !px-4 !py-2 text-xs"
+                >
+                  Xem bộ công cụ ảnh <ArrowRight size={14} />
+                </button>
               </div>
             </div>
 

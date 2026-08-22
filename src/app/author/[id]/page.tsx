@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (id !== 'quanpl86') return { title: 'Author Not Found' };
 
   return {
-    title: 'Phan Long Quân - System Architect & STEM Educator',
+    title: 'Phan Long Quân - Kiến trúc sư hệ thống & Chuyên gia giáo dục STEM',
     description: 'Chuyên gia Kiến trúc Hệ thống & Nhà giáo dục STEM. Người xây dựng KING DRAGON HUB và định hình phương pháp giảng dạy công nghệ cho thế hệ trẻ.',
     alternates: {
       canonical: `https://kingdragonhub.com/author/${id}`,
@@ -28,7 +28,7 @@ export default async function AuthorProfile({ params }: { params: Promise<{ id: 
   const authorData = {
     name: 'Phan Long Quân',
     alias: 'KING DRAGON',
-    role: 'System Architect & STEM Educator',
+    role: 'Kiến trúc sư hệ thống & Chuyên gia giáo dục STEM',
     bio: 'Chuyên gia Kiến trúc Hệ thống & Nhà giáo dục STEM với sứ mệnh định hình lại cách tiếp cận kiến thức công nghệ cho thế hệ trẻ. Tập trung nghiên cứu và ứng dụng Trí tuệ Nhân tạo (AI), Tư duy máy tính (Computational Thinking) và phương pháp học thuật Xoắn ốc (Spiral Curriculum) vào môi trường giáo dục từ cấp Tiểu học đến THPT.',
     avatarUrl: '/icon.png', // Using the logo as avatar for now
     linkedin: 'https://www.linkedin.com/in/long-qu%C3%A2n-phan-6a9388125/',
@@ -36,7 +36,7 @@ export default async function AuthorProfile({ params }: { params: Promise<{ id: 
       { name: 'Tư duy máy tính (CT)', icon: BrainCircuit },
       { name: 'Khung giáo trình IOSTEM', icon: Layers },
       { name: 'Lập trình Python & Web', icon: Code2 },
-      { name: 'Robotics (WRO/FLL)', icon: Cpu },
+      { name: 'Kỹ thuật Robot (WRO/FLL)', icon: Cpu },
       { name: 'Phương pháp sư phạm STEM', icon: GraduationCap }
     ],
     experience: [

@@ -43,3 +43,8 @@ next-env.d.ts
 # local worker
 services/node_modules
 services/dist
+
+# local runtime and Codex working artifacts
+/.codex-worktrees/
+/design-qa-*.png
+/imgs/

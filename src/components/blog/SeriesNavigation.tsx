@@ -34,8 +34,8 @@ export function SeriesNavigation({ seriesName, posts, currentPostId }: SeriesNav
     <div className="my-12 p-6 rounded-lg border border-brand-orange/20 bg-brand-orange/5">
       <div className="flex items-center gap-3 mb-6">
         <div className="h-6 w-1 bg-brand-orange"></div>
-        <h3 className="font-orbitron font-bold uppercase tracking-widest text-sm text-foreground">
-          Series: <span className="text-brand-orange">{seriesName}</span>
+        <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-foreground">
+          Chuỗi bài: <span className="text-brand-orange">{seriesName}</span>
         </h3>
       </div>
       

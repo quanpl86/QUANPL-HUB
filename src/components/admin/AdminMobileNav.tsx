@@ -37,16 +37,17 @@ export function AdminMobileNav() {
   }, [isOpen]);
 
   return (
-    <div className="lg:hidden mb-6 relative">
+    <div className="admin-mobile-nav">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between gap-2 font-orbitron text-[11px] text-brand-orange border-2 border-brand-orange/40 px-5 py-3 uppercase tracking-widest bg-white dark:bg-cyber-black shadow-lg font-black z-[101] relative"
+        className="admin-mobile-nav__trigger"
+        aria-expanded={isOpen}
       >
         <span className="flex items-center gap-3">
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          Danh mục Quản trị
+          Menu quản trị
         </span>
-        <span className="text-[10px] bg-brand-orange/10 px-2 py-0.5 cyber-cut-sm">
+        <span className="admin-mobile-nav__current">
           {navItems.find(i => i.href === pathname)?.label || 'Menu'}
         </span>
       </button>
@@ -54,19 +55,17 @@ export function AdminMobileNav() {
       {/* Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+          className="admin-mobile-nav__backdrop"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Circuit Style Menu */}
       {isOpen && (
-        <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-cyber-black/95 border-b-2 border-brand-orange shadow-[0_25px_60px_rgba(0,0,0,0.4)] z-[100] animate-in fade-in slide-in-from-top-4 duration-300 overflow-hidden">
-          <nav className="flex flex-col p-6 tech-mono gap-0 relative">
-            {/* Connecting Vertical Line */}
-            <div className="absolute left-8 top-10 bottom-20 w-[2px] bg-gradient-to-b from-brand-orange via-brand-orange/30 to-transparent"></div>
+        <div className="admin-mobile-nav__panel">
+          <nav aria-label="Điều hướng quản trị trên thiết bị di động">
             
-            {navItems.map((item, idx) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
@@ -74,33 +73,17 @@ export function AdminMobileNav() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`
-                    relative py-5 pl-12 flex items-center gap-5 transition-all group
-                    ${isActive ? 'bg-brand-orange/[0.05]' : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'}
-                  `}
+                  className={`admin-mobile-nav__link ${isActive ? 'is-active' : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
                 >
-                  {/* Connecting Dot */}
-                  <div className={`
-                    absolute left-[25px] w-3.5 h-3.5 rounded-full border-2 transition-all duration-300 z-10
-                    ${isActive 
-                      ? 'border-brand-orange bg-brand-orange shadow-[0_0_12px_rgba(249,115,22,0.6)]' 
-                      : 'border-brand-orange/40 bg-white dark:bg-cyber-black group-hover:border-brand-orange'
-                    }
-                  `}></div>
-                  
-                  <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-brand-orange' : 'text-muted'}`} />
-                  <span className={`text-[11px] font-orbitron font-black uppercase tracking-[0.15em] transition-colors ${isActive ? 'text-brand-orange' : 'text-foreground dark:text-muted'}`}>
+                  <Icon aria-hidden="true" />
+                  <span>
                     {item.label}
                   </span>
                 </Link>
               );
             })}
             
-            <div className="mt-6 pt-6 border-t border-brand-orange/10 px-4">
-               <p className="tech-mono text-[9px] text-brand-orange/40 uppercase tracking-[0.3em] text-center italic">
-                  // CORE_SYSTEM_HIERARCHY //
-               </p>
-            </div>
           </nav>
         </div>
       )}

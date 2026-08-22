@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, RefreshCw, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   addEditorialReviewComment,
@@ -142,14 +142,10 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-xs text-muted mb-1">{children}</p>;
 }
 
-const BTN_PRIMARY =
-  'px-4 py-2 bg-brand-orange text-white font-orbitron text-xs uppercase cursor-pointer transition-colors hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed';
-const BTN_SECONDARY =
-  'px-3 py-2 border border-brand-orange text-brand-orange bg-[var(--card-bg)] font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-brand-orange hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
-const BTN_GHOST =
-  'px-3 py-2 border border-brand-orange/50 text-foreground bg-[var(--card-bg)] font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:border-brand-orange hover:bg-brand-orange/10 disabled:opacity-50 disabled:cursor-not-allowed';
-const BTN_DANGER =
-  'px-3 py-2 border border-red-400 text-red-500 bg-[var(--card-bg)] font-orbitron text-[11px] uppercase cursor-pointer transition-colors hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed';
+const BTN_PRIMARY = 'editorial-action editorial-action--primary';
+const BTN_SECONDARY = 'editorial-action editorial-action--secondary';
+const BTN_GHOST = 'editorial-action editorial-action--ghost';
+const BTN_DANGER = 'editorial-action editorial-action--danger';
 
 export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialWeek[] }) {
   const [weeks, setWeeks] = useState(initialWeeks);
@@ -204,11 +200,12 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
   const waitingWeekCount = dueSlots.filter((item) => item.week.status !== 'approved').length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+    <div className="editorial-review space-y-7">
+      <div className="editorial-review__header flex flex-col md:flex-row md:items-start md:justify-between gap-5">
         <div>
-          <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">
-            DUYỆT LỊCH <span className="cyber-text-gradient">TUẦN</span>
+          <p className="admin-eyebrow mb-3">Quy trình biên tập</p>
+          <h1 className="cyber-h1 mb-3">
+            Duyệt lịch <span className="cyber-text-gradient">tuần</span>
           </h1>
           <p className="text-sm text-muted">
             {weekTitleVi(iso)} — xem đề xuất của ChatGPT, góp ý, rồi duyệt hoặc yêu cầu sửa.
@@ -232,6 +229,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
             })}
             className={BTN_GHOST}
           >
+            <RefreshCw aria-hidden="true" size={16} />
             Tải lại
           </button>
           <button
@@ -239,6 +237,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
             onClick={() => setPromptOpen(true)}
             className={BTN_PRIMARY}
           >
+            <Sparkles aria-hidden="true" size={16} />
             Prompt AI
           </button>
         </div>
@@ -254,15 +253,15 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
           [`${kpi.ready}`, 'Tuần ChatGPT đã sửa, chờ xem'],
           [`${kpi.approved}`, 'Tuần đã duyệt cả tuần'],
         ].map(([value, hint]) => (
-          <div key={hint} className="border border-brand-orange/20 p-3 bg-cyber-black/5">
-            <p className="font-orbitron text-sm font-bold">{value}</p>
-            <p className="text-[11px] text-muted mt-1">{hint}</p>
+          <div key={hint} className="editorial-kpi">
+            <p className="editorial-kpi__value">{value}</p>
+            <p className="editorial-kpi__label">{hint}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="border border-brand-orange/20 p-4 space-y-1">
+        <div className="editorial-summary-card space-y-1">
           <p className="text-sm font-semibold">Hiệu suất lập kế hoạch</p>
           <p className="text-sm">Đạt: {performance.planning.passed} tuần · Không đạt: {performance.planning.failed} tuần</p>
           <p className="text-sm">Đang xem: {performance.planning.in_review} · Trung bình số lần sửa: {performance.planning.avg_revisions}</p>
@@ -272,7 +271,7 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
               : 'Chưa chốt tuần nào — tỉ lệ đạt sẽ hiện sau khi bạn duyệt hoặc hủy'}
           </p>
         </div>
-        <div className="border border-brand-orange/20 p-4 space-y-1">
+        <div className="editorial-summary-card space-y-1">
           <p className="text-sm font-semibold">Hiệu suất viết bài</p>
           <p className="text-sm">Chờ đọc: {performance.writing.drafted} · Đã đăng: {performance.writing.published} · Bị trả: {performance.writing.rejected}</p>
           <p className="text-sm">Lần gửi draft lỗi: {performance.writing.write_fails}{performance.writing.avg_seo != null ? ` · Điểm SEO TB: ${performance.writing.avg_seo}` : ''}</p>
@@ -286,15 +285,17 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
 
       <EditorialPerformanceReport weeks={weeks} />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="editorial-tabs" role="group" aria-label="Lọc lịch tuần theo trạng thái">
         {PIPELINE.map((item) => (
           <button
             key={item.key}
+            type="button"
             onClick={() => setFilter(item.key)}
-            className={`px-3 py-1 text-[12px] border cursor-pointer transition-colors ${
+            aria-pressed={filter === item.key}
+            className={`editorial-tab ${
               filter === item.key
-                ? 'border-brand-orange bg-brand-orange text-white'
-                : 'border-brand-orange/30 hover:border-brand-orange hover:bg-brand-orange/10'
+                ? 'is-active'
+                : ''
             }`}
           >
             {item.label}
@@ -326,20 +327,21 @@ export function EditorialReviewDesk({ initialWeeks }: { initialWeeks: EditorialW
       )}
 
       {weeks.length === 0 ? (
-        <div className="border border-dashed border-brand-orange/30 p-10 text-center tech-mono text-xs text-muted uppercase">
+        <div className="editorial-empty-state">
           Chưa có lịch tuần. Bảo ChatGPT đề xuất danh sách bài trong tuần — danh sách sẽ hiện ở đây để bạn kéo thứ tự, sửa nội dung và ghi chú.
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)] gap-6">
-          <aside className="space-y-2">
+          <aside className="editorial-week-list space-y-2" aria-label="Danh sách tuần biên tập">
             {visibleWeeks.map((week) => (
               <button
                 key={week.id}
                 onClick={() => setSelectedId(week.id)}
-                className={`w-full text-left border p-4 cursor-pointer transition-colors ${
+                aria-pressed={selected?.id === week.id}
+                className={`editorial-week-card ${
                   selected?.id === week.id
-                    ? 'border-brand-orange bg-brand-orange/10'
-                    : 'border-brand-orange/20 bg-[var(--card-bg)] hover:border-brand-orange/60'
+                    ? 'is-active'
+                    : ''
                 }`}
               >
                 <p className="font-orbitron text-sm font-bold">{week.title || `Tuần ${week.week_start}`}</p>

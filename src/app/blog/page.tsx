@@ -1,5 +1,5 @@
-import { getSupabaseServer } from '@/lib/supabase-server';
 import { ExploreContent } from '@/components/layout/ExploreContent';
+import { getPublicCategories, getPublicPostIndex, matchesPostQuery } from '@/lib/content/public-content';
 
 // Utility for smart/fuzzy tag matching
 function removeAccents(str: string) {
@@ -46,48 +46,41 @@ export default async function BlogPage({
   const q = params.q as string;
   const category = params.category as string;
   const tag = params.tag as string;
+  const field = params.field as string;
 
-  const supabase = await getSupabaseServer();
+  const [categories, posts] = await Promise.all([
+    getPublicCategories(),
+    getPublicPostIndex(),
+  ]);
 
-  // 1. Fetch Categories
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name, slug')
-    .order('name');
-
-  // 2. Build Query
-  let query = supabase
-    .from('posts')
-    .select('*, categories(name, slug), tags')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false });
-
-  if (q) {
-    query = query.ilike('title', `%${q}%`);
-  }
-
-  const { data: posts } = await query;
-
-  const filteredPosts = posts?.filter(post => {
+  const filteredPosts = posts.filter(post => {
     let match = true;
+    if (q) match = match && matchesPostQuery(post, q);
     if (category && category !== 'all') {
       match = match && post.categories?.slug === category;
+    }
+    if (field && field !== 'all') {
+      const postCategory = post.categories as unknown as {
+        subjects?: { fields?: { slug?: string } | null } | null;
+      } | null;
+      match = match && postCategory?.subjects?.fields?.slug === field;
     }
     if (tag) {
       match = match && isTagMatch(post.tags || [], tag);
     }
     return match;
-  }) || [];
+  });
 
   return (
     <div>
       <ExploreContent 
         initialPosts={filteredPosts} 
-        categories={categories || []}
+        categories={categories}
         title={
-          <h1 key="blog-header-title" className="cyber-h1 text-5xl mb-4">THƯ VIỆN <span className="cyber-text-gradient">TRI THỨC</span></h1>
+          <><p className="editorial-kicker">Kho nội dung</p><h1 key="blog-header-title" className="editorial-title mt-4 !text-4xl md:!text-6xl">Thư viện tri thức</h1></>
         }
-        subtitle={tag ? `ĐANG_LỌC_THEO_THẺ: ${tag.toUpperCase()}` : "TRUY_CẬP_KHO_KIẾN_THỨC_TOÀN_CẦU"}
+        subtitle={tag ? `Đang lọc theo thẻ: ${tag}` : "Tìm bài viết theo lĩnh vực, danh mục hoặc mục tiêu học tập."}
+        variant="archive"
       />
     </div>
   );

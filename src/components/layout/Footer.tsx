@@ -1,129 +1,62 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  Code,
-  MessageCircle,
-  UserCircle,
-  PlayCircle,
-  ShieldCheck,
-  Zap
-} from 'lucide-react';
-import { getSiteSettings } from '@/app/actions/settings';
+import { BrandLogo } from './BrandLogo';
+import { ArrowUpRight, Code, MessageCircle, PlayCircle, UserCircle } from 'lucide-react';
+import { verifiedPublicSocialLinks } from '@/lib/content/public-content';
 
-export const Footer = () => {
-  const [settings, setSettings] = useState<any>(null);
+const columns = [
+  { title: 'Khám phá', links: [['AI', '/blog?q=AI'], ['STEM', '/blog?q=STEM'], ['Robot', '/blog?q=Robotics'], ['Dạy & Học', '/blog?q=giáo dục']] },
+  { title: 'Tài nguyên', links: [['Bài viết', '/blog'], ['Tiện ích', '/utility-hub'], ['Bản đồ tri thức', '/#knowledge-fields'], ['Bắt đầu tại đây', '/#start-here']] },
+  { title: 'King Dragon Hub', links: [['Giới thiệu', '/about'], ['Đăng nhập', '/login'], ['RSS', '/feed.xml'], ['Trang chủ', '/']] },
+];
 
-  useEffect(() => {
-    const loadSettings = async () => {
-      const result = await getSiteSettings();
-      if (result.success && result.data) {
-        setSettings(result.data);
-      }
-    };
-    loadSettings();
-  }, []);
-
-  const currentYear = new Date().getFullYear();
-
-  const renderLogo = () => {
-    const siteTitle = settings?.site_title || 'KING DRAGON HUB';
-    const parts = siteTitle.split(/[\s-]+/);
-    if (parts.length >= 2) {
-      const firstPart = parts.slice(0, -1).join('-');
-      const lastPart = parts[parts.length - 1];
-      return (
-        <>
-          <span className="bg-foreground text-background px-4 py-2 uppercase">{firstPart}</span>
-          <span className="bg-brand-orange text-white px-4 py-2 uppercase">{lastPart}</span>
-        </>
-      );
-    }
-    return <span className="bg-brand-orange text-white px-5 py-2 uppercase">{siteTitle}</span>;
-  };
+export function Footer() {
+  const networks = [
+    { href: verifiedPublicSocialLinks.github, label: 'GitHub', Icon: Code },
+    { href: verifiedPublicSocialLinks.facebook, label: 'Facebook', Icon: MessageCircle },
+    { href: verifiedPublicSocialLinks.linkedin, label: 'LinkedIn', Icon: UserCircle },
+    { href: verifiedPublicSocialLinks.youtube, label: 'YouTube', Icon: PlayCircle },
+  ];
 
   return (
-    <footer className="relative bg-cyber-gray border-t-2 border-brand-orange/20 pt-16 pb-12 overflow-hidden">
-      {/* Background Decoration */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 rounded-full blur-[80px] pointer-events-none"></div>
-
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          {/* Brand Column */}
-          <div className="md:col-span-2 space-y-6">
-            <div className="flex items-center font-orbitron font-bold text-xl tracking-tighter overflow-hidden cyber-cut-sm w-fit">
-              {renderLogo()}
-            </div>
-            <p className="font-sans text-sm text-muted leading-relaxed max-w-sm uppercase tracking-wider">
-              {settings?.site_description || 'Hệ sinh thái tri thức cá nhân tối thượng. Khám phá sức mạnh của công nghệ hiện đại.'}
-            </p>
-
-            {/* Social Links */}
-            <div className="flex gap-4 pt-2">
-              {settings?.github_url && (
-                <a href={settings.github_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-cyber-black/40 border border-brand-orange/20 text-brand-orange hover:bg-brand-orange hover:text-white transition-all cyber-cut-sm">
-                  <Code size={18} />
+    <footer className="border-t border-foreground/10 bg-foreground/[0.025]">
+      <div className="container mx-auto px-6 py-12 md:py-16">
+        <div className="grid gap-12 lg:grid-cols-[1.2fr_1.8fr]">
+          <div className="max-w-md">
+            <Link href="/" className="inline-flex" aria-label="King Dragon Hub — Trang chủ">
+              <BrandLogo />
+            </Link>
+            <p className="mt-5 text-sm leading-7 text-foreground/60">Kiến thức thực hành về AI, STEM và công nghệ giáo dục.</p>
+            <nav aria-label="Kết nối với King Dragon Hub" className="mt-5 inline-flex items-center overflow-hidden rounded-md border border-foreground/20 bg-background/60">
+              {networks.map(({ href, label, Icon }, index) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label={`${label} của King Dragon Hub`}
+                  title={label}
+                  className={`grid h-10 w-10 place-items-center text-foreground/75 transition hover:bg-brand-orange hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-orange ${index ? 'border-l border-foreground/15' : ''}`}
+                >
+                  <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
                 </a>
-              )}
-              {settings?.facebook_url && (
-                <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-cyber-black/40 border border-brand-orange/20 text-brand-orange hover:bg-brand-orange hover:text-white transition-all cyber-cut-sm">
-                  <MessageCircle size={18} />
-                </a>
-              )}
-              {settings?.linkedin_url && (
-                <a href={settings.linkedin_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-cyber-black/40 border border-brand-orange/20 text-brand-orange hover:bg-brand-orange hover:text-white transition-all cyber-cut-sm">
-                  <UserCircle size={18} />
-                </a>
-              )}
-              {settings?.youtube_url && (
-                <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center bg-cyber-black/40 border border-brand-orange/20 text-brand-orange hover:bg-brand-orange hover:text-white transition-all cyber-cut-sm">
-                  <PlayCircle size={18} />
-                </a>
-              )}
-            </div>
+              ))}
+            </nav>
           </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-orbitron font-bold text-xs text-brand-orange uppercase tracking-widest mb-6">ĐIỀU HƯỚNG</h4>
-            <ul className="space-y-4 font-mono text-[11px] text-muted uppercase tracking-wider">
-              <li><Link href="/blog" className="hover:text-brand-orange transition-colors duration-300 flex items-center gap-2"> {'>'} THƯ VIỆN TRI THỨC</Link></li>
-              <li><Link href="/utility-hub" className="hover:text-brand-orange transition-colors duration-300 flex items-center gap-2"> {'>'} TIỆN ÍCH AI</Link></li>
-              <li><Link href="/about" className="hover:text-brand-orange transition-colors duration-300 flex items-center gap-2"> {'>'} GIỚI THIỆU</Link></li>
-            </ul>
-          </div>
-
-          {/* System Status */}
-          <div>
-            <h4 className="font-orbitron font-bold text-xs text-brand-orange uppercase tracking-widest mb-6">HỆ THỐNG</h4>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Zap size={14} className="text-green-500 animate-pulse" />
-                <span className="font-mono text-[10px] text-muted uppercase">Trạng thái: Ổn định</span>
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+            {columns.map((column) => (
+              <div key={column.title}>
+                <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground/40">{column.title}</h2>
+                <ul className="mt-5 space-y-3">
+                  {column.links.map(([label, href]) => <li key={label}><Link href={href} className="inline-flex items-center gap-1 text-sm text-foreground/65 transition hover:text-brand-orange">{label}{label === 'Tiện ích' && <ArrowUpRight size={12} />}</Link></li>)}
+                </ul>
               </div>
-              <div className="flex items-center gap-3">
-                <ShieldCheck size={14} className="text-blue-400" />
-                <span className="font-mono text-[10px] text-muted uppercase">Bảo mật: Mã hóa 256-bit</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-
-        {/* Bottom Bar */}
-        <div className="pt-12 border-t border-brand-orange/10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-            © {currentYear} <span className="text-brand-orange font-bold">KING DRAGON HUB</span>. TOÀN BỘ BẢN QUYỀN ĐƯỢC BẢO LƯU.
-          </p>
-          <div className="flex gap-8 font-mono text-[9px] text-muted-foreground uppercase tracking-widest">
-            <span className="hover:text-brand-orange cursor-pointer transition-colors">CHÍNH SÁCH BẢO MẬT</span>
-            <span className="hover:text-brand-orange cursor-pointer transition-colors">ĐIỀU KHOẢN DỊCH VỤ</span>
-          </div>
+        <div className="mt-10 flex flex-col gap-3 border-t border-foreground/10 pt-6 text-xs text-foreground/40 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} King Dragon Hub. Toàn bộ bản quyền được bảo lưu.</p>
         </div>
       </div>
-
-      {/* Decorative Line */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-orange/40 to-transparent"></div>
     </footer>
   );
-};
+}

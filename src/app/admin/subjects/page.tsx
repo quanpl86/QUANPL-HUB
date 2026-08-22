@@ -1,9 +1,11 @@
 import React from 'react';
 import { supabase } from '@/lib/supabase';
 import { SubjectForm } from '@/components/admin/HierarchyForms';
-import { StaticCyberCard } from '@/components/ui/StaticCyberCard';
+import { AdminEmptyState, AdminPageHeader, AdminPanel } from '@/components/admin/AdminUi';
 import { DeleteButton } from '@/components/admin/DeleteButton';
 import { addSubject, deleteSubject } from '@/app/actions/hierarchy';
+
+export const dynamic = 'force-dynamic';
 
 type SubjectRow = {
   id: string;
@@ -24,36 +26,28 @@ export default async function SubjectsPage() {
     .order('name');
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-10">
-        <h1 className="cyber-h1 text-3xl mb-2">MA TRẬN <span className="cyber-text-gradient">CHỦ ĐỀ</span></h1>
-        <p className="font-mono text-brand-orange text-xs uppercase tracking-widest font-bold">
-          {'// MÔ-ĐUN_ĐỊNH_NGHĨA_KỶ_LUẬT //'}
-        </p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader eyebrow="Taxonomy · Cấp 2" title="Quản lý" accent="chủ đề" description="Tổ chức chủ đề bên trong từng lĩnh vực tri thức." />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <StaticCyberCard className="p-6 h-fit border-brand-orange/25">
-          <h2 className="font-orbitron font-bold text-sm mb-6 border-b border-brand-orange/35 pb-2 uppercase tracking-widest">Đăng Ký Chủ Đề Mới</h2>
+        <AdminPanel title="Thêm chủ đề" className="h-fit">
           <SubjectForm action={addSubject} fields={fields || []} />
-        </StaticCyberCard>
+        </AdminPanel>
 
         <div className="flex flex-col gap-4">
-          <h2 className="font-orbitron font-bold text-sm mb-2 uppercase tracking-widest">Chủ Đề Đang Hoạt Động</h2>
+          <h2 className="font-orbitron font-bold text-sm mb-2">Chủ đề hiện có</h2>
           {(subjects as SubjectRow[] | null)?.map((sub) => (
-            <div key={sub.id} className="group relative bg-cyber-black/5 dark:bg-cyber-black/40 border border-brand-orange/25 p-4 hover:border-brand-orange/60 transition-all flex justify-between items-start cyber-cut-sm">
+            <div key={sub.id} className="admin-list-card">
               <div>
                 {sub.fields && (
-                  <span className="tech-mono text-[10px] text-brand-orange uppercase tracking-tight mb-2 block font-black">
-                    [{sub.fields.name}]
-                  </span>
+                  <span className="admin-meta">{sub.fields.name}</span>
                 )}
-                <h3 className="font-orbitron font-bold text-brand-orange text-base mb-1">{sub.name}</h3>
-                <p className="tech-mono text-[11px] text-foreground dark:text-muted line-clamp-2 uppercase font-bold">{sub.description || 'Không có mô tả'}</p>
+                <h3>{sub.name}</h3><p>{sub.description || 'Không có mô tả'}</p>
               </div>
-              <DeleteButton id={sub.id} onDelete={deleteSubject} label="chủ đề" />
+              <DeleteButton id={Number(sub.id)} onDelete={deleteSubject} label="chủ đề" />
             </div>
           ))}
+          {!subjects?.length && <AdminEmptyState title="Chưa có chủ đề" description="Chọn một lĩnh vực và tạo chủ đề đầu tiên." />}
         </div>
       </div>
     </div>

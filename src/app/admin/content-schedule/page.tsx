@@ -18,14 +18,13 @@ export default async function ContentSchedulePage() {
   }
 
   return (
-    <div className="min-h-screen dragon-grid">
+    <div>
       <div className="mb-10">
+        <span className="admin-eyebrow">Quy trình biên tập</span>
         <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">
-          LỊCH TRÌNH <span className="cyber-text-gradient">NỘI DUNG</span>
+          Lịch <span className="cyber-text-gradient">nội dung</span>
         </h1>
-        <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-bold">
-          Lịch tuần ChatGPT và lộ trình nội dung do bạn lên
-        </p>
+        <p className="text-muted text-sm">Lập kế hoạch, theo dõi tiến độ và chuẩn bị nội dung cho AI Agent.</p>
       </div>
 
       <EditorialCalendarBoard initialWeeks={editorialWeeks} initialLooseSlots={looseSlots} />

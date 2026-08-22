@@ -39,7 +39,7 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-xl p-4 md:p-10"
+          className="admin-preview fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-xl p-4 md:p-10"
         >
           {/* Header Controls */}
           <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-[110] bg-gradient-to-b from-black/80 to-transparent">
@@ -91,7 +91,7 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/30"></div>
               </div>
               <div className="flex-grow text-center">
-                <span className="font-mono text-[9px] uppercase tracking-[0.4em]" style={{ color: 'rgba(15, 23, 42, 0.6)' }}>Blog_detail_layout // preview</span>
+                <span className="font-mono text-[9px]" style={{ color: 'rgba(15, 23, 42, 0.6)' }}>Xem trước bài viết</span>
               </div>
             </div>
 
@@ -102,11 +102,11 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
                 <div className="container mx-auto px-6 pt-16 pb-10">
                   <div className="max-w-[1200px] mx-auto">
                     <div className="tech-mono text-[0.7rem] tracking-[0.1em] mb-6 uppercase font-bold" style={{ color: '#0f172a' }}>
-                      PREVIEW_MODE
+                      Bản xem trước
                     </div>
 
                     <h1 className="font-[family-name:var(--font-inter)] font-medium text-[2.7rem] md:text-[4.25rem] lg:text-[4.8rem] leading-[1.05] tracking-[-0.03em] mb-12 w-full" style={{ color: '#0f172a' }}>
-                      {data.title || 'TIÊU_ĐỀ_BẢN_NHÁP'}
+                      {data.title || 'Tiêu đề bản nháp'}
                     </h1>
 
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
@@ -116,12 +116,12 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
                         </div>
                         <div className="flex items-center gap-2 font-[family-name:var(--font-inter)] text-sm">
                           <span className="font-semibold" style={{ color: '#0f172a' }}>KING DRAGON Admin</span>
-                          <span className="hidden md:inline" style={{ color: 'rgba(15, 23, 42, 0.7)' }}>Authorised System Architect</span>
+                          <span className="hidden md:inline" style={{ color: 'rgba(15, 23, 42, 0.7)' }}>Quản trị nội dung</span>
                         </div>
                       </div>
 
                       <span className="px-3 py-1 text-[0.65rem] tech-mono font-bold uppercase tracking-wider border rounded-full" style={{ borderColor: 'rgba(15, 23, 42, 0.3)', color: 'rgba(15, 23, 42, 0.8)' }}>
-                        {data.category_name || 'REDACTED'}
+                        {data.category_name || 'Chưa phân loại'}
                       </span>
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export const PreviewModal = ({ isOpen, onClose, data }: PreviewModalProps) => {
 
                     <section 
                       className="king-dragon-content prose prose-brand max-w-none"
-                      dangerouslySetInnerHTML={{ __html: sanitize(renderMathInHtml(data.content || '<p class="text-muted italic opacity-50 uppercase tracking-widest text-sm">// ĐANG_CHỜ_TRUYỀN_TẢI_NỘI_DUNG //</p>')) }}
+                      dangerouslySetInnerHTML={{ __html: sanitize(renderMathInHtml(data.content || '<p class="text-muted italic opacity-50 text-sm">Nội dung xem trước sẽ xuất hiện tại đây.</p>')) }}
                     />
                   </div>
                 </div>

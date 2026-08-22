@@ -87,9 +87,9 @@ export default function AdminSetupPage() {
       const postResult = await seedDemoPosts();
       if (!postResult.success) throw new Error(postResult.error as string);
 
-      toast.success(`TRUYỀN TẢI HOÀN TẤT: ${postResult.count} bài viết đã được đồng bộ.`);
+      toast.success(`Đã đồng bộ ${postResult.count} bài viết.`);
     } catch (error: any) {
-      toast.error(`LỖI_NGHIÊM_TRỌNG: ${error.message}`);
+      toast.error(`Không thể đồng bộ: ${error.message}`);
     } finally {
       setIsPending(false);
     }
@@ -99,8 +99,9 @@ export default function AdminSetupPage() {
     <div className="max-w-4xl mx-auto py-10 px-6">
       <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-brand-orange/20 pb-6 gap-6">
         <div>
-          <h1 className="cyber-h1 text-3xl mb-2 uppercase tracking-tight">CÀI ĐẶT <span className="cyber-text-gradient">HỆ THỐNG</span></h1>
-          <p className="font-mono text-muted text-xs uppercase tracking-widest">// CẤU_HÌNH_TRUNG_TÂM_ĐIỀU_HÀNH //</p>
+          <span className="admin-eyebrow">Cấu hình</span>
+          <h1 className="cyber-h1 text-3xl mb-2">Cài đặt <span className="cyber-text-gradient">hệ thống</span></h1>
+          <p className="text-muted text-sm">Quản lý thông tin website, tích hợp và cấu hình vận hành.</p>
         </div>
         <CyberButton 
           variant="primary" 
@@ -109,7 +110,7 @@ export default function AdminSetupPage() {
           className="h-12 px-8"
         >
           <Save size={18} className={isSaving ? 'animate-spin' : ''} />
-          {isSaving ? 'ĐANG LƯU...' : 'LƯU THAY ĐỔI'}
+          {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
         </CyberButton>
       </div>
 

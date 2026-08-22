@@ -1,8 +1,8 @@
 import { HeroSection } from "@/components/layout/HeroSection";
-import { getSupabaseServer } from '@/lib/supabase-server';
 import { ExploreContent } from '@/components/layout/ExploreContent';
 import { StartHereSection } from '@/components/layout/StartHereSection';
-import { EcosystemMap } from '@/components/layout/EcosystemMap';
+import { KnowledgeGateway } from '@/components/layout/KnowledgeGateway';
+import { getPublicCategories, getPublicPostIndex, matchesPostQuery } from '@/lib/content/public-content';
 
 export default async function Home({
   searchParams,
@@ -12,48 +12,36 @@ export default async function Home({
   const params = await searchParams;
   const q = params.q as string;
   const category = params.category as string;
+  const field = params.field as string;
 
-  const supabase = await getSupabaseServer();
-
-  // 1. Fetch Categories for the filter bar
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name, slug')
-    .order('name');
-
-  // 2. Build Post Query
-  let query = supabase
-    .from('posts')
-    .select('*, categories(name, slug)')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false });
-
-  if (q) {
-    query = query.ilike('title', `%${q}%`);
-  }
-
-  if (category && category !== 'all') {
-    query = query.filter('categories.slug', 'eq', category);
-  }
-
-  const { data: posts } = await query.limit(9);
+  const [categories, posts] = await Promise.all([
+    getPublicCategories(),
+    getPublicPostIndex(),
+  ]);
 
   // Filter posts where category match (supabase-js filter on joined table can be tricky)
-  const filteredPosts = posts?.filter(post => {
-    if (!category || category === 'all') return true;
-    return post.categories?.slug === category;
-  }) || [];
+  const filteredPosts = posts.filter(post => {
+    const postCategory = post.categories as unknown as {
+      slug?: string;
+      subjects?: { fields?: { slug?: string } | null } | null;
+    } | null;
+    if (category && category !== 'all' && postCategory?.slug !== category) return false;
+    if (field && field !== 'all' && postCategory?.subjects?.fields?.slug !== field) return false;
+    if (q && !matchesPostQuery(post, q)) return false;
+    return true;
+  }).slice(0, 9);
 
   return (
     <div className="flex flex-col min-h-screen">
       <HeroSection />
       <StartHereSection />
-      <EcosystemMap />
+      <KnowledgeGateway />
       
       <ExploreContent 
         initialPosts={filteredPosts} 
-        categories={categories || []} 
-        subtitle="KHỞI_ĐỘNG_HÀNH_TRÌNH_KHAI_PHÁ_DỮ_LIỆU"
+        categories={categories}
+        subtitle="Bài viết chuyên sâu, hướng dẫn thực hành và các nội dung mới nhất."
+        variant="homepage"
       />
     </div>
   );

@@ -41,14 +41,14 @@ export const SeoAdvisor = ({ post }: { post: Post }) => {
   const score = report.score;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-5xl my-auto relative animate-in fade-in zoom-in duration-200">
+    <div className="admin-modal fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">
+      <div className="admin-modal__dialog w-full max-w-5xl my-auto relative animate-in fade-in zoom-in duration-200">
         <CyberCard className="p-6 md:p-10 border-brand-orange shadow-[0_0_50px_rgba(0,0,0,0.5)] bg-white dark:bg-cyber-black">
           <div className="flex justify-between items-start mb-8 border-b-2 border-brand-orange/20 pb-6">
             <div>
               <h2 className="font-orbitron font-bold text-xl md:text-2xl text-foreground uppercase tracking-wider flex items-center gap-3">
                 <Brain className="text-brand-orange" size={28} />
-                AI_SEO_ADVISOR <span className="text-brand-orange font-black text-sm hidden md:inline ml-2">// PHÂN TÍCH: {post.title}</span>
+                Trợ lý SEO <span className="text-brand-orange font-black text-sm hidden md:inline ml-2">Phân tích: {post.title}</span>
               </h2>
             </div>
             <button 
@@ -75,7 +75,7 @@ export const SeoAdvisor = ({ post }: { post: Post }) => {
                     <span className="tech-mono text-[10px] text-brand-orange font-bold uppercase">Điểm SEO</span>
                  </div>
               </div>
-              <h3 className="font-orbitron font-bold text-xs uppercase tracking-widest text-center border-t border-brand-orange/20 pt-4 w-full">CHỈ SỐ ĐỒNG NHẤT</h3>
+              <h3 className="font-orbitron font-bold text-xs text-center border-t border-brand-orange/20 pt-4 w-full">Mức độ hoàn thiện</h3>
               <p className="mt-4 tech-mono text-[11px] text-muted text-center font-bold italic leading-relaxed">
                 "AI (Perplexity, ChatGPT) dựa vào siêu dữ liệu có cấu trúc để trích xuất nội dung."
               </p>

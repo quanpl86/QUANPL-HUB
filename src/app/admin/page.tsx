@@ -3,6 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { CyberCard } from '@/components/ui/CyberCard';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   const startTime = performance.now();
   
@@ -65,8 +67,9 @@ export default async function AdminDashboard() {
   return (
     <div className="max-w-[1600px] mx-auto pb-10">
       <div className="mb-12">
-        <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">TRUNG TÂM <span className="cyber-text-gradient">ĐIỀU HÀNH</span></h1>
-        <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-bold animate-pulse">// HỆ_THỐNG_Ổ_ĐỊNH //</p>
+        <span className="admin-eyebrow">Tổng quan</span>
+        <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">Bảng <span className="cyber-text-gradient">điều khiển</span></h1>
+        <p className="text-muted text-sm">Theo dõi nhanh nội dung, tương tác và chất lượng biên tập.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -88,7 +91,7 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Recent Posts */}
             <CyberCard className="p-8">
-              <h2 className="cyber-h3 !text-lg mb-8 border-b border-brand-orange/20 pb-4 text-brand-orange">TRUYỀN TẢI GẦN ĐÂY</h2>
+              <h2 className="cyber-h3 !text-lg mb-8 border-b border-brand-orange/20 pb-4 text-brand-orange">Bài viết gần đây</h2>
               
               <div className="space-y-4">
                 {recentPosts && recentPosts.length > 0 ? (
@@ -116,7 +119,7 @@ export default async function AdminDashboard() {
                   ))
                 ) : (
                   <div className="tech-mono text-sm text-muted font-bold py-12 text-center border border-dashed border-brand-orange/20 uppercase tracking-[0.2em]">
-                    // TRỐNG //
+                    Chưa có bài viết nào.
                   </div>
                 )}
               </div>
@@ -124,7 +127,7 @@ export default async function AdminDashboard() {
 
             {/* Recent Comments */}
             <CyberCard className="p-8 border-yellow-500/20">
-              <h2 className="cyber-h3 !text-lg mb-8 border-b border-yellow-500/20 pb-4 text-yellow-500 dark:text-yellow-400">TƯƠNG TÁC CỘNG ĐỒNG</h2>
+              <h2 className="cyber-h3 !text-lg mb-8 border-b border-yellow-500/20 pb-4 text-yellow-500 dark:text-yellow-400">Bình luận gần đây</h2>
               
               <div className="space-y-4">
                 {recentComments && recentComments.length > 0 ? (
@@ -138,7 +141,7 @@ export default async function AdminDashboard() {
                         "{comment.content}"
                       </p>
                       <div className="flex items-center gap-3 pt-3 border-t border-yellow-500/10">
-                        <span className="tech-mono text-[9px] text-muted font-bold uppercase">BÀI VIẾT:</span>
+                        <span className="tech-mono text-[9px] text-muted font-bold uppercase">Bài viết:</span>
                         <span className="font-orbitron font-bold text-[10px] text-brand-orange font-bold truncate uppercase tracking-tight">
                           {comment.posts?.title}
                         </span>
@@ -147,7 +150,7 @@ export default async function AdminDashboard() {
                   ))
                 ) : (
                   <div className="tech-mono text-sm text-muted font-bold py-12 text-center border border-dashed border-yellow-500/20 uppercase tracking-[0.2em]">
-                    // TRỐNG //
+                    Chưa có bình luận nào.
                   </div>
                 )}
               </div>
@@ -159,7 +162,7 @@ export default async function AdminDashboard() {
         <div className="flex flex-col gap-6">
           {/* Widget 1: SEO & AI Health */}
           <CyberCard className="p-6 border-blue-500/30">
-            <h2 className="cyber-h3 !text-sm mb-6 text-blue-600 dark:text-blue-400">CHỈ_SỐ_VẬN_HÀNH</h2>
+            <h2 className="cyber-h3 !text-sm mb-6 text-blue-600 dark:text-blue-400">Chất lượng nội dung</h2>
             <div className="flex flex-col gap-5">
               <div className="flex justify-between items-end">
                 <span className="tech-mono text-[13px] text-foreground font-bold uppercase">Điểm SEO</span>
@@ -181,17 +184,17 @@ export default async function AdminDashboard() {
 
           {/* Widget 2: Terminal Log */}
           <CyberCard className="p-6 bg-cyber-black/5 dark:bg-cyber-black/80 border border-brand-orange/10">
-            <h2 className="cyber-h3 !text-sm mb-6 text-brand-orange">NHẬT_KÝ_HỆ_THỐNG</h2>
+            <h2 className="cyber-h3 !text-sm mb-6 text-brand-orange">Hoạt động gần đây</h2>
             <div className="tech-mono text-[11px] space-y-4 text-foreground font-bold">
-              <p className="leading-relaxed"><span className="text-brand-orange font-black">[20:55:01]</span> <span className="text-green-600 dark:text-green-400">Đăng_nhập:</span> Quản trị viên KING DRAGON kết nối thành công</p>
-              <p className="leading-relaxed"><span className="text-brand-orange font-black">[20:54:12]</span> Đồng_bộ: Đã triển khai Ma trận Cấp bậc V2</p>
-              <p className="leading-relaxed"><span className="text-brand-orange font-black">[20:50:33]</span> Ổn_định: Mọi mô-đun đang hoạt động tối ưu</p>
+              <p className="leading-relaxed"><span className="text-brand-orange font-black">20:55</span> <span className="text-green-600 dark:text-green-400">Đăng nhập:</span> Quản trị viên đã kết nối thành công.</p>
+              <p className="leading-relaxed"><span className="text-brand-orange font-black">20:54</span> Đồng bộ: Cấu trúc taxonomy đã được cập nhật.</p>
+              <p className="leading-relaxed"><span className="text-brand-orange font-black">20:50</span> Tất cả chức năng đang hoạt động bình thường.</p>
             </div>
           </CyberCard>
 
           {/* Widget 3: Quick Scratchpad */}
           <CyberCard className="p-6 border-purple-500/20">
-            <h2 className="cyber-h3 !text-sm mb-6 text-purple-600 dark:text-purple-400">GHI_CHÚ_NHANH</h2>
+            <h2 className="cyber-h3 !text-sm mb-6 text-purple-600 dark:text-purple-400">Ghi chú nhanh</h2>
             <textarea 
               className="w-full bg-cyber-black/5 dark:bg-cyber-black/50 border border-brand-orange/20 p-5 tech-mono text-sm text-foreground font-bold outline-none focus:border-purple-500 transition-all resize-none cyber-cut-sm placeholder:text-muted/50"
               rows={6}

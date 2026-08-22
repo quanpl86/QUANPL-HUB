@@ -3,39 +3,39 @@ import { ArrowRight, Bot, BrainCircuit, Cpu, GraduationCap } from 'lucide-react'
 
 const pathways = [
   {
-    title: 'AI cho học sinh và phụ huynh',
-    description: 'Hiểu AI theo cách an toàn, thực tế và phù hợp với lứa tuổi trước khi chọn công cụ hay khóa học.',
+    title: 'Khám phá AI an toàn',
+    description: 'Hiểu AI theo cách thực tế, có trách nhiệm và phù hợp với lứa tuổi trước khi chọn công cụ hoặc khóa học.',
     href: '/blog?q=AI',
     icon: Bot,
-    signal: 'NỀN TẢNG AI',
-    cta: 'Bắt đầu với AI',
+    signal: 'HỌC SINH & PHỤ HUYNH',
+    cta: 'Khám phá AI',
     color: 'from-orange-500/20 to-orange-500/5'
   },
   {
-    title: 'STEM cho giáo viên',
-    description: 'Khung tư duy, hoạt động lớp học và workflow AI giúp thiết kế bài học STEM có chiều sâu hơn.',
+    title: 'Thiết kế bài học STEM & AI',
+    description: 'Khung phương pháp, hoạt động lớp học và công cụ AI giúp giáo viên thiết kế trải nghiệm học tập có chiều sâu.',
     href: '/blog?q=STEM',
     icon: GraduationCap,
-    signal: 'CÔNG CỤ GIÁO VIÊN',
-    cta: 'Xem lộ trình STEM',
+    signal: 'GIÁO VIÊN',
+    cta: 'Xem lộ trình giáo viên',
     color: 'from-emerald-500/20 to-emerald-500/5'
   },
   {
-    title: 'Robotics Competition Engineering',
+    title: 'Thi đấu & kỹ thuật Robot',
     description: 'Phân tích đề, chiến thuật ghi điểm, thiết kế robot và tư duy kỹ thuật cho WRO / GreenMech.',
     href: '/blog?q=Robotics',
     icon: Cpu,
-    signal: 'PHÒNG LAB ROBOTICS',
-    cta: 'Khám phá Robotics',
+    signal: 'ĐỘI ROBOT',
+    cta: 'Xem lộ trình Robot',
     color: 'from-blue-500/20 to-blue-500/5'
   },
   {
-    title: 'Second Brain và PKM',
+    title: 'Xây dựng hệ thống tri thức cá nhân',
     description: 'Xây hệ thống ghi chú, NotebookLM, RAG và kho tri thức cá nhân cho người học công nghệ.',
     href: '/blog?q=Second%20Brain',
     icon: BrainCircuit,
-    signal: 'HỆ THỐNG DRAGONMIND',
-    cta: 'Mở DragonMind',
+    signal: 'NGƯỜI TỰ HỌC',
+    cta: 'Xem lộ trình tự học',
     color: 'from-purple-500/20 to-purple-500/5'
   },
 ];
@@ -51,12 +51,12 @@ export function StartHereSection() {
               <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">BẮT ĐẦU TẠI ĐÂY</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-inter)] tracking-tight text-foreground">
-              Bắt đầu đúng <span className="text-brand-orange">lộ trình</span>
+              Bắt đầu theo <span className="text-brand-orange">mục tiêu của bạn</span>
             </h2>
           </div>
           <p className="body-lg text-muted max-w-3xl lg:ml-auto">
-            KING DRAGON HUB là một hệ sinh thái tri thức. Nếu bạn mới đến, hãy chọn một cổng vào phù hợp trước,
-            rồi đi tiếp theo chuỗi bài viết, công cụ và framework được kết nối với nhau.
+            Nếu đây là lần đầu bạn đến KingDragonHub, hãy chọn một lộ trình phù hợp với mục tiêu của mình.
+            Mỗi lộ trình kết nối các bài viết, công cụ và phương pháp liên quan để bạn có thể khám phá tiếp theo từng bước.
           </p>
         </div>
 
@@ -105,16 +105,16 @@ export function StartHereSection() {
 
         <div className="mt-12 flex flex-col md:flex-row gap-6 items-center justify-between bg-foreground/[0.02] border border-foreground/10 rounded-2xl p-8">
           <div>
-            <p className="text-xl font-bold font-[family-name:var(--font-inter)] text-foreground">Muốn xem toàn bộ bản đồ tri thức?</p>
+            <p className="text-xl font-bold font-[family-name:var(--font-inter)] text-foreground">Muốn khám phá theo lĩnh vực?</p>
             <p className="text-sm text-foreground/70 mt-2 max-w-2xl leading-relaxed">
-              Vào thư viện để tìm theo chủ đề, sắp xếp bài mới nhất và lần theo các node kiến thức đang mở.
+              Xem cách AI, STEM, Robot, khoa học máy tính và giáo dục được kết nối trong hệ thống nội dung.
             </p>
           </div>
           <Link
-            href="/blog"
+            href="/#knowledge-fields"
             className="shrink-0 inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-brand-orange/90 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:shadow-lg hover:shadow-brand-orange/20"
           >
-            Tìm bài viết theo chủ đề
+            Xem bản đồ tri thức
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>

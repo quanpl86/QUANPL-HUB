@@ -25,11 +25,11 @@ export function LikeButton({ postId, initialLikes, isLikedInitially }: LikeButto
     startTransition(async () => {
       try {
         await toggleLike(postId);
-      } catch (error) {
+      } catch {
         // Rollback
         setLiked(!newLiked);
         setCount(prev => !newLiked ? prev + 1 : prev - 1);
-        toast.error('SYSTEM_ERROR: Thao tác thất bại');
+        toast.error('Không thể cập nhật lượt thích. Vui lòng thử lại.');
       }
     });
   };
@@ -39,18 +39,18 @@ export function LikeButton({ postId, initialLikes, isLikedInitially }: LikeButto
       onClick={handleLike}
       disabled={isPending}
       className={`
-        group flex items-center gap-3 px-6 py-3 rounded-full border transition-all duration-300
+        group flex items-center gap-2.5 px-5 py-2.5 rounded-full border transition-all duration-300
         ${liked 
           ? 'bg-brand-orange/20 border-brand-orange text-brand-orange shadow-[0_0_20px_rgba(249,115,22,0.3)]' 
-          : 'bg-cyber-black/40 border-brand-orange/20 text-muted hover:border-brand-orange/60 hover:text-foreground'
+          : 'bg-background border-foreground/15 text-foreground/60 hover:border-brand-orange/60 hover:text-brand-orange'
         }
       `}
     >
       <Heart 
         className={`w-5 h-5 transition-transform duration-300 ${liked ? 'fill-current scale-110' : 'group-hover:scale-110'}`} 
       />
-      <span className="font-orbitron font-bold text-sm tracking-widest">
-        {count} {count === 1 ? 'LIKE' : 'LIKES'}
+      <span className="text-sm font-semibold">
+        {count} lượt thích
       </span>
       
     </button>

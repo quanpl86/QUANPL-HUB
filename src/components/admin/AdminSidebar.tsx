@@ -3,7 +3,7 @@
 import React, { memo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Database, BookOpen, Layers, FileText, Users, Settings, Cpu, MessageSquare, CalendarClock, ClipboardCheck } from 'lucide-react';
+import { LayoutDashboard, Database, BookOpen, Layers, FileText, Users, Settings, Cpu, MessageSquare, CalendarClock, ArrowUpRight, ClipboardCheck } from 'lucide-react';
 
 export const navItems = [
   { label: 'Bảng điều khiển', href: '/admin', icon: LayoutDashboard },
@@ -24,37 +24,34 @@ export const AdminSidebar = memo(function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="min-w-[256px] w-[256px] border-r border-brand-orange/25 bg-cyber-black/5 dark:bg-cyber-black/20 h-full hidden lg:flex flex-col p-4 gap-1">
-      <div className="mb-8 px-4 border-b border-brand-orange/25 pb-4">
-        <p className="tech-mono text-brand-orange drop-shadow-[0_0_8px_rgba(255,87,34,0.35)]">
-          Trung_tâm_điều_hành
-        </p>
+    <aside className="admin-sidebar">
+      <div className="admin-sidebar__heading">
+        <span className="admin-eyebrow">Khu vực quản trị</span>
+        <strong>Quản lý nội dung</strong>
+        <p>Điều hành taxonomy, bài viết và quy trình biên tập.</p>
       </div>
-      
+      <nav className="admin-sidebar__nav" aria-label="Điều hướng quản trị">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+        const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(`${item.href}/`));
         
         return (
           <Link 
             key={item.href} 
             href={item.href}
             prefetch={true}
-            className={`
-              group flex items-center gap-3 px-4 py-3 font-orbitron text-[11px] uppercase tracking-wider transition-all duration-200 font-bold
-              ${isActive 
-                ? 'bg-brand-orange/[0.14] text-brand-orange border-l-2 border-brand-orange translate-x-1 shadow-[inset_8px_0_18px_rgba(249,115,22,0.08)]'
-                : 'text-foreground/80 hover:text-brand-orange hover:bg-brand-orange/[0.06] dark:hover:bg-white/5 border-l-2 border-transparent hover:border-brand-orange/35 hover:translate-x-1'
-              }
-            `}
+            className={`admin-sidebar__link ${isActive ? 'is-active' : ''}`}
+            aria-current={isActive ? 'page' : undefined}
           >
-            <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-brand-orange' : 'text-foreground/65 group-hover:text-brand-orange'}`} />
+            <Icon aria-hidden="true" />
             <span>{item.label}</span>
           </Link>
         );
       })}
-
-      {/* Footer info or empty space */}
+      </nav>
+      <Link href="/" className="admin-sidebar__public-link">
+        Xem trang công khai <ArrowUpRight aria-hidden="true" />
+      </Link>
     </aside>
   );
 });

@@ -64,7 +64,7 @@ export default function NewPostPage() {
         toast.error(`LỖI_HỆ_THỐNG: ${result.error}`);
       }
     } catch (error) {
-      toast.error('THẤT_BẠI_NGHIÊM_TRỌNG: Không thể truyền tải dữ liệu');
+      toast.error('Không thể lưu bài viết. Vui lòng thử lại.');
     } finally {
       setIsPending(false);
     }
@@ -74,8 +74,9 @@ export default function NewPostPage() {
     <div className="max-w-[1400px] mx-auto">
       <div className="mb-8 flex justify-between items-end">
         <div>
-          <h1 className="cyber-h1 text-3xl mb-2">KHỞI TẠO <span className="cyber-text-gradient">BÀI VIẾT</span></h1>
-          <p className="font-mono text-muted text-xs uppercase tracking-widest">// GIAO_DIỆN_SÁNG_TẠO_NỘI_DUNG //</p>
+          <span className="admin-eyebrow">Biên tập nội dung</span>
+          <h1 className="cyber-h1 text-3xl mb-2">Tạo <span className="cyber-text-gradient">bài viết</span></h1>
+          <p className="text-muted text-sm">Soạn nội dung, cấu hình metadata và kiểm tra trước khi xuất bản.</p>
         </div>
 
         <div className="flex gap-4">
@@ -86,7 +87,7 @@ export default function NewPostPage() {
             onClick={() => setIsPreviewOpen(true)}
           >
             <Eye size={16} />
-            XEM TRƯỚC
+            Xem trước
           </CyberButton>
         </div>
       </div>
@@ -99,13 +100,13 @@ export default function NewPostPage() {
             <input 
               name="title"
               required
-              placeholder="NHẬP_TIÊU_ĐỀ_TẠI_ĐÂY..."
+              placeholder="Nhập tiêu đề bài viết..."
               className="w-full bg-transparent border-b border-brand-orange/20 py-4 text-4xl font-orbitron font-bold text-foreground outline-none focus:border-brand-orange transition-colors placeholder:text-brand-orange/20"
             />
           </div>
           
           <div className="flex flex-col gap-2">
-            <label className="font-mono text-[10px] text-brand-orange uppercase">Dẫn nhập (Excerpt)</label>
+            <label className="font-mono text-[10px] text-brand-orange uppercase">Mô tả ngắn</label>
             <textarea 
               name="excerpt"
               rows={2}

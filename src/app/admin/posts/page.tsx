@@ -20,13 +20,14 @@ export default async function AdminPostsPage() {
     <div className="max-w-[1400px] mx-auto">
       <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">DANH SÁCH <span className="cyber-text-gradient">BÀI ĐĂNG</span></h1>
-          <p className="tech-mono text-brand-orange text-[11px] uppercase tracking-[0.3em] font-black animate-pulse">// KHO_NỘI_DUNG_TOÀN_CẦU //</p>
+          <span className="admin-eyebrow">Thư viện nội dung</span>
+          <h1 className="cyber-h1 !text-4xl md:!text-5xl mb-3">Quản lý <span className="cyber-text-gradient">bài viết</span></h1>
+          <p className="text-muted text-sm">Theo dõi trạng thái xuất bản, chất lượng SEO và chỉnh sửa nội dung.</p>
         </div>
         <Link href="/admin/posts/new">
           <CyberButton variant="primary" className="flex items-center gap-3">
             <Plus size={18} />
-            Khởi tạo bài viết mới
+            Tạo bài viết mới
           </CyberButton>
         </Link>
       </div>
@@ -79,7 +80,7 @@ export default async function AdminPostsPage() {
 
         {posts?.length === 0 && (
           <div className="text-center py-32 border border-dashed border-brand-orange/20">
-            <p className="font-mono text-muted text-xs uppercase tracking-[0.2em]">// KHÔNG_CÓ_DỮ_LIỆU_BÀI_ĐĂNG //</p>
+            <p className="font-mono text-muted text-xs">Chưa có bài viết nào.</p>
             <Link href="/admin/posts/new" className="mt-4 inline-block text-brand-orange font-orbitron text-[10px] uppercase hover:underline">
               Bắt đầu bài đăng đầu tiên của bạn
             </Link>

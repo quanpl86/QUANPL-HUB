@@ -1,6 +1,7 @@
 'use server';
 
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { updateTag } from 'next/cache';
 
 export async function updateSiteSettings(settings: any) {
   const supabase = getSupabaseAdmin();
@@ -14,6 +15,7 @@ export async function updateSiteSettings(settings: any) {
       });
 
     if (error) throw error;
+    updateTag('site-settings');
     return { success: true, data };
   } catch (error: any) {
     console.error('Lỗi khi cập nhật cài đặt:', error);

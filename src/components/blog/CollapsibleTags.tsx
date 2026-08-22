@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { getVietnameseTaxonomyLabel } from '@/config/knowledge-taxonomy';
 
 interface CollapsibleTagsProps {
   tags: string[];
@@ -44,10 +45,10 @@ export function CollapsibleTags({
             href={`/blog?tag=${encodeURIComponent(tag)}`}
             className={baseClassName}
           >
-            {tag}
+            {getVietnameseTaxonomyLabel(tag)}
           </Link>
         ) : (
-          <span key={idx} className={baseClassName}>{tag}</span>
+          <span key={idx} className={baseClassName}>{getVietnameseTaxonomyLabel(tag)}</span>
         )
       ))}
 
@@ -55,7 +56,7 @@ export function CollapsibleTags({
         <button 
           onClick={handleExpand}
           className={`${baseClassName} cursor-pointer flex items-center justify-center font-bold px-3 hover:bg-foreground/10`}
-          aria-label="Xem thêm Tags"
+          aria-label="Xem thêm thẻ chủ đề"
         >
           •••
         </button>

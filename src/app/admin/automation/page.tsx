@@ -197,24 +197,23 @@ export default function AutomationPage() {
   };
 
   return (
-    <div className="min-h-screen dragon-grid transition-colors duration-300 font-sans">
+    <div className="transition-colors duration-300 font-sans">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black flex items-center gap-3 uppercase tracking-tighter text-[var(--foreground)] font-orbitron">
-            <span className="text-brand-orange drop-shadow-[0_0_8px_rgba(249,115,22,0.3)]">AI</span> 
-            TRUNG TÂM TỰ ĐỘNG HÓA
+          <span className="admin-eyebrow">AI & tích hợp</span>
+          <h1 className="cyber-h1 text-3xl md:text-4xl">
+            Quản lý <span className="cyber-text-gradient">tự động hóa</span>
           </h1>
-          <p className="text-[var(--muted)] mt-2 flex items-center font-mono text-[10px] uppercase tracking-[0.2em] font-bold">
-            <span className="w-2 h-2 bg-green-500 rounded-none animate-pulse mr-2 shadow-[0_0_8px_#22c55e]"></span>
-            HỆ ĐIỀU HÀNH KING DRAGON: V2.5.0 // TRẠNG THÁI: {isPending ? 'ĐANG XỬ LÝ...' : 'SẴN SÀNG'}
+          <p className="text-[var(--muted)] mt-2 text-sm">
+            Kết nối dịch vụ, cấu hình AI Agent và theo dõi luồng xử lý. {isPending ? 'Đang xử lý...' : ''}
           </p>
         </div>
         
         <div className="flex gap-4">
           <button className="flex items-center gap-2 px-6 py-2.5 bg-[var(--card-bg)] border-2 border-slate-900 dark:border-brand-orange transition-all font-mono text-[10px] font-black uppercase shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#f97316] group active:translate-x-1 active:translate-y-1 active:shadow-none">
             <Radio size={14} className="group-hover:text-brand-orange" />
-            CHẨN ĐOÁN
+            Kiểm tra kết nối
           </button>
           <button 
             onClick={handleStartPipeline}
@@ -222,7 +221,7 @@ export default function AutomationPage() {
             className="flex items-center gap-2 px-6 py-2.5 bg-brand-orange text-white font-black uppercase text-[10px] font-mono border-2 border-slate-900 dark:border-white shadow-[4px_4px_0px_#000] dark:shadow-[4px_4px_0px_#fff] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all active:translate-x-0 active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isPending ? <Loader2 className="animate-spin" size={14} /> : <Play size={14} fill="currentColor" />}
-            KÍCH HOẠT PIPELINE
+            Chạy quy trình
           </button>
         </div>
       </div>
@@ -239,9 +238,9 @@ export default function AutomationPage() {
           <div className="flex border-b-2 border-[var(--card-border)] gap-10 mb-6 font-orbitron">
             {[
               { id: 'connections', label: 'KẾT NỐI' },
-              { id: 'agents', label: 'AI AGENTS' },
-              { id: 'knowledge', label: 'TRI THỨC (MCP)' },
-              { id: 'workflow', label: 'LUỒNG XỬ LÝ' }
+              { id: 'agents', label: 'AI Agent' },
+              { id: 'knowledge', label: 'Kho tri thức' },
+              { id: 'workflow', label: 'Luồng xử lý' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -265,7 +264,7 @@ export default function AutomationPage() {
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-64 font-mono text-[10px] text-[var(--muted)] uppercase tracking-widest">
                 <Loader2 className="animate-spin mb-4 text-brand-orange" size={32} />
-                ĐANG KHỞI TẠO KING DRAGON OS...
+                Đang tải cấu hình...
               </div>
             ) : (
               <>

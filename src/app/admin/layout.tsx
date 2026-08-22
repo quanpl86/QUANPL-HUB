@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Admin Command Center',
+  title: 'Quản trị | King Dragon Hub',
   robots: {
     index: false,
     follow: false,
@@ -19,11 +19,11 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-5rem)] max-w-[1600px] mx-auto w-full overflow-hidden">
-      <div className="flex-shrink-0">
+    <div className="admin-workspace">
+      <div className="admin-sidebar-slot">
         <AdminSidebar />
       </div>
-      <main className="flex-grow py-4 px-4 lg:px-8 overflow-y-auto">
+      <main className="admin-content" id="admin-main-content">
         <AdminMobileNav />
         <Suspense fallback={<AdminLoading />}>
           {children}

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useTransition } from 'react';
-import { CyberButton } from '@/components/ui/CyberButton';
 import { toast } from 'sonner';
 
 interface UserRoleButtonProps {
@@ -15,7 +14,9 @@ export function UserRoleButton({ userId, currentRole, updateRole }: UserRoleButt
 
   const handleToggle = async () => {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
-    const confirmMsg = `Are you sure you want to ${newRole === 'admin' ? 'UPGRADE' : 'DOWNGRADE'} this entity?`;
+    const confirmMsg = newRole === 'admin'
+      ? 'Cấp quyền quản trị cho người dùng này?'
+      : 'Thu hồi quyền quản trị của người dùng này?';
     
     if (!confirm(confirmMsg)) return;
 
@@ -23,24 +24,23 @@ export function UserRoleButton({ userId, currentRole, updateRole }: UserRoleButt
       try {
         const result = await updateRole(userId, newRole);
         if (result.success) {
-          toast.success(`AUTHORITY_RESTRICTED: ${newRole.toUpperCase()} privilege ${newRole === 'admin' ? 'granted' : 'revoked'}`);
+          toast.success(newRole === 'admin' ? 'Đã cấp quyền quản trị.' : 'Đã thu hồi quyền quản trị.');
         } else {
-          toast.error(`SYSTEM_ERROR: ${result.error}`);
+          toast.error(`Không thể cập nhật vai trò: ${result.error}`);
         }
-      } catch (error) {
-        toast.error('ACCESS_DENIED: Matrix authority override failed');
+      } catch {
+        toast.error('Không thể cập nhật vai trò. Vui lòng thử lại.');
       }
     });
   };
 
   return (
-    <CyberButton 
-      variant="secondary" 
-      className="text-[9px] py-2 px-4 min-w-[120px]"
+    <button
+      className="admin-button min-w-[132px]"
       disabled={isPending}
       onClick={handleToggle}
     >
-      {isPending ? 'PROCESSING...' : currentRole === 'admin' ? 'DOWNGRADE TO USER' : 'UPGRADE TO ADMIN'}
-    </CyberButton>
+      {isPending ? 'Đang cập nhật...' : currentRole === 'admin' ? 'Thu hồi quyền' : 'Cấp quyền quản trị'}
+    </button>
   );
 }
