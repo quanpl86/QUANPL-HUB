@@ -44,15 +44,15 @@ function asset(imageId: ArticleWorkflowImageId) {
 test("start returns cover generation and exact sequential plan", () => {
   const run = createArticleWorkflowRun({ topic: "STEM", article_package: articlePackage() });
   assert.deepEqual(run.image_plan.map((item) => item.image_id), ["cover", "img-01", "img-02", "img-03"]);
-  assert.deepEqual(getArticleWorkflowNextAction(run), {
-    action: "GENERATE_IMAGE",
-    image_id: "cover",
-    purpose: "article_cover",
-    prompt: "Cover prompt",
-    alt: "Cover alt",
-    aspect: "16:9",
-    filename: undefined,
-  });
+  const next = getArticleWorkflowNextAction(run);
+  assert.equal(next.action, "GENERATE_IMAGE");
+  if (next.action !== "GENERATE_IMAGE") return;
+  assert.equal(next.image_id, "cover");
+  assert.equal(next.purpose, "article_cover");
+  assert.equal(next.alt, "Cover alt");
+  assert.equal(next.aspect, "16:9");
+  assert.match(next.prompt, /Scene \/ context \/ action: Cover prompt/);
+  assert.match(next.prompt, /KDH EDITORIAL COVER — CLEAN & CLEAR STANDARD/);
 });
 
 test("each continuation stores URL and advances to the next image", () => {
