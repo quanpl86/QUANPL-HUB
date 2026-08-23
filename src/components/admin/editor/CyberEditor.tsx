@@ -581,67 +581,76 @@ export function CyberEditor({
 
   return (
     <div className={`cyber-editor-wrapper transition-all duration-500 ${isFullView ? 'fixed inset-0 z-[200] bg-cyber-black p-2 overflow-hidden flex flex-col' : 'relative flex flex-col'}`}>
-      {/* Mode Switcher & Expand Toggle - Sticky only in FullView */}
-      <div className={`flex justify-center items-center ${isFullView ? 'sticky top-0 z-[110] bg-cyber-black/90 backdrop-blur-md py-4 mb-2 shrink-0' : 'relative py-4 mb-4 border-b border-white/5'}`}>
-        <div className="inline-flex bg-cyber-black/90 border border-brand-orange/20 p-1 backdrop-blur-xl shadow-[0_0_30px_rgba(255,87,34,0.1)]">
-          {[
-            { id: 'agent', label: 'AI hỗ trợ', icon: Cpu },
-            { id: 'matrix', label: 'Nâng cao', icon: Command },
-            { id: 'simple', label: 'Cơ bản', icon: Type },
-          ].map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setMode(m.id as EditorMode)}
-              className={`flex items-center gap-2 px-6 py-2.5 font-orbitron text-[10px] font-bold tracking-[0.2em] transition-all relative ${
-                mode === m.id ? 'text-cyber-black' : 'text-muted-foreground hover:text-brand-orange'
-              }`}
-            >
-              {mode === m.id && (
-                <motion.div layoutId="activeMode" className="absolute inset-0 bg-brand-orange shadow-[0_0_15px_rgba(249,115,22,0.5)]" transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }} />
-              )}
-              <span className="relative z-10 flex items-center gap-2">
-                <m.icon size={14} className={mode === m.id ? 'animate-pulse' : ''} />
-                {m.label}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <button 
-          type="button"
-          onClick={() => setIsFullView(!isFullView)}
-          className="ml-4 p-3 bg-cyber-black border border-brand-orange/20 text-brand-orange hover:bg-brand-orange/10 transition-all shadow-[0_0_15px_rgba(255,87,34,0.05)]"
-          title={isFullView ? "Thu nhỏ" : "Mở rộng tối đa"}
-        >
-          {isFullView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-        </button>
-      </div>
-
       <div className={`cyber-editor-container border border-brand-orange/20 bg-cyber-black/40 relative transition-all shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col ${isFullView ? 'flex-grow overflow-hidden' : 'min-h-[600px]'}`}>
-        {/* Tab Headers */}
-        <div className="flex border-b border-white/10 bg-cyber-black/80 shrink-0">
-          {[
-            { id: 'text', label: 'ĐỊNH DẠNG & VĂN BẢN' },
-            { id: 'structure', label: 'CẤU TRÚC & CĂN LỀ' },
-            { id: 'ai-media', label: 'AI KHỐI & ĐA PHƯƠNG TIỆN' },
-          ].map(tab => (
-            <button
-              key={tab.id}
+        {/* Tab Headers & Controls */}
+        <div className="flex flex-wrap items-center justify-between border-b border-white/10 bg-cyber-black/80 shrink-0 px-2 gap-2">
+          {/* Tool Group Tabs */}
+          <div className="flex items-center">
+            {[
+              { id: 'text', label: 'ĐỊNH DẠNG & VĂN BẢN' },
+              { id: 'structure', label: 'CẤU TRÚC & CĂN LỀ' },
+              { id: 'ai-media', label: 'AI KHỐI & ĐA PHƯƠNG TIỆN' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveToolTab(tab.id as any)}
+                className={`px-4 sm:px-6 py-3 font-orbitron text-[9px] font-bold tracking-[0.2em] transition-all border-r border-white/10 relative ${
+                  activeToolTab === tab.id 
+                    ? 'text-brand-orange bg-brand-orange/5' 
+                    : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {activeToolTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-brand-orange shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                )}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Mode Switcher (Icons Only) & FullView Toggle */}
+          <div className="flex items-center gap-2 py-1.5 ml-auto">
+            {/* 3 Icon Mode Switcher */}
+            <div className="inline-flex items-center bg-cyber-black/90 border border-brand-orange/20 p-1 backdrop-blur-xl shadow-[0_0_15px_rgba(255,87,34,0.05)]">
+              {[
+                { id: 'agent', label: 'AI hỗ trợ', icon: Cpu },
+                { id: 'matrix', label: 'Nâng cao', icon: Command },
+                { id: 'simple', label: 'Cơ bản', icon: Type },
+              ].map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setMode(m.id as EditorMode)}
+                  title={m.label}
+                  className={`p-2 transition-all relative ${
+                    mode === m.id ? 'text-cyber-black' : 'text-muted-foreground hover:text-brand-orange'
+                  }`}
+                >
+                  {mode === m.id && (
+                    <motion.div 
+                      layoutId="activeMode" 
+                      className="absolute inset-0 bg-brand-orange shadow-[0_0_10px_rgba(249,115,22,0.5)]" 
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }} 
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center justify-center">
+                    <m.icon size={15} className={mode === m.id ? 'animate-pulse' : ''} />
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Expand / Minimize Fullscreen Toggle */}
+            <button 
               type="button"
-              onClick={() => setActiveToolTab(tab.id as any)}
-              className={`px-6 py-3 font-orbitron text-[9px] font-bold tracking-[0.2em] transition-all border-r border-white/10 relative ${
-                activeToolTab === tab.id 
-                  ? 'text-brand-orange bg-brand-orange/5' 
-                  : 'text-muted-foreground hover:text-white hover:bg-white/5'
-              }`}
+              onClick={() => setIsFullView(!isFullView)}
+              className="p-2 bg-cyber-black border border-brand-orange/20 text-brand-orange hover:bg-brand-orange/10 transition-all shadow-[0_0_15px_rgba(255,87,34,0.05)]"
+              title={isFullView ? "Thu nhỏ" : "Mở rộng tối đa"}
             >
-              {activeToolTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-brand-orange shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
-              )}
-              {tab.label}
+              {isFullView ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </button>
-          ))}
+          </div>
         </div>
 
         {/* Toolbar - Dynamic Tabbed Content */}
