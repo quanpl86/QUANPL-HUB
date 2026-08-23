@@ -598,7 +598,7 @@ export function CyberEditor({
                 className={`px-4 sm:px-6 py-3 font-orbitron text-[9px] font-bold tracking-[0.2em] transition-all border-r border-white/10 relative ${
                   activeToolTab === tab.id 
                     ? 'text-brand-orange bg-brand-orange/5' 
-                    : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                    : 'text-muted-foreground hover:text-brand-orange hover:bg-brand-orange/10'
                 }`}
               >
                 {activeToolTab === tab.id && (
@@ -660,8 +660,8 @@ export function CyberEditor({
               <div className="flex flex-wrap items-center gap-1">
                 {/* History */}
                 <div className="flex items-center gap-0.5 mr-2">
-                  <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Hoàn tác"><Undo size={16} /></button>
-                  <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Làm lại"><Redo size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className="p-2 text-muted-foreground hover:text-brand-orange disabled:opacity-20" title="Hoàn tác"><Undo size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-2 text-muted-foreground hover:text-brand-orange disabled:opacity-20" title="Làm lại"><Redo size={16} /></button>
                   <button type="button" onClick={() => editor.chain().focus().unsetAllMarks().run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Xóa định dạng"><Eraser size={16} /></button>
                 </div>
                 

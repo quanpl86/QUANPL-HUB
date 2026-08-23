@@ -191,7 +191,7 @@ export default function NewPostPage() {
                 className={`w-9 h-9 flex items-center justify-center rounded transition-all ${
                   activeSidebarTab === 'format' 
                     ? 'text-cyber-black bg-brand-orange font-bold shadow-[0_0_10px_rgba(249,115,22,0.6)] scale-105' 
-                    : 'text-muted-foreground hover:text-white hover:bg-white/10'
+                    : 'text-muted-foreground hover:text-brand-orange hover:bg-brand-orange/10'
                 }`}
                 title="Tab 1: Văn bản & Định dạng"
               >
@@ -203,7 +203,7 @@ export default function NewPostPage() {
                 className={`w-9 h-9 flex items-center justify-center rounded transition-all ${
                   activeSidebarTab === 'structure' 
                     ? 'text-cyber-black bg-brand-orange font-bold shadow-[0_0_10px_rgba(249,115,22,0.6)] scale-105' 
-                    : 'text-muted-foreground hover:text-white hover:bg-white/10'
+                    : 'text-muted-foreground hover:text-brand-orange hover:bg-brand-orange/10'
                 }`}
                 title="Tab 2: Cấu trúc & Căn lề"
               >
@@ -215,7 +215,7 @@ export default function NewPostPage() {
                 className={`w-9 h-9 flex items-center justify-center rounded transition-all ${
                   activeSidebarTab === 'ai-media' 
                     ? 'text-cyber-black bg-brand-orange font-bold shadow-[0_0_10px_rgba(249,115,22,0.6)] scale-105' 
-                    : 'text-muted-foreground hover:text-white hover:bg-white/10'
+                    : 'text-muted-foreground hover:text-brand-orange hover:bg-brand-orange/10'
                 }`}
                 title="Tab 3: AI Khối & Media"
               >
@@ -232,7 +232,7 @@ export default function NewPostPage() {
                       type="button"
                       onClick={() => editorInstance.chain().focus().undo().run()}
                       disabled={!editorInstance.can().undo()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white disabled:opacity-20"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange disabled:opacity-20"
                       title="Hoàn tác"
                     >
                       <Undo size={16} />
@@ -241,7 +241,7 @@ export default function NewPostPage() {
                       type="button"
                       onClick={() => editorInstance.chain().focus().redo().run()}
                       disabled={!editorInstance.can().redo()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white disabled:opacity-20"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange disabled:opacity-20"
                       title="Làm lại"
                     >
                       <Redo size={16} />
@@ -249,7 +249,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().unsetAllMarks().run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Xóa định dạng"
                     >
                       <Eraser size={16} />
@@ -258,7 +258,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleBold().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bold') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bold') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="In đậm"
                     >
                       <Bold size={16} />
@@ -266,7 +266,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleItalic().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('italic') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('italic') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="In nghiêng"
                     >
                       <Italic size={16} />
@@ -274,7 +274,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleUnderline().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('underline') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('underline') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Gạch chân"
                     >
                       <UnderIcon size={16} />
@@ -282,7 +282,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleStrike().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('strike') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('strike') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Gạch ngang"
                     >
                       <Minus size={16} className="rotate-45" />
@@ -290,7 +290,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleCode().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('code') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('code') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Mã dòng"
                     >
                       <Code size={16} />
@@ -301,7 +301,7 @@ export default function NewPostPage() {
                         const url = prompt('Nhập liên kết URL:');
                         if (url) editorInstance.chain().focus().setLink({ href: url }).run();
                       }}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('link') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('link') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Liên kết"
                     >
                       <LinkIcon size={16} />
@@ -309,7 +309,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleSuperscript().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('superscript') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('superscript') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Chỉ số trên"
                     >
                       <Supra size={16} />
@@ -317,7 +317,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleSubscript().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('subscript') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('subscript') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Chỉ số dưới"
                     >
                       <Infra size={16} />
@@ -330,7 +330,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleHeading({ level: 1 }).run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 1 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 1 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Tiêu đề 1"
                     >
                       <Heading1 size={16} />
@@ -338,7 +338,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleHeading({ level: 2 }).run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 2 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 2 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Tiêu đề 2"
                     >
                       <Heading2 size={16} />
@@ -346,7 +346,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleHeading({ level: 3 }).run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 3 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 3 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Tiêu đề 3"
                     >
                       <Heading3 size={16} />
@@ -354,7 +354,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleHeading({ level: 4 }).run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 4 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 4 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Tiêu đề 4"
                     >
                       <Heading4 size={16} />
@@ -362,7 +362,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleHeading({ level: 5 }).run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 5 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 5 }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Tiêu đề 5"
                     >
                       <Heading5 size={16} />
@@ -371,7 +371,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleBulletList().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bulletList') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bulletList') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Danh sách dấu chấm"
                     >
                       <List size={16} />
@@ -379,7 +379,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleOrderedList().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('orderedList') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('orderedList') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Danh sách số"
                     >
                       <ListOrdered size={16} />
@@ -387,7 +387,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleTaskList().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('taskList') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('taskList') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Danh sách công việc"
                     >
                       <ListTodo size={16} />
@@ -396,7 +396,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().setTextAlign('left').run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'left' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'left' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Căn trái"
                     >
                       <AlignLeft size={16} />
@@ -404,7 +404,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().setTextAlign('center').run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'center' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'center' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Căn giữa"
                     >
                       <AlignCenter size={16} />
@@ -412,7 +412,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().setTextAlign('right').run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'right' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'right' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Căn phải"
                     >
                       <AlignRight size={16} />
@@ -420,7 +420,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().setTextAlign('justify').run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'justify' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'justify' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Căn đều"
                     >
                       <AlignJustify size={16} />
@@ -429,7 +429,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleCodeBlock().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('codeBlock') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('codeBlock') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Khối mã lệnh"
                     >
                       <Monitor size={16} />
@@ -437,7 +437,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().toggleBlockquote().run()}
-                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('blockquote') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white'}`}
+                      className={`p-1.5 rounded transition-colors ${editorInstance.isActive('blockquote') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange'}`}
                       title="Trích dẫn"
                     >
                       <Quote size={16} />
@@ -445,7 +445,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn bảng"
                     >
                       <TableIcon size={16} />
@@ -453,7 +453,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().setHorizontalRule().run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Đường kẻ ngang"
                     >
                       <Minus size={16} />
@@ -480,7 +480,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().insertContent({ type: 'workflowTimeline', attrs: { title: 'Quy trình triển khai thực hành', intro: 'Dùng block này cho các nội dung dạng quy trình...' } }).run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn quy trình / timeline"
                     >
                       <GitBranch size={16} />
@@ -488,7 +488,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().insertContent({ type: 'knowledgeCallout', attrs: { variant: 'insight', title: 'Insight trọng tâm', body: 'Viết kết luận quan trọng...' } }).run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn callout / ghi chú nổi bật"
                     >
                       <PanelTop size={16} />
@@ -496,7 +496,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().insertContent({ type: 'keyTakeaways', attrs: { title: 'TL;DR / Key Takeaways', points: ['Ý chính 1', 'Ý chính 2'] } }).run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn tóm tắt / TL;DR"
                     >
                       <Lightbulb size={16} />
@@ -504,7 +504,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().insertContent({ type: 'faqBlock', attrs: { question: 'Câu hỏi thường gặp?', answer: 'Câu trả lời chi tiết.' } }).run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn khối FAQ"
                     >
                       <HelpCircle size={16} />
@@ -512,7 +512,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().insertContent({ type: 'chartBlock', attrs: { title: 'Đồ thị dữ liệu', description: 'Mô tả dữ liệu...' } }).run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn đồ thị"
                     >
                       <BarChart3 size={16} />
@@ -520,7 +520,7 @@ export default function NewPostPage() {
                     <button
                       type="button"
                       onClick={() => editorInstance.chain().focus().insertContent({ type: 'drawingBoard', attrs: { title: 'Bảng vẽ minh họa', description: 'Dùng để vẽ...' } }).run()}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn bảng vẽ"
                     >
                       <PenTool size={16} />
@@ -532,7 +532,7 @@ export default function NewPostPage() {
                         const url = prompt('Nhập URL hình ảnh:');
                         if (url) editorInstance.chain().focus().setImage({ src: url }).run();
                       }}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn ảnh bằng URL"
                     >
                       <ImageIcon size={16} />
@@ -543,7 +543,7 @@ export default function NewPostPage() {
                         const url = prompt('Nhập link video YouTube:');
                         if (url) editorInstance.chain().focus().setYoutubeVideo({ src: url }).run();
                       }}
-                      className="p-1.5 rounded text-muted-foreground hover:text-white"
+                      className="p-1.5 rounded text-muted-foreground hover:text-brand-orange"
                       title="Chèn Video YouTube"
                     >
                       <YoutubeIcon size={16} />
@@ -612,7 +612,7 @@ export default function NewPostPage() {
                       className={`flex-1 py-1.5 font-orbitron text-[8px] font-bold tracking-widest text-center transition-all ${
                         activeSidebarTab === tab.id 
                           ? 'text-brand-orange bg-brand-orange/5 border-b border-brand-orange' 
-                          : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                          : 'text-muted-foreground hover:text-brand-orange hover:bg-brand-orange/10'
                       }`}
                     >
                       {tab.label}
@@ -628,7 +628,7 @@ export default function NewPostPage() {
                         type="button"
                         onClick={() => editorInstance.chain().focus().undo().run()}
                         disabled={!editorInstance.can().undo()}
-                        className="p-1.5 rounded text-muted-foreground hover:text-white disabled:opacity-20 border border-transparent"
+                        className="p-1.5 rounded text-muted-foreground hover:text-brand-orange disabled:opacity-20 border border-transparent"
                         title="Hoàn tác"
                       >
                         <Undo size={14} />
@@ -637,7 +637,7 @@ export default function NewPostPage() {
                         type="button"
                         onClick={() => editorInstance.chain().focus().redo().run()}
                         disabled={!editorInstance.can().redo()}
-                        className="p-1.5 rounded text-muted-foreground hover:text-white disabled:opacity-20 border border-transparent"
+                        className="p-1.5 rounded text-muted-foreground hover:text-brand-orange disabled:opacity-20 border border-transparent"
                         title="Làm lại"
                       >
                         <Redo size={14} />
@@ -654,7 +654,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleBold().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bold') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bold') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="In đậm"
                       >
                         <Bold size={14} />
@@ -662,7 +662,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleItalic().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('italic') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('italic') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="In nghiêng"
                       >
                         <Italic size={14} />
@@ -670,7 +670,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleUnderline().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('underline') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('underline') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Gạch chân"
                       >
                         <UnderIcon size={14} />
@@ -678,7 +678,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleStrike().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('strike') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('strike') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Gạch ngang"
                       >
                         <Minus size={14} className="rotate-45" />
@@ -686,7 +686,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleCode().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('code') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('code') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Mã dòng"
                       >
                         <Code size={14} />
@@ -697,7 +697,7 @@ export default function NewPostPage() {
                           const url = prompt('Nhập liên kết URL:');
                           if (url) editorInstance.chain().focus().setLink({ href: url }).run();
                         }}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('link') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('link') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Liên kết"
                       >
                         <LinkIcon size={14} />
@@ -705,7 +705,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleSuperscript().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('superscript') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('superscript') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Chỉ số trên"
                       >
                         <Supra size={14} />
@@ -713,7 +713,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleSubscript().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('subscript') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('subscript') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Chỉ số dưới"
                       >
                         <Infra size={14} />
@@ -726,7 +726,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleHeading({ level: 1 }).run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 1 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 1 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Tiêu đề 1"
                       >
                         <Heading1 size={14} />
@@ -734,7 +734,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleHeading({ level: 2 }).run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 2 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 2 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Tiêu đề 2"
                       >
                         <Heading2 size={14} />
@@ -742,7 +742,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleHeading({ level: 3 }).run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 3 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 3 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Tiêu đề 3"
                       >
                         <Heading3 size={14} />
@@ -750,7 +750,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleHeading({ level: 4 }).run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 4 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 4 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Tiêu đề 4"
                       >
                         <Heading4 size={14} />
@@ -758,7 +758,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleHeading({ level: 5 }).run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 5 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('heading', { level: 5 }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Tiêu đề 5"
                       >
                         <Heading5 size={14} />
@@ -767,7 +767,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleBulletList().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bulletList') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('bulletList') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Danh sách dấu chấm"
                       >
                         <List size={14} />
@@ -775,7 +775,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleOrderedList().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('orderedList') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('orderedList') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Danh sách số"
                       >
                         <ListOrdered size={14} />
@@ -783,7 +783,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleTaskList().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('taskList') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('taskList') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Danh sách công việc"
                       >
                         <ListTodo size={14} />
@@ -792,7 +792,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().setTextAlign('left').run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'left' }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'left' }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Căn trái"
                       >
                         <AlignLeft size={14} />
@@ -800,7 +800,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().setTextAlign('center').run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'center' }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'center' }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Căn giữa"
                       >
                         <AlignCenter size={14} />
@@ -808,7 +808,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().setTextAlign('right').run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'right' }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'right' }) ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Căn phải"
                       >
                         <AlignRight size={14} />
@@ -816,7 +816,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().setTextAlign('justify').run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'justify' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive({ textAlign: 'justify' }) ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Căn đều"
                       >
                         <AlignJustify size={14} />
@@ -825,7 +825,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleCodeBlock().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('codeBlock') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('codeBlock') ? 'text-brand-orange bg-brand-orange/10 border border-brand-orange/20' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Khối mã lệnh"
                       >
                         <Monitor size={14} />
@@ -833,7 +833,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().toggleBlockquote().run()}
-                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('blockquote') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-white border border-transparent'}`}
+                        className={`p-1.5 rounded transition-colors ${editorInstance.isActive('blockquote') ? 'text-brand-orange bg-brand-orange/10' : 'text-muted-foreground hover:text-brand-orange border border-transparent'}`}
                         title="Trích dẫn"
                       >
                         <Quote size={14} />
@@ -841,7 +841,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-                        className="p-1.5 rounded text-muted-foreground hover:text-white border border-transparent"
+                        className="p-1.5 rounded text-muted-foreground hover:text-brand-orange border border-transparent"
                         title="Chèn bảng"
                       >
                         <TableIcon size={14} />
@@ -849,7 +849,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().setHorizontalRule().run()}
-                        className="p-1.5 rounded text-muted-foreground hover:text-white border border-transparent"
+                        className="p-1.5 rounded text-muted-foreground hover:text-brand-orange border border-transparent"
                         title="Đường kẻ ngang"
                       >
                         <Minus size={14} />
@@ -876,7 +876,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().insertContent({ type: 'workflowTimeline', attrs: { title: 'Quy trình triển khai thực hành', intro: 'Dùng block này cho các nội dung dạng quy trình...' } }).run()}
-                        className="p-1.5 rounded text-muted-foreground hover:text-white border border-transparent"
+                        className="p-1.5 rounded text-muted-foreground hover:text-brand-orange border border-transparent"
                         title="Chèn quy trình / timeline"
                       >
                         <GitBranch size={14} />
@@ -884,7 +884,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().insertContent({ type: 'knowledgeCallout', attrs: { variant: 'insight', title: 'Insight trọng tâm', body: 'Viết kết luận quan trọng...' } }).run()}
-                        className="p-1.5 rounded text-muted-foreground hover:text-white border border-transparent"
+                        className="p-1.5 rounded text-muted-foreground hover:text-brand-orange border border-transparent"
                         title="Chèn callout / ghi chú nổi bật"
                       >
                         <PanelTop size={14} />
@@ -892,7 +892,7 @@ export default function NewPostPage() {
                       <button
                         type="button"
                         onClick={() => editorInstance.chain().focus().insertContent({ type: 'keyTakeaways', attrs: { title: 'TL;DR / Key Takeaways', points: ['Ý chính 1', 'Ý chính 2'] } }).run()}
-                        className="p-1.5 rounded text-muted-foreground hover:text-white border border-transparent"
+                        className="p-1.5 rounded text-muted-foreground hover:text-brand-orange border border-transparent"
                         title="Chèn tóm tắt / TL;DR"
                       >
                         <Lightbulb size={14} />
