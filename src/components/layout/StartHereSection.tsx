@@ -44,20 +44,14 @@ export function StartHereSection() {
   return (
     <section id="start-here" className="bg-background py-20 border-t border-brand-orange/20">
       <div className="container mx-auto px-6">
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-end mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/5 border border-brand-orange/20 mb-5">
-              <span className="h-2 w-2 rounded-full bg-brand-orange" />
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">BẮT ĐẦU TẠI ĐÂY</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-inter)] tracking-tight text-foreground">
-              Bắt đầu theo <span className="text-brand-orange">mục tiêu của bạn</span>
-            </h2>
+        <div className="mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/5 border border-brand-orange/20 mb-5">
+            <span className="h-2 w-2 rounded-full bg-brand-orange" />
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">BẮT ĐẦU TẠI ĐÂY</span>
           </div>
-          <p className="body-lg text-muted max-w-3xl lg:ml-auto">
-            Nếu đây là lần đầu bạn đến KingDragonHub, hãy chọn một lộ trình phù hợp với mục tiêu của mình.
-            Mỗi lộ trình kết nối các bài viết, công cụ và phương pháp liên quan để bạn có thể khám phá tiếp theo từng bước.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-inter)] tracking-tight text-foreground">
+            Bắt đầu theo <span className="text-brand-orange">mục tiêu của bạn</span>
+          </h2>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
