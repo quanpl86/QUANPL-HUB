@@ -727,8 +727,12 @@ body {
 .admin-content button.font-orbitron { font-size:.8rem; letter-spacing:0; text-transform:none; }
 .admin-content table { font-family:var(--font-space-grotesk),ui-sans-serif,sans-serif; }
 .admin-content select { appearance:auto; min-height:46px; padding:.65rem .8rem; }
-.admin-content input:not([type="checkbox"]):not([type="radio"]),
-.admin-content textarea { min-height:46px; padding:.72rem .85rem; }
+:where(.admin-content) input:not([type="checkbox"]):not([type="radio"]),
+:where(.admin-content) textarea { min-height:46px; padding:.72rem .85rem; }
+.admin-content input[class*="pl-8"] { padding-left: 2rem !important; }
+.admin-content input[class*="pl-9"] { padding-left: 2.25rem !important; }
+.admin-content input[class*="pl-10"] { padding-left: 2.5rem !important; }
+.admin-content input[class*="pl-12"] { padding-left: 3rem !important; }
 .admin-content input[type="checkbox"], .admin-content input[type="radio"] { accent-color:#f97316; }
 .admin-modal .font-orbitron, .admin-modal .tech-mono { font-family:var(--font-space-grotesk),ui-sans-serif,sans-serif; letter-spacing:0; text-transform:none; }
 .admin-modal [class*="uppercase"] { text-transform:none; }
