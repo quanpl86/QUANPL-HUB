@@ -595,10 +595,10 @@ export function CyberEditor({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveToolTab(tab.id as any)}
-                className={`px-4 sm:px-6 py-3 font-orbitron text-[9px] font-bold tracking-[0.2em] transition-all border-r border-white/10 relative ${
+                className={`px-4 sm:px-6 py-3 font-orbitron text-[9px] font-bold tracking-[0.2em] transition-all border-r border-slate-200 dark:border-white/10 relative ${
                   activeToolTab === tab.id 
-                    ? 'text-brand-orange bg-brand-orange/5' 
-                    : 'text-muted-foreground hover:text-brand-orange hover:bg-brand-orange/10'
+                    ? 'text-brand-orange bg-brand-orange/10' 
+                    : 'text-slate-600 dark:text-slate-400 hover:text-brand-orange hover:bg-brand-orange/10'
                 }`}
               >
                 {activeToolTab === tab.id && (

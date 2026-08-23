@@ -683,7 +683,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                 </div>
 
                 {/* Tab Selector Headers */}
-                <div className="flex bg-cyber-black/60 border border-white/5 mb-3">
+                <div className="flex bg-slate-100 dark:bg-cyber-black/60 border border-slate-200 dark:border-white/5 mb-3">
                   {[
                     { id: 'format', label: 'VĂN BẢN' },
                     { id: 'structure', label: 'CẤU TRÚC' },
@@ -695,8 +695,8 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                       onClick={() => setActiveSidebarTab(tab.id as any)}
                       className={`flex-1 py-1.5 font-orbitron text-[8px] font-bold tracking-widest text-center transition-all ${
                         activeSidebarTab === tab.id 
-                          ? 'text-brand-orange bg-brand-orange/5 border-b border-brand-orange' 
-                          : 'text-muted-foreground hover:text-brand-orange hover:bg-brand-orange/10'
+                          ? 'text-brand-orange bg-brand-orange/10 border-b-2 border-brand-orange font-bold' 
+                          : 'text-slate-600 dark:text-slate-400 hover:text-brand-orange hover:bg-brand-orange/10'
                       }`}
                     >
                       {tab.label}
