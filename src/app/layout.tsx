@@ -68,7 +68,7 @@ export const metadata: Metadata = {
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { FloatingMascot } from "@/components/ui/FloatingMascot";
+
 import { Toaster } from "sonner";
 
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -117,7 +117,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <FloatingMascot />
+
           <Toaster richColors position="top-right" theme="dark" />
         </ThemeProvider>
       </body>

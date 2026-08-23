@@ -312,12 +312,22 @@ const MathPreview = Extension.create({
 });
 
 // --- Main Editor Component ---
-export function CyberEditor({ content, onChange }: { content: string, onChange: (html: string) => void }) {
+export function CyberEditor({ 
+  content, 
+  onChange, 
+  onEditorInit 
+}: { 
+  content: string; 
+  onChange: (html: string) => void; 
+  onEditorInit?: (editor: any) => void; 
+}) {
   const [mode, setMode] = useState<EditorMode>('agent');
   const [isFullView, setIsFullView] = useState(false);
   const [assetProvider, setAssetProvider] = useState<'supabase' | 'github'>('github');
   const [isUploadingAsset, setIsUploadingAsset] = useState(false);
+  const [activeToolTab, setActiveToolTab] = useState<'text' | 'structure' | 'ai-media'>('text');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasInitializedRef = useRef(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [promptConfig, setPromptConfig] = useState<{
     isOpen: boolean; title: string; placeholder: string; defaultValue: string; 
@@ -381,6 +391,13 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
       }
     }
   });
+
+  useEffect(() => {
+    if (editor && onEditorInit && !hasInitializedRef.current) {
+      onEditorInit(editor);
+      hasInitializedRef.current = true;
+    }
+  }, [editor, onEditorInit]);
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
@@ -602,166 +619,225 @@ export function CyberEditor({ content, onChange }: { content: string, onChange: 
       </div>
 
       <div className={`cyber-editor-container border border-brand-orange/20 bg-cyber-black/40 relative transition-all shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col ${isFullView ? 'flex-grow overflow-hidden' : 'min-h-[600px]'}`}>
-        {/* Toolbar - Standard positioning (non-sticky as requested) */}
-        <div className="border-b border-white/10 bg-cyber-black/40 p-2 flex flex-wrap items-center justify-between gap-y-2 shrink-0">
-          <div className="flex flex-wrap items-center gap-1">
-            {/* Group 1: History & Magic */}
-              <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => openPrompt('import_ai', 'NHẬP NỘI DUNG TỪ AI', 'Dán toàn bộ văn bản Markdown từ AI vào đây...')} className="p-2 text-brand-orange hover:bg-brand-orange/10 font-bold px-4 flex items-center gap-2 border border-brand-orange/20 mr-2 rounded-sm" title="Nhập toàn bộ Markdown từ AI"><Wand2 size={16} /> Nhập từ AI</button>
-              <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Hoàn tác"><Undo size={16} /></button>
-              <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Làm lại"><Redo size={16} /></button>
-            </div>
-
-            <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
-
-            {/* Group 2: Structure */}
-            <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 ${editor.isActive('heading', { level: 1 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 1"><Heading1 size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 ${editor.isActive('heading', { level: 2 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 2"><Heading2 size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 ${editor.isActive('heading', { level: 3 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 3"><Heading3 size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} className={`p-2 ${editor.isActive('heading', { level: 4 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 4"><Heading4 size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()} className={`p-2 ${editor.isActive('heading', { level: 5 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 5"><Heading5 size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 ${editor.isActive('bulletList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách dấu chấm"><List size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 ${editor.isActive('orderedList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách số"><ListOrdered size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleTaskList().run()} className={`p-2 ${editor.isActive('taskList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách công việc"><ListTodo size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={`p-2 ${editor.isActive('codeBlock') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Khối mã lệnh"><Monitor size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={`p-2 ${editor.isActive('blockquote') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Trích dẫn"><Quote size={18} /></button>
-            </div>
-
-            <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
-
-            {/* Group 3: Formatting */}
-            <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 ${editor.isActive('bold') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="In đậm"><Bold size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 ${editor.isActive('italic') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="In nghiêng"><Italic size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 ${editor.isActive('strike') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Gạch ngang"><Minus size={18} className="rotate-45" /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleCode().run()} className={`p-2 ${editor.isActive('code') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Mã dòng"><Code size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 ${editor.isActive('underline') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Gạch chân"><UnderIcon size={18} /></button>
-              
-              {/* Text Color Picker */}
-              <div className="relative">
-                <button 
-                  type="button" 
-                  onClick={() => { setShowTextColor(!showTextColor); setShowBgColor(false); }} 
-                  className={`p-2 ${editor.isActive('textStyle', { color: editor.getAttributes('textStyle').color }) ? 'text-brand-orange' : 'text-muted-foreground'}`} 
-                  title="Màu chữ"
-                >
-                  <Palette size={18} style={{ color: editor.getAttributes('textStyle').color || 'currentColor' }} />
-                </button>
-                {showTextColor && (
-                  <div className="absolute top-full left-0 z-50 mt-2">
-                    <ColorPicker 
-                      title="CHỌN MÀU CHỮ"
-                      color={editor.getAttributes('textStyle').color || '#ffffff'} 
-                      onColorChange={(c) => { editor.chain().focus().setColor(c).run(); setShowTextColor(false); }} 
-                    />
-                  </div>
-                )}
-              </div>
-
-              <select
-                value={editor.getAttributes('textStyle').fontSize || 'default'}
-                onChange={(e) => {
-                  const size = e.target.value;
-                  if (size === 'default') editor.chain().focus().unsetFontSize().run();
-                  else editor.chain().focus().setFontSize(size).run();
-                }}
-                className="bg-cyber-black text-muted-foreground outline-none border border-white/10 px-1 py-1 text-xs mx-1 cursor-pointer hover:border-brand-orange/50 transition-colors"
-                title="Kích thước chữ"
-              >
-                <option value="default">Size</option>
-                <option value="12px">12px</option>
-                <option value="14px">14px</option>
-                <option value="16px">16px</option>
-                <option value="18px">18px</option>
-                <option value="20px">20px</option>
-                <option value="24px">24px</option>
-                <option value="30px">30px</option>
-              </select>
-
-              {/* Highlight Picker */}
-              <div className="relative">
-                <button 
-                  type="button" 
-                  onClick={() => { setShowBgColor(!showBgColor); setShowTextColor(false); }} 
-                  className={`p-2 ${editor.isActive('highlight') ? 'text-brand-orange' : 'text-muted-foreground'}`} 
-                  title="Màu nền chữ"
-                >
-                  <PaintBucket size={18} />
-                </button>
-                {showBgColor && (
-                  <div className="absolute top-full left-0 z-50 mt-2">
-                    <ColorPicker 
-                      title="CHỌN MÀU NỀN"
-                      color={editor.getAttributes('highlight').color || '#ff5722'} 
-                      onColorChange={(c) => { editor.chain().focus().setHighlight({ color: c }).run(); setShowBgColor(false); }} 
-                    />
-                  </div>
-                )}
-              </div>
-
-              <button type="button" onClick={() => editor.chain().focus().toggleHighlight().run()} className={`p-2 ${editor.isActive('highlight') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tô màu nhanh"><Highlighter size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().unsetAllMarks().run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Xóa định dạng"><Eraser size={18} /></button>
-              <button type="button" onClick={() => openPrompt('link', 'LIÊN KẾT', 'URL...')} className={`p-2 ${editor.isActive('link') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Chèn liên kết"><LinkIcon size={18} /></button>
-            </div>
-
-            <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
-
-            {/* Group 4: Scripts */}
-            <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => editor.chain().focus().toggleSuperscript().run()} className={`p-2 ${editor.isActive('superscript') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Chỉ số trên"><Supra size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().toggleSubscript().run()} className={`p-2 ${editor.isActive('subscript') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Chỉ số dưới"><Infra size={18} /></button>
-            </div>
-
-            <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
-
-            {/* Group 5: Alignment */}
-            <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 ${editor.isActive({ textAlign: 'left' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn trái"><AlignLeft size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 ${editor.isActive({ textAlign: 'center' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn giữa"><AlignCenter size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 ${editor.isActive({ textAlign: 'right' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn phải"><AlignRight size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`p-2 ${editor.isActive({ textAlign: 'justify' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn đều"><AlignJustify size={18} /></button>
-            </div>
-
-            <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
-
-            {/* Group 6: Content Blocks */}
-            <div className="flex items-center gap-0.5">
-              <button type="button" onClick={insertWorkflowTimeline} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn quy trình / timeline"><GitBranch size={18} /></button>
-              <button type="button" onClick={insertKnowledgeCallout} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn callout / ghi chú nổi bật"><PanelTop size={18} /></button>
-              <button type="button" onClick={insertKeyTakeaways} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn tóm tắt / TL;DR"><Lightbulb size={18} /></button>
-              <button type="button" onClick={insertFAQBlock} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn khối hỏi đáp FAQ"><HelpCircle size={18} /></button>
-              <button type="button" onClick={insertChartBlock} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn đồ thị"><BarChart3 size={18} /></button>
-              <button type="button" onClick={insertDrawingBoard} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng vẽ"><PenTool size={18} /></button>
-            </div>
-
-            <div className="w-[1px] bg-white/10 mx-1 self-stretch"></div>
-
-            {/* Group 7: Media & Tables */}
-            <div className="flex items-center gap-0.5">
-              <button type="button" onClick={() => openPrompt('image', 'HÌNH ẢNH', 'URL...', '', 'Alt text (tuỳ chọn)...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn ảnh"><ImageIcon size={18} /></button>
-              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploadingAsset} className="p-2 text-muted-foreground hover:text-brand-orange disabled:opacity-40" title="Tải ảnh từ máy lên storage"><UploadCloud size={18} /></button>
-              <button type="button" onClick={() => openPrompt('youtube', 'YOUTUBE', 'Link video...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn Video YouTube"><YoutubeIcon size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng"><TableIcon size={18} /></button>
-              <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Đường kẻ ngang"><Minus size={18} /></button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 px-2">
-            <ImagePlus size={14} className="text-brand-orange" />
-            <select
-              value={assetProvider}
-              onChange={(event) => setAssetProvider(event.target.value as 'supabase' | 'github')}
-              className="bg-cyber-black border border-brand-orange/20 px-2 py-1 font-mono text-[9px] uppercase text-muted-foreground outline-none hover:text-brand-orange"
-              title="Nơi lưu ảnh upload"
+        {/* Tab Headers */}
+        <div className="flex border-b border-white/10 bg-cyber-black/80 shrink-0">
+          {[
+            { id: 'text', label: 'ĐỊNH DẠNG & VĂN BẢN' },
+            { id: 'structure', label: 'CẤU TRÚC & CĂN LỀ' },
+            { id: 'ai-media', label: 'AI KHỐI & ĐA PHƯƠNG TIỆN' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveToolTab(tab.id as any)}
+              className={`px-6 py-3 font-orbitron text-[9px] font-bold tracking-[0.2em] transition-all border-r border-white/10 relative ${
+                activeToolTab === tab.id 
+                  ? 'text-brand-orange bg-brand-orange/5' 
+                  : 'text-muted-foreground hover:text-white hover:bg-white/5'
+              }`}
             >
-              <option value="supabase">Supabase</option>
-              <option value="github">GitHub</option>
-            </select>
-            <span className="font-mono text-[9px] uppercase text-muted-foreground">
-              {isUploadingAsset ? 'Đang tải ảnh...' : 'Upload ảnh'}
-            </span>
+              {activeToolTab === tab.id && (
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-brand-orange shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+              )}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Toolbar - Dynamic Tabbed Content */}
+        <div className="border-b border-white/10 bg-cyber-black/40 p-2 flex flex-wrap items-center justify-between gap-y-2 shrink-0 min-h-[50px]">
+          <div className="flex flex-wrap items-center gap-1">
+            {activeToolTab === 'text' && (
+              <div className="flex flex-wrap items-center gap-1">
+                {/* History */}
+                <div className="flex items-center gap-0.5 mr-2">
+                  <button type="button" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Hoàn tác"><Undo size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} className="p-2 text-muted-foreground hover:text-white disabled:opacity-20" title="Làm lại"><Redo size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().unsetAllMarks().run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Xóa định dạng"><Eraser size={16} /></button>
+                </div>
+                
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Inline Formatting */}
+                <div className="flex items-center gap-0.5 mr-2">
+                  <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 ${editor.isActive('bold') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="In đậm"><Bold size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 ${editor.isActive('italic') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="In nghiêng"><Italic size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 ${editor.isActive('underline') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Gạch chân"><UnderIcon size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 ${editor.isActive('strike') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Gạch ngang"><Minus size={16} className="rotate-45" /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleCode().run()} className={`p-2 ${editor.isActive('code') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Mã dòng"><Code size={16} /></button>
+                  <button type="button" onClick={() => openPrompt('link', 'LIÊN KẾT', 'URL...')} className={`p-2 ${editor.isActive('link') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Chèn liên kết"><LinkIcon size={16} /></button>
+                </div>
+
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Typography and Colors */}
+                <div className="flex items-center gap-1 mr-2">
+                  {/* Font Size Selector */}
+                  <select
+                    value={editor.getAttributes('textStyle').fontSize || 'default'}
+                    onChange={(e) => {
+                      const size = e.target.value;
+                      if (size === 'default') editor.chain().focus().unsetFontSize().run();
+                      else editor.chain().focus().setFontSize(size).run();
+                    }}
+                    className="bg-cyber-black text-muted-foreground outline-none border border-white/10 px-2 py-1 text-xs cursor-pointer hover:border-brand-orange/50 transition-colors"
+                    title="Kích thước chữ"
+                  >
+                    <option value="default">Size</option>
+                    <option value="12px">12px</option>
+                    <option value="14px">14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                    <option value="24px">24px</option>
+                    <option value="30px">30px</option>
+                  </select>
+
+                  {/* Text Color Picker */}
+                  <div className="relative">
+                    <button 
+                      type="button" 
+                      onClick={() => { setShowTextColor(!showTextColor); setShowBgColor(false); }} 
+                      className={`p-2 ${editor.isActive('textStyle', { color: editor.getAttributes('textStyle').color }) ? 'text-brand-orange' : 'text-muted-foreground'}`} 
+                      title="Màu chữ"
+                    >
+                      <Palette size={16} style={{ color: editor.getAttributes('textStyle').color || 'currentColor' }} />
+                    </button>
+                    {showTextColor && (
+                      <div className="absolute top-full left-0 z-50 mt-2">
+                        <ColorPicker 
+                          title="CHỌN MÀU CHỮ"
+                          color={editor.getAttributes('textStyle').color || '#ffffff'} 
+                          onColorChange={(c) => { editor.chain().focus().setColor(c).run(); setShowTextColor(false); }} 
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Highlight Picker */}
+                  <div className="relative">
+                    <button 
+                      type="button" 
+                      onClick={() => { setShowBgColor(!showBgColor); setShowTextColor(false); }} 
+                      className={`p-2 ${editor.isActive('highlight') ? 'text-brand-orange' : 'text-muted-foreground'}`} 
+                      title="Màu nền chữ"
+                    >
+                      <PaintBucket size={16} />
+                    </button>
+                    {showBgColor && (
+                      <div className="absolute top-full left-0 z-50 mt-2">
+                        <ColorPicker 
+                          title="CHỌN MÀU NỀN"
+                          color={editor.getAttributes('highlight').color || '#ff5722'} 
+                          onColorChange={(c) => { editor.chain().focus().setHighlight({ color: c }).run(); setShowBgColor(false); }} 
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <button type="button" onClick={() => editor.chain().focus().toggleHighlight().run()} className={`p-2 ${editor.isActive('highlight') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tô màu nhanh"><Highlighter size={16} /></button>
+                </div>
+
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Script Options */}
+                <div className="flex items-center gap-0.5">
+                  <button type="button" onClick={() => editor.chain().focus().toggleSuperscript().run()} className={`p-2 ${editor.isActive('superscript') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Chỉ số trên"><Supra size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleSubscript().run()} className={`p-2 ${editor.isActive('subscript') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Chỉ số dưới"><Infra size={16} /></button>
+                </div>
+              </div>
+            )}
+
+            {activeToolTab === 'structure' && (
+              <div className="flex flex-wrap items-center gap-1">
+                {/* Headings */}
+                <div className="flex items-center gap-0.5 mr-2">
+                  <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 ${editor.isActive('heading', { level: 1 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 1"><Heading1 size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 ${editor.isActive('heading', { level: 2 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 2"><Heading2 size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 ${editor.isActive('heading', { level: 3 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 3"><Heading3 size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} className={`p-2 ${editor.isActive('heading', { level: 4 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 4"><Heading4 size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()} className={`p-2 ${editor.isActive('heading', { level: 5 }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Tiêu đề 5"><Heading5 size={16} /></button>
+                </div>
+
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Lists */}
+                <div className="flex items-center gap-0.5 mr-2">
+                  <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 ${editor.isActive('bulletList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách dấu chấm"><List size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 ${editor.isActive('orderedList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách số"><ListOrdered size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleTaskList().run()} className={`p-2 ${editor.isActive('taskList') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Danh sách công việc"><ListTodo size={16} /></button>
+                </div>
+
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Alignment */}
+                <div className="flex items-center gap-0.5 mr-2">
+                  <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`p-2 ${editor.isActive({ textAlign: 'left' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn trái"><AlignLeft size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`p-2 ${editor.isActive({ textAlign: 'center' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn giữa"><AlignCenter size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().setTextAlign('right').run()} className={`p-2 ${editor.isActive({ textAlign: 'right' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn phải"><AlignRight size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`p-2 ${editor.isActive({ textAlign: 'justify' }) ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Căn đều"><AlignJustify size={16} /></button>
+                </div>
+
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Other Blocks */}
+                <div className="flex items-center gap-0.5">
+                  <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={`p-2 ${editor.isActive('codeBlock') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Khối mã lệnh"><Monitor size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()} className={`p-2 ${editor.isActive('blockquote') ? 'text-brand-orange' : 'text-muted-foreground'}`} title="Trích dẫn"><Quote size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng"><TableIcon size={16} /></button>
+                  <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()} className="p-2 text-muted-foreground hover:text-brand-orange" title="Đường kẻ ngang"><Minus size={16} /></button>
+                </div>
+              </div>
+            )}
+
+            {activeToolTab === 'ai-media' && (
+              <div className="flex flex-wrap items-center gap-1">
+                {/* AI Assistant */}
+                <div className="flex items-center gap-1 mr-2">
+                  <button type="button" onClick={() => openPrompt('import_ai', 'NHẬP NỘI DUNG TỪ AI', 'Dán toàn bộ văn bản Markdown từ AI vào đây...')} className="p-2 text-brand-orange hover:bg-brand-orange/10 font-bold px-3 flex items-center gap-1.5 border border-brand-orange/20 rounded-sm text-xs" title="Nhập toàn bộ Markdown từ AI"><Wand2 size={14} /> Nhập từ AI</button>
+                </div>
+
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Special AI Blocks */}
+                <div className="flex items-center gap-0.5 mr-2">
+                  <button type="button" onClick={insertWorkflowTimeline} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn quy trình / timeline"><GitBranch size={16} /></button>
+                  <button type="button" onClick={insertKnowledgeCallout} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn callout / ghi chú nổi bật"><PanelTop size={16} /></button>
+                  <button type="button" onClick={insertKeyTakeaways} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn tóm tắt / TL;DR"><Lightbulb size={16} /></button>
+                  <button type="button" onClick={insertFAQBlock} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn khối hỏi đáp FAQ"><HelpCircle size={16} /></button>
+                  <button type="button" onClick={insertChartBlock} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn đồ thị"><BarChart3 size={16} /></button>
+                  <button type="button" onClick={insertDrawingBoard} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn bảng vẽ"><PenTool size={16} /></button>
+                </div>
+
+                <div className="w-[1px] bg-white/10 h-6 mx-1"></div>
+
+                {/* Media */}
+                <div className="flex items-center gap-0.5">
+                  <button type="button" onClick={() => openPrompt('image', 'HÌNH ẢNH', 'URL...', '', 'Alt text (tuỳ chọn)...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn ảnh bằng URL"><ImageIcon size={16} /></button>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploadingAsset} className="p-2 text-muted-foreground hover:text-brand-orange disabled:opacity-40" title="Tải ảnh từ máy tính"><UploadCloud size={16} /></button>
+                  <button type="button" onClick={() => openPrompt('youtube', 'YOUTUBE', 'Link video...')} className="p-2 text-muted-foreground hover:text-brand-orange" title="Chèn Video YouTube"><YoutubeIcon size={16} /></button>
+                </div>
+              </div>
+            )}
           </div>
+
+          {activeToolTab === 'ai-media' && (
+            <div className="flex items-center gap-2 px-2 transition-all duration-300">
+              <ImagePlus size={14} className="text-brand-orange" />
+              <select
+                value={assetProvider}
+                onChange={(event) => setAssetProvider(event.target.value as 'supabase' | 'github')}
+                className="bg-cyber-black border border-brand-orange/20 px-2 py-1 font-mono text-[9px] uppercase text-muted-foreground outline-none hover:text-brand-orange cursor-pointer"
+                title="Nơi lưu ảnh upload"
+              >
+                <option value="supabase">Supabase</option>
+                <option value="github">GitHub</option>
+              </select>
+              <span className="font-mono text-[9px] uppercase text-muted-foreground">
+                {isUploadingAsset ? 'Đang tải ảnh...' : 'Upload ảnh'}
+              </span>
+            </div>
+          )}
         </div>
 
         <input

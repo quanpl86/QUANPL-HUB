@@ -7,6 +7,7 @@ import { ChevronDown, LogOut, Menu, Search, X } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { knowledgeFields } from '@/config/knowledge-taxonomy';
+import { navItems as adminNavItems } from '@/components/admin/AdminSidebar';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { BrandLogo } from './BrandLogo';
 
@@ -18,6 +19,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const isAdminArea = pathname.startsWith('/admin');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
@@ -99,7 +101,32 @@ export function Header() {
         </div>
 
         {mobileOpen && (
-          <nav className="border-t border-foreground/10 bg-background px-6 py-6 lg:hidden" aria-label="Điều hướng di động">
+          <nav className="mobile-drawer border-t border-foreground/10 bg-background px-6 py-6 lg:hidden" aria-label="Điều hướng di động">
+            {/* Admin navigation — only when inside /admin */}
+            {isAdminArea && user && (
+              <div className="mb-5">
+                <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-brand-orange/70">Quản trị</p>
+                <div className="admin-header-nav-grid">
+                  {adminNavItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(`${item.href}/`));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`admin-header-nav-link ${isActive ? 'is-active' : ''}`}
+                        aria-current={isActive ? 'page' : undefined}
+                      >
+                        <Icon aria-hidden="true" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Public navigation */}
             <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/40">Khám phá theo lĩnh vực</p>
             <div className="grid gap-2 sm:grid-cols-2">
               {knowledgeFields.map((field) => <Link key={field.slug} href={`/blog?field=${field.slug}`} className="mobile-nav-card"><span>{field.label}</span><small>{field.subjects.join(' · ')}</small></Link>)}

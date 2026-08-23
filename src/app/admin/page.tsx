@@ -97,10 +97,9 @@ export default async function AdminDashboard() {
                 {recentPosts && recentPosts.length > 0 ? (
                   recentPosts.map((post) => (
                     <Link key={post.id} href={`/admin/posts/edit/${post.id}`}>
-                      <div className="flex items-center justify-between p-5 bg-cyber-black/5 dark:bg-cyber-black/40 border border-brand-orange/10 hover:border-brand-orange/30 transition-all group cyber-cut-sm">
-                        <div className="flex items-center gap-5">
-                          <div className={`w-1.5 h-10 ${post.is_published ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'bg-brand-orange shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}></div>
-                          <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-5 p-5 min-w-0 bg-cyber-black/5 dark:bg-cyber-black/40 border border-brand-orange/10 hover:border-brand-orange/30 transition-all group cyber-cut-sm">
+                          <div className={`w-1.5 shrink-0 h-10 ${post.is_published ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'bg-brand-orange shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}></div>
+                          <div className="min-w-0">
                             <h3 className="font-orbitron font-bold text-sm text-foreground group-hover:text-brand-orange transition-colors truncate">{post.title}</h3>
                             <div className="flex gap-4 mt-2">
                               <span className="tech-mono text-[10px] text-brand-orange font-bold uppercase">[{
@@ -113,7 +112,6 @@ export default async function AdminDashboard() {
                               </span>
                             </div>
                           </div>
-                        </div>
                       </div>
                     </Link>
                   ))
