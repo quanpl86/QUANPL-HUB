@@ -8,7 +8,7 @@ import {
   NodeViewWrapper,
   ReactNodeViewRenderer
 } from '@tiptap/react';
-import type { NodeViewProps } from '@tiptap/react';
+import type { Editor, NodeViewProps } from '@tiptap/react';
 import { BubbleMenu, FloatingMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import { BubbleMenu as BubbleMenuExtension } from '@tiptap/extension-bubble-menu';
@@ -53,7 +53,7 @@ import {
   LayoutTemplate, Link as LinkIcon, List, ListOrdered, ListTodo, Maximize2, Minimize2, Minus, Monitor,
   PaintBucket, Palette, PanelTop, PenTool, Play as YoutubeIcon, Quote, Redo, Subscript as Infra,
   Superscript as Supra, Table as TableIcon, Terminal, Type, Underline as UnderIcon, Undo, UploadCloud,
-  Wand2, Zap, X, Lightbulb, HelpCircle
+  Wand2, Zap, X, Lightbulb, HelpCircle, Trash2, RefreshCw
 } from 'lucide-react';
 import { CyberPrompt } from '@/components/ui/CyberPrompt';
 import { ChartBlock, DrawingBoard, KnowledgeCallout, ScratchEmbed, SketchfabEmbed, WorkflowTimeline, KeyTakeaways, FAQBlock } from './CustomExtensions';
@@ -311,15 +311,42 @@ const MathPreview = Extension.create({
   },
 });
 
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function fileToDataUrl(file: File) {
+  return blobToDataUrl(file);
+}
+
+function applyImageSrc(editor: Editor, src: string, alt?: string) {
+  if (editor.isActive('image')) {
+    editor.chain().focus().updateAttributes('image', { src, ...(alt ? { alt } : {}) }).run();
+    return;
+  }
+  editor.chain().focus().setImage({ src, alt: alt || '' }).run();
+}
+
 // --- Main Editor Component ---
 export function CyberEditor({ 
   content, 
   onChange, 
-  onEditorInit 
+  onEditorInit,
+  localAssets = false,
+  characterLimit = 50000,
+  syncFromProps = true,
 }: { 
   content: string; 
   onChange: (html: string) => void; 
-  onEditorInit?: (editor: any) => void; 
+  onEditorInit?: (editor: Editor) => void;
+  localAssets?: boolean;
+  characterLimit?: number | null;
+  syncFromProps?: boolean;
 }) {
   const [mode, setMode] = useState<EditorMode>('agent');
   const [isFullView, setIsFullView] = useState(false);
@@ -327,6 +354,7 @@ export function CyberEditor({
   const [isUploadingAsset, setIsUploadingAsset] = useState(false);
   const [activeToolTab, setActiveToolTab] = useState<'text' | 'structure' | 'ai-media'>('text');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const replaceImageInputRef = useRef<HTMLInputElement>(null);
   const hasInitializedRef = useRef(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [promptConfig, setPromptConfig] = useState<{
@@ -358,10 +386,10 @@ export function CyberEditor({
     Typography, Superscript, Subscript,
     Color, TextStyle, Link, Underline,
     MathPreview,
-    CharacterCount.configure({ limit: 50000 }),
+    CharacterCount.configure(characterLimit ? { limit: characterLimit } : {}),
     BubbleMenuExtension,
     FloatingMenuExtension,
-  ], [mode]);
+  ], [mode, characterLimit]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -400,10 +428,11 @@ export function CyberEditor({
   }, [editor, onEditorInit]);
 
   useEffect(() => {
+    if (!syncFromProps) return;
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content, { emitUpdate: false });
     }
-  }, [content, editor]);
+  }, [content, editor, syncFromProps]);
 
   // Cleanup on unmount to prevent 'domFromPos' errors
   useEffect(() => {
@@ -439,7 +468,7 @@ export function CyberEditor({
           return;
         }
 
-        editor.chain().focus().setImage({ src: result.url as string, alt: secondaryValue || '' }).run();
+        applyImageSrc(editor, result.url as string, secondaryValue || '');
         toast.success(`Đã tải ảnh lên ${result.provider === 'github' ? 'GitHub' : 'Supabase'} và chèn vào bài viết.`);
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'Không thể tải ảnh lên.');
@@ -452,7 +481,7 @@ export function CyberEditor({
 
     if (!value && promptConfig.type !== 'import_ai') { setPromptConfig(p => ({ ...p, isOpen: false })); return; }
     switch (promptConfig.type) {
-      case 'image': editor.chain().focus().setImage({ src: value, alt: secondaryValue || '' }).run(); break;
+      case 'image': applyImageSrc(editor, value, secondaryValue || ''); break;
       case 'youtube': editor.chain().focus().setYoutubeVideo({ src: value }).run(); break;
       case 'scratch': editor.chain().focus().insertContent({ type: 'scratchEmbed', attrs: { projectId: value } }).run(); break;
       case 'sketchfab': editor.chain().focus().insertContent({ type: 'sketchfabEmbed', attrs: { modelId: value } }).run(); break;
@@ -572,8 +601,27 @@ export function CyberEditor({
     }).run();
   };
 
-  const handleAssetUpload = (file?: File) => {
+  const handleAssetUpload = async (file?: File, replaceSelected = false) => {
     if (!file) return;
+    if (localAssets) {
+      setIsUploadingAsset(true);
+      try {
+        const src = await fileToDataUrl(file);
+        if (replaceSelected && editor.isActive('image')) {
+          applyImageSrc(editor, src, file.name);
+        } else {
+          editor.chain().focus().setImage({ src, alt: file.name }).run();
+        }
+        toast.success(replaceSelected ? 'Đã thay thế hình ảnh.' : 'Đã chèn ảnh vào tài liệu.');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Không thể đọc file ảnh.');
+      } finally {
+        setIsUploadingAsset(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        if (replaceImageInputRef.current) replaceImageInputRef.current.value = '';
+      }
+      return;
+    }
     setPendingFile(file);
     const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
     openPrompt('upload_meta', 'THÔNG TIN ẢNH TẢI LÊN', 'Tên file (tùy chọn)...', fileNameWithoutExt, 'Alt text (tùy chọn)...');
@@ -594,7 +642,7 @@ export function CyberEditor({
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveToolTab(tab.id as any)}
+                onClick={() => setActiveToolTab(tab.id as 'text' | 'structure' | 'ai-media')}
                 className={`px-4 sm:px-6 py-3 font-orbitron text-[9px] font-bold tracking-[0.2em] transition-all border-r border-slate-200 dark:border-white/10 relative ${
                   activeToolTab === tab.id 
                     ? 'text-brand-orange bg-brand-orange/10' 
@@ -833,17 +881,19 @@ export function CyberEditor({
           {activeToolTab === 'ai-media' && (
             <div className="flex items-center gap-2 px-2 transition-all duration-300">
               <ImagePlus size={14} className="text-brand-orange" />
-              <select
-                value={assetProvider}
-                onChange={(event) => setAssetProvider(event.target.value as 'supabase' | 'github')}
-                className="bg-cyber-black border border-brand-orange/20 px-2 py-1 font-mono text-[9px] uppercase text-muted-foreground outline-none hover:text-brand-orange cursor-pointer"
-                title="Nơi lưu ảnh upload"
-              >
-                <option value="supabase">Supabase</option>
-                <option value="github">GitHub</option>
-              </select>
+              {!localAssets && (
+                <select
+                  value={assetProvider}
+                  onChange={(event) => setAssetProvider(event.target.value as 'supabase' | 'github')}
+                  className="bg-cyber-black border border-brand-orange/20 px-2 py-1 font-mono text-[9px] uppercase text-muted-foreground outline-none hover:text-brand-orange cursor-pointer"
+                  title="Nơi lưu ảnh upload"
+                >
+                  <option value="supabase">Supabase</option>
+                  <option value="github">GitHub</option>
+                </select>
+              )}
               <span className="font-mono text-[9px] uppercase text-muted-foreground">
-                {isUploadingAsset ? 'Đang tải ảnh...' : 'Upload ảnh'}
+                {isUploadingAsset ? 'Đang xử lý ảnh...' : localAssets ? 'Ảnh lưu trên máy' : 'Upload ảnh'}
               </span>
             </div>
           )}
@@ -855,6 +905,13 @@ export function CyberEditor({
           accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
           className="hidden"
           onChange={(event) => handleAssetUpload(event.target.files?.[0])}
+        />
+        <input
+          ref={replaceImageInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+          className="hidden"
+          onChange={(event) => handleAssetUpload(event.target.files?.[0], true)}
         />
 
         {/* Image Bubble Menu */}
@@ -878,8 +935,14 @@ export function CyberEditor({
               <button type="button" onClick={() => {
                   const attrs = editor.getAttributes('image');
                   if(attrs.src) setCropModalConfig({ isOpen: true, src: attrs.src });
-              }} className="p-2 text-white hover:text-[#ff5722]" title="Crop ảnh">
+              }} className="p-2 text-white hover:text-[#ff5722]" title="Cắt / chỉnh ảnh">
                 <CropIcon size={16} />
+              </button>
+              <button type="button" onClick={() => replaceImageInputRef.current?.click()} className="p-2 text-white hover:text-[#ff5722]" title="Thay ảnh">
+                <RefreshCw size={16} />
+              </button>
+              <button type="button" onClick={() => editor.chain().focus().deleteSelection().run()} className="p-2 text-white hover:text-red-500" title="Xóa ảnh">
+                <Trash2 size={16} />
               </button>
             </div>
           </BubbleMenu>
@@ -996,16 +1059,22 @@ export function CyberEditor({
         onConfirm={async (blob) => {
           setCropModalConfig({ isOpen: false, src: '' });
           setIsUploadingAsset(true);
-          const formData = new FormData();
-          formData.append('file', new File([blob], `cropped-${Date.now()}.jpg`, { type: 'image/jpeg' }));
-          formData.append('provider', assetProvider);
           try {
+            if (localAssets) {
+              const src = await blobToDataUrl(blob);
+              applyImageSrc(editor, src);
+              toast.success('Đã cập nhật hình ảnh.');
+              return;
+            }
+            const formData = new FormData();
+            formData.append('file', new File([blob], `cropped-${Date.now()}.jpg`, { type: 'image/jpeg' }));
+            formData.append('provider', assetProvider);
             const result = await uploadEditorAsset(formData);
             if (!result.success || !('url' in result) || !result.url) {
               toast.error('error' in result ? result.error : 'Không thể tải ảnh đã cắt lên.');
               return;
             }
-            editor.chain().focus().setImage({ src: result.url as string }).run();
+            applyImageSrc(editor, result.url as string);
             toast.success(`Đã cắt và tải ảnh mới lên ${result.provider === 'github' ? 'GitHub' : 'Supabase'}`);
           } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Không thể tải ảnh đã cắt lên.');

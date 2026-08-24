@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   ChevronRight, FileCode2, ImagePlus, FileDown, Layers, 
   Scissors, GripVertical, Trash2, CheckCircle2, FileUp, Loader2, FilePlus, RotateCw,
-  LayoutGrid, List, ZoomIn, ZoomOut, CheckSquare, Square, Eye, X
+  LayoutGrid, List, ZoomIn, ZoomOut, CheckSquare, Square, Eye, X, PenTool
 } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -388,7 +388,7 @@ export default function PdfStudioPage() {
                 <h1 className="text-3xl font-bold text-gray-900">PDF Studio</h1>
               </div>
               <p className="text-gray-600 text-lg max-w-2xl">
-                Trạm xử lý PDF nội bộ tốc độ cao. Đóng gói ảnh, gộp và cắt file hoàn toàn bằng mã nhị phân <b>chạy offline trên trình duyệt</b>, không tải lên bất kỳ máy chủ nào.
+                Trạm xử lý PDF nội bộ tốc độ cao. Đóng gói ảnh, gộp và cắt file hoàn toàn bằng mã nhị phân <b>chạy offline trên trình duyệt</b>, không tải lên bất kỳ máy chủ nào. Muốn sửa chữ và ảnh trong PDF, mở <Link href="/utility-hub/pdf-editor" className="text-rose-600 font-semibold hover:underline">PDF Editor</Link>.
               </p>
             </div>
           </div>
@@ -426,6 +426,13 @@ export default function PdfStudioPage() {
               <Scissors size={18} className="mr-2" />
               Cắt & Trích xuất trang
             </button>
+            <Link
+              href="/utility-hub/pdf-editor"
+              className="whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-rose-600 hover:border-gray-300 font-bold text-sm flex items-center transition-colors"
+            >
+              <PenTool size={18} className="mr-2" />
+              Chỉnh sửa PDF
+            </Link>
           </nav>
         </div>
       </div>

@@ -3,7 +3,7 @@ import CropperJS from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
 import { CyberButton } from '../../ui/CyberButton';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crop as CropIcon, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { X, Crop as CropIcon, ZoomIn, ZoomOut, RotateCw, FlipHorizontal, FlipVertical, SunMedium, Contrast } from 'lucide-react';
 
 export const ImageCropModal = ({
   isOpen, src, onConfirm, onCancel
@@ -13,6 +13,10 @@ export const ImageCropModal = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const [cropper, setCropper] = useState<CropperJS | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [brightness, setBrightness] = useState(100);
+  const [contrast, setContrast] = useState(100);
+  const [scaleX, setScaleX] = useState(1);
+  const [scaleY, setScaleY] = useState(1);
 
   useEffect(() => {
     if (isOpen && imageRef.current) {
@@ -27,6 +31,10 @@ export const ImageCropModal = ({
         guides: true,
       });
       setCropper(cropperInstance);
+      setBrightness(100);
+      setContrast(100);
+      setScaleX(1);
+      setScaleY(1);
 
       return () => {
         cropperInstance.destroy();
@@ -49,7 +57,19 @@ export const ImageCropModal = ({
         return;
       }
 
-      canvas.toBlob((blob: Blob | null) => {
+      const output = document.createElement('canvas');
+      output.width = canvas.width;
+      output.height = canvas.height;
+      const ctx = output.getContext('2d');
+      if (!ctx) {
+        setIsProcessing(false);
+        onCancel();
+        return;
+      }
+      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
+      ctx.drawImage(canvas, 0, 0);
+
+      output.toBlob((blob: Blob | null) => {
         setIsProcessing(false);
         if (blob) onConfirm(blob);
         else onCancel();
@@ -114,10 +134,64 @@ export const ImageCropModal = ({
                   <button type="button" onClick={() => cropper?.rotate(90)} className="p-2 hover:bg-brand-orange/20 text-white hover:text-brand-orange transition-colors" title="Xoay phải 90 độ">
                     <RotateCw size={18} />
                   </button>
+                  <div className="w-[1px] h-6 bg-white/10"></div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = scaleX * -1;
+                      setScaleX(next);
+                      cropper?.scaleX(next);
+                    }}
+                    className="p-2 hover:bg-brand-orange/20 text-white hover:text-brand-orange transition-colors"
+                    title="Lật ngang"
+                  >
+                    <FlipHorizontal size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = scaleY * -1;
+                      setScaleY(next);
+                      cropper?.scaleY(next);
+                    }}
+                    className="p-2 hover:bg-brand-orange/20 text-white hover:text-brand-orange transition-colors"
+                    title="Lật dọc"
+                  >
+                    <FlipVertical size={18} />
+                  </button>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-2 text-white/80">
+                  <SunMedium size={14} />
+                  <input
+                    type="range"
+                    min={50}
+                    max={150}
+                    value={brightness}
+                    onChange={(event) => setBrightness(Number(event.target.value))}
+                    className="w-20 accent-brand-orange"
+                    title="Độ sáng"
+                  />
+                  <Contrast size={14} />
+                  <input
+                    type="range"
+                    min={50}
+                    max={150}
+                    value={contrast}
+                    onChange={(event) => setContrast(Number(event.target.value))}
+                    className="w-20 accent-brand-orange"
+                    title="Độ tương phản"
+                  />
                 </div>
 
                 <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded overflow-hidden">
-                  <button type="button" onClick={() => cropper?.reset()} className="px-3 py-2 hover:bg-brand-orange/20 text-white hover:text-brand-orange transition-colors font-mono text-[10px] uppercase tracking-widest" title="Đặt lại">
+                  <button type="button" onClick={() => {
+                    cropper?.reset();
+                    setBrightness(100);
+                    setContrast(100);
+                    setScaleX(1);
+                    setScaleY(1);
+                  }} className="px-3 py-2 hover:bg-brand-orange/20 text-white hover:text-brand-orange transition-colors font-mono text-[10px] uppercase tracking-widest" title="Đặt lại">
                     Reset
                   </button>
                 </div>

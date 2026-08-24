@@ -41,9 +41,9 @@ export function sanitize(html: string): string {
       'msqrt', 'mroot', 'mstyle', 'mspace', 'mtext', 'munder', 'mover', 'munderover', 'annotation'
     ],
     ALLOWED_ATTR: [
-      'id', 'href', 'name', 'target', 'src', 'alt', 'title', 'class', 'style', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'data-type', 'data-title', 'data-intro', 'data-steps', 'loading', 'question',
+      'id', 'href', 'name', 'target', 'src', 'alt', 'title', 'class', 'style', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'data-type', 'data-title', 'data-intro', 'data-steps', 'data-pdf-page', 'data-align', 'loading', 'question',
       'aria-hidden', 'encoding', 'xmlns'
     ],
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|ftp|sms):|[^a-z0-9+.-]|(?:[a-z0-9+.-]+:)?\/\/)/i
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|ftp|sms|data):|[^a-z0-9+.-]|(?:[a-z0-9+.-]+:)?\/\/)/i
   });
 }

@@ -1290,3 +1290,51 @@ body.zen-mode-active .admin-content > div:not(.admin-mobile-nav) {
 .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #f97316;
 }
+
+body.pdf-workspace-active footer {
+  display: none !important;
+}
+
+.pdf-layout-desk {
+  background: #e2e8f0;
+}
+
+.pdf-layout-sheet {
+  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.16);
+  background: #fff;
+}
+
+.pdf-hit {
+  pointer-events: auto;
+}
+
+.pdf-hit.is-outlined {
+  outline: 1px dashed rgba(100, 116, 139, 0.75);
+  outline-offset: 1px;
+}
+
+.pdf-hit:hover {
+  outline: 2px solid rgba(244, 63, 94, 0.45);
+  outline-offset: 1px;
+}
+
+.pdf-hit.is-selected {
+  outline: 2px solid #f43f5e;
+  outline-offset: 1px;
+}
+
+.pdf-text-input {
+  display: block;
+  border: 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.pdf-text-input::selection {
+  background: rgba(244, 63, 94, 0.45);
+  color: #111111;
+}
+
+.pdf-context-menu {
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}

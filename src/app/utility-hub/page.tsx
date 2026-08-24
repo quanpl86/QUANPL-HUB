@@ -167,6 +167,16 @@ const featuredTools = [
     category: 'Tiện ích tài liệu'
   },
   {
+    title: 'PDF Editor',
+    description: 'Mở PDF đúng layout gốc (ảnh, chữ, trang), rồi click để thêm/xóa/sửa văn bản và ảnh ngay trên trang, xuất lại file.',
+    icon: FileCode2,
+    status: 'SẴN SÀNG',
+    formats: 'PDF -> SOẠN THẢO -> PDF',
+    href: '/utility-hub/pdf-editor',
+    color: 'from-red-500/20 to-red-500/5',
+    category: 'Tiện ích tài liệu'
+  },
+  {
     title: 'Trạm AI Scratchblocks',
     description: 'Hỏi AI để tạo thuật toán Scratch, hệ thống sẽ tự động vẽ ngay ra các khối lệnh 3.0 sắc nét để bạn chèn vào giáo án.',
     icon: Box,
