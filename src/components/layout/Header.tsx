@@ -74,15 +74,19 @@ export function Header() {
                       </Link>
                     );
                   })}
-                  <Link href="/blog" className="col-span-2 flex items-center justify-between rounded-xl border border-brand-orange/15 bg-brand-orange/[0.05] px-4 py-3 text-sm font-semibold text-foreground hover:text-brand-orange">
+                  <Link href="/ai-in-education" className="col-span-2 flex items-center justify-between rounded-xl border border-brand-orange/30 bg-brand-orange/[0.08] px-4 py-2.5 text-xs font-semibold text-brand-orange hover:bg-brand-orange/15 transition">
+                    <span>⚡ Chuyên đề trọng điểm: AI trong Giáo dục Hub</span>
+                    <span>→</span>
+                  </Link>
+                  <Link href="/blog" className="col-span-2 flex items-center justify-between rounded-xl border border-foreground/10 bg-foreground/[0.02] px-4 py-2 text-xs font-medium text-foreground/70 hover:text-brand-orange">
                     Xem toàn bộ bản đồ tri thức <span>→</span>
                   </Link>
                 </div>
               </div>
             </div>
-            <Link href="/blog?q=AI" className="nav-link">AI</Link>
-            <Link href="/blog?q=STEM" className="nav-link">STEM & Robot</Link>
-            <Link href="/blog?q=giáo dục" className="nav-link">Dạy & Học</Link>
+            <Link href="/ai-in-education" className="nav-link text-brand-orange font-semibold">AI Giáo dục</Link>
+            <Link href="/blog?category=stem-education" className="nav-link">STEM & Robot</Link>
+            <Link href="/blog?field=edu-skills" className="nav-link">Dạy & Học</Link>
             <Link href="/utility-hub" className="nav-link">Tiện ích</Link>
           </nav>
 
@@ -132,7 +136,11 @@ export function Header() {
               {knowledgeFields.map((field) => <Link key={field.slug} href={`/blog?field=${field.slug}`} className="mobile-nav-card"><span>{field.label}</span><small>{field.subjects.join(' · ')}</small></Link>)}
             </div>
             <div className="mt-5 grid grid-cols-2 gap-2 border-t border-foreground/10 pt-5 text-sm font-semibold">
-              <Link href="/blog">Bài viết</Link><Link href="/utility-hub">Tiện ích</Link><Link href="/about">Giới thiệu</Link><Link href={user ? '/admin' : '/login'}>{user ? 'Quản lý' : 'Đăng nhập'}</Link>
+              <Link href="/ai-in-education" className="text-brand-orange">AI Giáo dục Hub</Link>
+              <Link href="/blog">Bài viết</Link>
+              <Link href="/utility-hub">Tiện ích</Link>
+              <Link href="/about">Giới thiệu</Link>
+              <Link href={user ? '/admin' : '/login'}>{user ? 'Quản lý' : 'Đăng nhập'}</Link>
             </div>
           </nav>
         )}

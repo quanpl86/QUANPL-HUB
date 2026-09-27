@@ -3,18 +3,18 @@ import { ArrowRight, Bot, BrainCircuit, Cpu, GraduationCap } from 'lucide-react'
 
 const pathways = [
   {
-    title: 'Khám phá AI an toàn',
-    description: 'Hiểu AI theo cách thực tế, có trách nhiệm và phù hợp với lứa tuổi trước khi chọn công cụ hoặc khóa học.',
-    href: '/blog?q=AI',
+    title: 'AI trong Giáo dục & Đào tạo',
+    description: 'Chiến lược toàn cầu, chuẩn năng lực giáo viên và phương pháp Khung 5C làm chủ AI không lệ thuộc.',
+    href: '/ai-in-education',
     icon: Bot,
-    signal: 'HỌC SINH & PHỤ HUYNH',
-    cta: 'Khám phá AI',
+    signal: 'HUB CHIẾN LƯỢC · AI IN EDUCATION',
+    cta: 'Khám phá Hub AI Giáo dục',
     color: 'from-orange-500/20 to-orange-500/5'
   },
   {
     title: 'Thiết kế bài học STEM & AI',
     description: 'Khung phương pháp, hoạt động lớp học và công cụ AI giúp giáo viên thiết kế trải nghiệm học tập có chiều sâu.',
-    href: '/blog?q=STEM',
+    href: '/blog?category=stem-education',
     icon: GraduationCap,
     signal: 'GIÁO VIÊN',
     cta: 'Xem lộ trình giáo viên',
@@ -23,7 +23,7 @@ const pathways = [
   {
     title: 'Thi đấu & kỹ thuật Robot',
     description: 'Phân tích đề, chiến thuật ghi điểm, thiết kế robot và tư duy kỹ thuật cho WRO / GreenMech.',
-    href: '/blog?q=Robotics',
+    href: '/blog?category=competition-robotics',
     icon: Cpu,
     signal: 'ĐỘI ROBOT',
     cta: 'Xem lộ trình Robot',
@@ -32,10 +32,10 @@ const pathways = [
   {
     title: 'Xây dựng hệ thống tri thức cá nhân',
     description: 'Xây hệ thống ghi chú, NotebookLM, RAG và kho tri thức cá nhân cho người học công nghệ.',
-    href: '/blog?q=Second%20Brain',
+    href: '/posts/notebooklm-xay-dung-bo-nao-thu-hai-cho-giao-duc-stem-po4ow',
     icon: BrainCircuit,
     signal: 'NGƯỜI TỰ HỌC',
-    cta: 'Xem lộ trình tự học',
+    cta: 'Xem bài viết nền tảng',
     color: 'from-purple-500/20 to-purple-500/5'
   },
 ];

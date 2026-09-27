@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/layout/HeroSection";
 import { ExploreContent } from '@/components/layout/ExploreContent';
 import { StartHereSection } from '@/components/layout/StartHereSection';
+import { AiEducationPillarSection } from '@/components/layout/AiEducationPillarSection';
 import { KnowledgeGateway } from '@/components/layout/KnowledgeGateway';
 import { getPublicCategories, getPublicPostIndex, matchesPostQuery } from '@/lib/content/public-content';
 
@@ -35,6 +36,7 @@ export default async function Home({
     <div className="flex flex-col min-h-screen">
       <HeroSection />
       <StartHereSection />
+      <AiEducationPillarSection />
       <KnowledgeGateway />
       
       <ExploreContent 

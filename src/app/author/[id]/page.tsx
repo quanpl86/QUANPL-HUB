@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Mail, BrainCircuit, GraduationCap, Code2, Layers, Cpu, CheckCircle2 } from 'lucide-react';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { getPublisherSchema } from '@/lib/seo/organization';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -72,7 +73,8 @@ export default async function AuthorProfile({ params }: { params: Promise<{ id: 
     alumniOf: {
       '@type': 'Organization',
       name: 'Educational Technology Sector'
-    }
+    },
+    worksFor: getPublisherSchema()
   };
 
   return (

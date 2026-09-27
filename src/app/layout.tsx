@@ -72,23 +72,14 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Toaster } from "sonner";
 
 import { JsonLd } from "@/components/seo/JsonLd";
+import { getOrganizationSchema } from "@/lib/seo/organization";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'KING DRAGON HUB',
-    url: 'https://kingdragonhub.com',
-    logo: 'https://kingdragonhub.com/icon.png',
-    description: 'Tri thức thực chiến về AI, STEM và Công nghệ Giáo dục.',
-    sameAs: [
-      'https://github.com/quanpl86'
-    ]
-  };
+  const organizationSchema = getOrganizationSchema();
 
   const websiteSchema = {
     '@context': 'https://schema.org',

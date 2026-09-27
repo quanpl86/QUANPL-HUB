@@ -4,9 +4,33 @@ import { ArrowUpRight, Code, MessageCircle, PlayCircle, UserCircle } from 'lucid
 import { verifiedPublicSocialLinks } from '@/lib/content/public-content';
 
 const columns = [
-  { title: 'Khám phá', links: [['AI', '/blog?q=AI'], ['STEM', '/blog?q=STEM'], ['Robot', '/blog?q=Robotics'], ['Dạy & Học', '/blog?q=giáo dục']] },
-  { title: 'Tài nguyên', links: [['Bài viết', '/blog'], ['Tiện ích', '/utility-hub'], ['Bản đồ tri thức', '/#knowledge-fields'], ['Bắt đầu tại đây', '/#start-here']] },
-  { title: 'King Dragon Hub', links: [['Giới thiệu', '/about'], ['Đăng nhập', '/login'], ['RSS', '/feed.xml'], ['Trang chủ', '/']] },
+  { 
+    title: 'Chuyên đề Trọng điểm', 
+    links: [
+      ['AI trong Giáo dục (Hub)', '/ai-in-education'],
+      ['STEM Education', '/blog?category=stem-education'],
+      ['Robot Thi đấu WRO', '/blog?category=competition-robotics'],
+      ['Phát triển Sư phạm', '/blog?field=edu-skills'],
+    ] 
+  },
+  { 
+    title: 'Trụ cột Chiến lược', 
+    links: [
+      ['AI Giáo dục Toàn cầu', '/posts/ai-trong-giao-duc-toan-cau-vi-sao-moi-nuoc-di-mot-huong'],
+      ['Khung Năng Lực AI Giáo Viên', '/posts/khung-nang-luc-ai-cho-giao-vien-viet-nam-lo-trinh-24-tuan'],
+      ['Khung 5C Giao Tiếp AI', '/posts/khung-5c-giao-tiep-voi-ai'],
+      ['Tiện ích Giáo dục', '/utility-hub'],
+    ] 
+  },
+  { 
+    title: 'King Dragon Hub', 
+    links: [
+      ['Giới thiệu', '/about'], 
+      ['Kho Bài viết', '/blog'], 
+      ['RSS Feed', '/feed.xml'], 
+      ['Trang chủ', '/']
+    ] 
+  },
 ];
 
 export function Footer() {

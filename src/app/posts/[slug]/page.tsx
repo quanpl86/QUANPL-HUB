@@ -8,7 +8,9 @@ import { TableOfContents } from '@/components/blog/TableOfContents';
 import { getPreparedPublicArticle, getPublicSeriesPosts, getRelatedPostCandidates } from '@/lib/content/public-article';
 import { PostInteractions } from '@/components/blog/PostInteractions';
 import { RelatedArticles } from '@/components/blog/RelatedArticles';
+import { AiEducationClusterNav } from '@/components/blog/AiEducationClusterNav';
 import { getVietnameseTaxonomyLabel } from '@/config/knowledge-taxonomy';
+import { getPublisherSchema, SITE_URL } from '@/lib/seo/organization';
 
 interface PostPageProps {
   params: Promise<{ slug: string }>;
@@ -92,25 +94,18 @@ export default async function PostPage({ params }: PostPageProps) {
     author: {
       '@type': 'Person',
       name: authorName,
-      url: 'https://kingdragonhub.com',
+      url: `${SITE_URL}/author/quanpl86`,
       jobTitle: 'STEM Education Specialist & System Architect',
       worksFor: {
         '@type': 'Organization',
+        '@id': `${SITE_URL}/#organization`,
         name: 'KING DRAGON HUB',
       },
       sameAs: [
-        'https://kingdragonhub.com',
+        SITE_URL,
       ],
     },
-    publisher: {
-      '@type': 'Organization',
-      name: 'KING DRAGON HUB',
-      url: 'https://kingdragonhub.com',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://kingdragonhub.com/logo.png',
-      },
-    },
+    publisher: getPublisherSchema(),
     datePublished: post.created_at,
     dateModified: post.updated_at || post.created_at,
     description: post.excerpt,
@@ -247,6 +242,9 @@ export default async function PostPage({ params }: PostPageProps) {
         </div>
 
         <div className="max-w-[1200px] mx-auto">
+          {/* AI in Education Topic Cluster Pathway */}
+          <AiEducationClusterNav currentSlug={slug} />
+
           {/* Related Articles Section */}
           <RelatedArticles posts={recentPosts || []} />
           
