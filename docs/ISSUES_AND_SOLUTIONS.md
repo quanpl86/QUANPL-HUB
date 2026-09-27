@@ -112,7 +112,7 @@
   1. xây AI Education hub — **production PASS**;
   2. link từ homepage + indexed pages — **production PASS**;
   3. accurate lastmod — **production PASS**;
-  4. resubmit sitemap — **DONE 2026-09-27 13:10 GMT+7; GSC accepted, pending download**;
+  4. resubmit sitemap — **DONE 2026-09-27 13:10 GMT+7; Google đã download lại thành công, 37 URL submitted, 0 warnings / 0 errors**;
   5. tracker 20–30 URLs;
   6. authority/original-asset campaign.
 - Verification:

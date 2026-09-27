@@ -53,7 +53,7 @@ Không mở rộng mạnh lịch viết bài mới cho đến khi:
 - [x] Fix `Organization.logo` schema toàn site — **production PASS 2026-09-27 13:10 GMT+7**.
 - [x] Tăng internal links tới các bài P0 đang UNKNOWN/DISCOVERED — **AI Education Hub + homepage/header/footer/cluster nav đã live trên production**.
 - [x] Deploy P0 SEO changes lên production và xác minh live HTML/JSON-LD — **PASS commit `37c0bc7`**.
-- [x] Re-submit sitemap sau production verification — **GSC accepted 2026-09-27 13:10 GMT+7; đang pending download**.
+- [x] Re-submit sitemap sau production verification — **DONE 2026-09-27 13:10 GMT+7; Google đã download lại thành công, 37 URL submitted, 0 warnings / 0 errors**.
 - [ ] Kết nối Bing Webmaster Tools.
 - [ ] Thiết lập IndexNow key + root key file.
 
