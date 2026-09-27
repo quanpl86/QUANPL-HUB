@@ -64,23 +64,32 @@
 
 ### 7.3 Knowledge Architecture & Content Strategy
 
+- [x] **P0.1 — Chuẩn hóa `Organization.logo` toàn site**: `ImageObject` (539x539px), `@id` organization entity, verified live production HTTP 200.
+- [x] **P0/P1 — Xây dựng AI in Education Hub (`/ai-in-education`)**: Canonical Hub authority, `CollectionPage` + `ItemList` 6 trụ cột chiến lược. Đã verified live HTTP 200.
+- [x] **P0.2 — Thiết lập Crawl Path & Internal Linking**: Liên kết chéo đa tầng từ Homepage (`AiEducationPillarSection`), Header, Footer và Component `AiEducationClusterNav` trong bài viết.
+- [x] **Cập nhật & Resubmit Sitemap**: `lastmod` chuẩn xác, dọn dẹp link 404, accepted trên GSC lúc 13:10 27/09/2026.
+- [/] **EXP-003 Topic Hub Experiment** [RUNNING]:
+  - **T0**: 27/09/2026 13:10 GMT+7.
+  - **Cohort**: 22 URLs (7 indexed / 14 not indexed / 1 pending).
+  - **Checkpoint 1 (3 ngày - 30/09/2026)**: Đo discovery transition & Google crawl activity trên Hub + sitemap.
+  - **Checkpoint 2 (7 ngày - 04/10/2026)**: Đánh giá tỷ lệ indexed %, impression lift và non-brand queries.
+  - **Nguyên tắc**: Giữ nguyên kiến trúc Hub trong 3–7 ngày, không sửa cấu trúc giữa chừng.
 - [ ] Tạo **Ecosystem Map** trực quan cho KING DRAGON HUB.
 - [ ] Tạo **DragonMind Architecture**: các lớp tri thức, workflow, content sources, AI tools.
 - [ ] Tạo hệ thống **Learning Path**:
   - [ ] Second Brain 101.
-  - [ ] AI for STEM Teachers.
+  - [x] AI for STEM Teachers & Decision Makers (tích hợp trong Hub `/ai-in-education`).
   - [ ] Robotics Competition Engineering.
   - [ ] Scratch & Computational Thinking.
   - [ ] NotebookLM / RAG cho giáo dục.
-- [ ] Bổ sung content collection hoặc series metadata cho bài viết.
-- [ ] Thêm block "Bài tiếp theo trong lộ trình" trên trang bài viết.
-- [ ] Thêm block "Bài liên quan" dựa theo category / tags / keywords.
+- [x] Bổ sung content collection hoặc series metadata cho bài viết.
+- [x] Thêm block "Cụm chuyên đề chiến lược" trên trang bài viết (`AiEducationClusterNav`).
 - [ ] Chuẩn hóa category naming để vừa có chất cyber vừa dễ hiểu với SEO.
 - [ ] Lập danh sách 20 bài cornerstone cần ưu tiên nâng cấp.
 
-### 7.4 Visual Knowledge Assets
+### 7.4 Visual Knowledge Assets & Authority (Trọng tâm giai đoạn chờ Crawl)
 
-- [ ] Xây component infographic / diagram dùng lại được trong bài viết.
+- [ ] Xây component infographic / diagram dùng lại được trong bài viết (Original Assets).
 - [ ] Thiết kế nhóm **Image Toolkit** trong Utility Hub:
   - [ ] Chuyển ảnh sang vector.
   - [ ] Chuyển định dạng ảnh.
