@@ -64,16 +64,20 @@
 
 ### 7.3 Knowledge Architecture & Content Strategy
 
-- [x] **P0.1 — Chuẩn hóa `Organization.logo` toàn site**: `ImageObject` (539x539px), `@id` organization entity, verified live production HTTP 200.
+- [x] **P0.1 — Chuẩn hóa `Organization.logo` toàn site**: `ImageObject` (539x539px), `@id` organization entity, production live verification đã PASS (0 warnings/errors); chờ Google recrawl để xác nhận trong các báo cáo structured data/indexing của GSC.
 - [x] **P0/P1 — Xây dựng AI in Education Hub (`/ai-in-education`)**: Canonical Hub authority, `CollectionPage` + `ItemList` 6 trụ cột chiến lược. Đã verified live HTTP 200.
 - [x] **P0.2 — Thiết lập Crawl Path & Internal Linking**: Liên kết chéo đa tầng từ Homepage (`AiEducationPillarSection`), Header, Footer và Component `AiEducationClusterNav` trong bài viết.
-- [x] **Cập nhật & Resubmit Sitemap**: `lastmod` chuẩn xác, dọn dẹp link 404, accepted trên GSC lúc 13:10 27/09/2026.
+- [x] **Cập nhật & Resubmit Sitemap**: Google đã tải lại thành công sau resubmit; hiện có **37 URL submitted**, `0 warnings / 0 errors`, không còn ở trạng thái pending download.
 - [/] **EXP-003 Topic Hub Experiment** [RUNNING]:
-  - **T0**: 27/09/2026 13:10 GMT+7.
-  - **Cohort**: 22 URLs (7 indexed / 14 not indexed / 1 pending).
-  - **Checkpoint 1 (3 ngày - 30/09/2026)**: Đo discovery transition & Google crawl activity trên Hub + sitemap.
-  - **Checkpoint 2 (7 ngày - 04/10/2026)**: Đánh giá tỷ lệ indexed %, impression lift và non-brand queries.
-  - **Nguyên tắc**: Giữ nguyên kiến trúc Hub trong 3–7 ngày, không sửa cấu trúc giữa chừng.
+  - **T0**: 27/09/2026 13:10 GMT+7 (Annotation GSC: `EXP-003 AI Education Hub production launch`).
+  - **Production Verification**: PASS (100% tiêu chí live endpoints).
+  - **Cohort T0**: **22 URL = 7 Indexed / 14 Not Indexed / 1 Pending**:
+    - `/ai-in-education` hiện là `Not Indexed → URL is unknown to Google`, chưa có `lastCrawlTime` (baseline đo lường).
+    - URL đang `Pending` thực tế: `posts/ai-tieu-hoc-lo-trinh-trien-khai-chuong-trinh-chinh-khoa-hieu-qua-g7p7l`.
+    - Phân biệt với số liệu toàn site trên Google Page Indexing (~13 indexed / 5 not indexed do phạm vi tập mẫu khác nhau).
+  - **Kỷ luật Structure Freeze (3–7 ngày)**: Giữ nguyên cấu trúc Hub, internal links và nội dung của cụm AI Education; không nhúng asset mới vào 2 bài Khung năng lực và Khung 5C trước Checkpoint 1 để tránh đưa thêm biến vào thử nghiệm.
+  - **Checkpoint 1 (3 ngày - 30/09/2026)**: Đo discovery/crawl transition (Googlebot crawl Hub & sitemap activity).
+  - **Checkpoint 2 (7 ngày - 04/10/2026)**: Đánh giá hiệu quả 7 ngày (tỷ lệ indexed %, impressions lift và non-brand queries).
 - [ ] Tạo **Ecosystem Map** trực quan cho KING DRAGON HUB.
 - [ ] Tạo **DragonMind Architecture**: các lớp tri thức, workflow, content sources, AI tools.
 - [ ] Tạo hệ thống **Learning Path**:
