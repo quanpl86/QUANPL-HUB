@@ -34,6 +34,54 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // 1. Hub chung LOP
+      {
+        source: '/lop',
+        destination: '/lop-control-center/',
+        permanent: false,
+      },
+      // 2. LOP Control Center & Op Center
+      {
+        source: '/lop/control',
+        destination: 'https://script.google.com/macros/s/AKfycbxyVkR5zsCbNALt62-E_t9lRMybA1p8PLdAvReuQrt2SA76vtXpN6Qd4X-awbQIZh6c/exec',
+        permanent: false,
+      },
+      {
+        source: '/lop/admin',
+        destination: 'https://script.google.com/macros/s/AKfycbxyVkR5zsCbNALt62-E_t9lRMybA1p8PLdAvReuQrt2SA76vtXpN6Qd4X-awbQIZh6c/exec',
+        permanent: false,
+      },
+      {
+        source: '/lop-app',
+        destination: 'https://script.google.com/macros/s/AKfycbxyVkR5zsCbNALt62-E_t9lRMybA1p8PLdAvReuQrt2SA76vtXpN6Qd4X-awbQIZh6c/exec',
+        permanent: false,
+      },
+      // 3. Teacher Portal
+      {
+        source: '/lop/teacher',
+        destination: 'https://script.google.com/macros/s/AKfycbxFI1NAkMo-FGI4q3uoA7nfOedDaRLOG2-xvdbmIv-a19mpMVm6kHAwEgEJ-BohtTBu/exec',
+        permanent: false,
+      },
+      {
+        source: '/teacher',
+        destination: 'https://script.google.com/macros/s/AKfycbxFI1NAkMo-FGI4q3uoA7nfOedDaRLOG2-xvdbmIv-a19mpMVm6kHAwEgEJ-BohtTBu/exec',
+        permanent: false,
+      },
+      // 4. Student Portal
+      {
+        source: '/lop/student',
+        destination: 'https://script.google.com/macros/s/AKfycbxY4ioAwO0bhJY8QIzd9PPA9qSQPPBMTuYKtx9GWGZXW_rdQUnRcPBhCVh1H5NdBzy99g/exec',
+        permanent: false,
+      },
+      {
+        source: '/student',
+        destination: 'https://script.google.com/macros/s/AKfycbxY4ioAwO0bhJY8QIzd9PPA9qSQPPBMTuYKtx9GWGZXW_rdQUnRcPBhCVh1H5NdBzy99g/exec',
+        permanent: false,
+      },
+    ];
+  },
   images: {
     qualities: [75, 95, 100],
     remotePatterns: [

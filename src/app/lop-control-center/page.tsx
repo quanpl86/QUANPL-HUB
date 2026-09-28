@@ -21,8 +21,10 @@ import {
   ClipboardCheck,
   Check,
   Radio,
-  Server
+  Server,
+  Link2
 } from 'lucide-react';
+import { CopyShortLinkButton } from '@/components/lop/CopyShortLinkButton';
 
 export const metadata: Metadata = {
   title: 'LOP Control Center & Portals | KING DRAGON HUB',
@@ -128,9 +130,15 @@ export default function LopControlCenterPage() {
                 Hệ Sinh Thái Webapp LOP
               </h2>
             </div>
-            <p className="text-xs text-foreground/60 max-w-xs sm:text-right">
-              Nhấp trực tiếp vào cổng phù hợp với vai trò của bạn để truy cập webapp trên Google Apps Script.
-            </p>
+            <div className="flex flex-col items-start sm:items-end gap-1.5">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-foreground/15 bg-foreground/5 px-3 py-1 text-xs text-foreground/80">
+                <Link2 className="h-3.5 w-3.5 text-brand-orange" />
+                <span>Hub quản lý chung: <strong className="text-brand-orange font-mono">kingdragonhub.com/lop</strong></span>
+              </div>
+              <p className="text-[11px] text-foreground/50">
+                Gõ trực tiếp link rút gọn trên trình duyệt để chuyển thẳng đến ứng dụng tương ứng.
+              </p>
+            </div>
           </div>
 
           {/* CARD 1: TOP LARGE CARD - LOP CONTROL CENTER & OP CENTER */}
@@ -207,22 +215,16 @@ export default function LopControlCenterPage() {
                 </div>
               </div>
 
-              {/* Bottom action bar */}
+              {/* Bottom action bar with Short Link */}
               <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-foreground/10">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-foreground/60">
-                  <span className="rounded-md bg-foreground/5 px-2.5 py-1 font-mono border border-foreground/10">
-                    Google Apps Script Webapp
-                  </span>
-                  <span className="rounded-md bg-foreground/5 px-2.5 py-1 font-mono border border-foreground/10">
-                    OAuth 2.0 Verified
-                  </span>
-                  <span className="rounded-md bg-foreground/5 px-2.5 py-1 font-mono border border-foreground/10">
-                    Full Admin Access
-                  </span>
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-foreground/50 font-medium text-xs">Link rút gọn:</span>
+                  <CopyShortLinkButton urlPath="/lop/control" />
+                  <CopyShortLinkButton urlPath="/lop/admin" />
                 </div>
 
                 <a 
-                  href={LOP_MAIN_URL}
+                  href="/lop/control"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-orange-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-brand-orange/20 transition-all duration-200 hover:from-brand-orange hover:to-orange-500 hover:shadow-lg hover:shadow-brand-orange/30 hover:scale-[1.02] active:scale-[0.98]"
@@ -272,15 +274,16 @@ export default function LopControlCenterPage() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-5 border-t border-foreground/10 flex items-center justify-between gap-3">
-                <span className="text-xs text-foreground/50 font-mono">
-                  Role: Teacher / TA
-                </span>
+              <div className="mt-8 pt-5 border-t border-foreground/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-foreground/50 font-medium text-xs">Link rút gọn:</span>
+                  <CopyShortLinkButton urlPath="/lop/teacher" />
+                </div>
                 <a 
-                  href={TEACHER_PORTAL_URL}
+                  href="/lop/teacher"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500 hover:text-white px-5 py-2.5 text-sm font-bold text-blue-400 transition-all duration-200 shadow-sm hover:shadow-blue-500/20"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500 hover:text-white px-5 py-2.5 text-sm font-bold text-blue-400 transition-all duration-200 shadow-sm hover:shadow-blue-500/20"
                 >
                   <span>Mở Teacher Portal</span>
                   <ExternalLink className="h-4 w-4" />
@@ -324,15 +327,16 @@ export default function LopControlCenterPage() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-5 border-t border-foreground/10 flex items-center justify-between gap-3">
-                <span className="text-xs text-foreground/50 font-mono">
-                  Role: Student / Learner
-                </span>
+              <div className="mt-8 pt-5 border-t border-foreground/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-foreground/50 font-medium text-xs">Link rút gọn:</span>
+                  <CopyShortLinkButton urlPath="/lop/student" />
+                </div>
                 <a 
-                  href={STUDENT_PORTAL_URL}
+                  href="/lop/student"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500 hover:text-white px-5 py-2.5 text-sm font-bold text-purple-400 transition-all duration-200 shadow-sm hover:shadow-purple-500/20"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500 hover:text-white px-5 py-2.5 text-sm font-bold text-purple-400 transition-all duration-200 shadow-sm hover:shadow-purple-500/20"
                 >
                   <span>Mở Student Portal</span>
                   <ExternalLink className="h-4 w-4" />
