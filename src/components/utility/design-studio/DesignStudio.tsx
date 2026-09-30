@@ -95,6 +95,54 @@ export const DesignStudio: React.FC = () => {
   const [isDraggingLeft, setIsDraggingLeft] = useState(false);
   const [isDraggingRight, setIsDraggingRight] = useState(false);
 
+  // Focus Mode (Chế độ tập trung - Toàn màn hình)
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  const handleToggleFocusMode = useCallback(() => {
+    setIsFocusMode((prev) => {
+      const next = !prev;
+      if (next) {
+        toast.info('Đã bật Chế độ Tập trung (Toàn màn hình). Nhấn Esc hoặc phím F để trở về.');
+        if (typeof document !== 'undefined' && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+      } else {
+        toast.info('Đã thoát Chế độ Tập trung.');
+        if (typeof document !== 'undefined' && document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+      return next;
+    });
+  }, []);
+
+  // Keyboard shortcut listener (Esc to exit, F to toggle) and fullscreen sync
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
+      if (e.key === 'Escape' && isFocusMode) {
+        handleToggleFocusMode();
+      } else if ((e.key === 'f' || e.key === 'F') && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        handleToggleFocusMode();
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFocusMode) {
+        setIsFocusMode(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [isFocusMode, handleToggleFocusMode]);
+
   // Drag handler for left sidebar divider
   const handleLeftDividerMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -153,6 +201,15 @@ export const DesignStudio: React.FC = () => {
     const fit = Math.min(1, Math.min(fitW, fitH));
     return Number(Math.max(0.2, fit).toFixed(2));
   }, [isLeftSidebarOpen, leftSidebarWidth, isRightInspectorOpen, rightInspectorWidth]);
+
+  // Recalibrate fit-zoom whenever focus mode changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const fit = calculateFitZoom(canvasWidth, canvasHeight);
+      setZoom(fit);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isFocusMode, calculateFitZoom, canvasWidth, canvasHeight]);
 
   // Save current canvas state to history stack
   const saveHistory = useCallback(() => {
@@ -829,7 +886,11 @@ export const DesignStudio: React.FC = () => {
   };
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden font-sans transition-colors ${
+    <div className={`flex flex-col font-sans transition-all duration-200 ${
+      isFocusMode
+        ? 'fixed inset-0 z-[100] h-screen w-screen overflow-hidden'
+        : 'h-screen overflow-hidden'
+    } ${
       isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       {/* 1. TOP BAR */}
@@ -864,6 +925,8 @@ export const DesignStudio: React.FC = () => {
         onToggleLeftSidebar={() => setIsLeftSidebarOpen((prev) => !prev)}
         isRightInspectorOpen={isRightInspectorOpen}
         onToggleRightInspector={() => setIsRightInspectorOpen((prev) => !prev)}
+        isFocusMode={isFocusMode}
+        onToggleFocusMode={handleToggleFocusMode}
       />
 
       {/* 2. MAIN 3-ZONE STUDIO WORKSPACE */}

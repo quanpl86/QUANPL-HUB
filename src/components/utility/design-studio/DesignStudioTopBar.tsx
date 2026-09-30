@@ -18,6 +18,8 @@ import {
   ArrowLeftRight,
   PanelLeft,
   PanelRight,
+  Expand,
+  Shrink,
 } from 'lucide-react';
 import { CANVAS_PRESETS } from './templates/preset-templates';
 
@@ -49,6 +51,8 @@ interface TopBarProps {
   onToggleLeftSidebar: () => void;
   isRightInspectorOpen: boolean;
   onToggleRightInspector: () => void;
+  isFocusMode: boolean;
+  onToggleFocusMode: () => void;
 }
 
 export const DesignStudioTopBar: React.FC<TopBarProps> = ({
@@ -79,6 +83,8 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
   onToggleLeftSidebar,
   isRightInspectorOpen,
   onToggleRightInspector,
+  isFocusMode,
+  onToggleFocusMode,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
@@ -624,6 +630,33 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
         >
           <PanelRight className="w-3.5 h-3.5" />
           <span className="hidden md:inline text-[11px]">Thuộc tính</span>
+        </button>
+
+        <div className={`h-5 w-[1px] hidden sm:block ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
+
+        {/* Toggle Focus Mode (Toàn màn hình) */}
+        <button
+          onClick={onToggleFocusMode}
+          className={`p-1.5 px-2.5 rounded-lg border transition text-xs flex items-center gap-1.5 font-semibold ${
+            isFocusMode
+              ? 'bg-amber-500/20 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/30 shadow-xs ring-2 ring-amber-500/20'
+              : isDark
+              ? 'text-slate-300 hover:text-emerald-400 hover:bg-slate-900 border-slate-800'
+              : 'text-slate-700 hover:text-emerald-600 hover:bg-slate-100 border-slate-200'
+          }`}
+          title={isFocusMode ? 'Thoát chế độ tập trung [Esc]' : 'Bật chế độ tập trung toàn màn hình [F]'}
+        >
+          {isFocusMode ? (
+            <>
+              <Shrink className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+              <span className="text-[11px]">Thoát tập trung</span>
+            </>
+          ) : (
+            <>
+              <Expand className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="hidden sm:inline text-[11px]">Tập trung</span>
+            </>
+          )}
         </button>
       </div>
     </header>
