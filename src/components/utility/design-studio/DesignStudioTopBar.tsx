@@ -16,6 +16,8 @@ import {
   Edit2,
   Check,
   ArrowLeftRight,
+  PanelLeft,
+  PanelRight,
 } from 'lucide-react';
 import { CANVAS_PRESETS } from './templates/preset-templates';
 
@@ -43,6 +45,10 @@ interface TopBarProps {
   canvasBgColor: string;
   onCanvasBgColorChange: (color: string, gradientStops?: [string, string]) => void;
   onOpenBackgroundTab?: () => void;
+  isLeftSidebarOpen: boolean;
+  onToggleLeftSidebar: () => void;
+  isRightInspectorOpen: boolean;
+  onToggleRightInspector: () => void;
 }
 
 export const DesignStudioTopBar: React.FC<TopBarProps> = ({
@@ -69,6 +75,10 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
   canvasBgColor,
   onCanvasBgColorChange,
   onOpenBackgroundTab,
+  isLeftSidebarOpen,
+  onToggleLeftSidebar,
+  isRightInspectorOpen,
+  onToggleRightInspector,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
@@ -117,7 +127,7 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
   return (
     <header className={`h-14 border-b px-4 flex items-center justify-between gap-3 select-none z-30 shrink-0 transition-colors ${headerBg}`}>
       {/* Left: Back & Project Title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <Link
           href="/utility-hub"
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition text-xs font-medium ${
@@ -130,6 +140,24 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
           <ArrowLeft className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Hub</span>
         </Link>
+
+        {/* Toggle Left Sidebar */}
+        <button
+          onClick={onToggleLeftSidebar}
+          className={`p-1.5 px-2 rounded-lg border transition text-xs flex items-center gap-1.5 font-medium ${
+            isLeftSidebarOpen
+              ? isDark
+                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-700'
+              : isDark
+              ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-slate-800'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-slate-200'
+          }`}
+          title={isLeftSidebarOpen ? 'Thu gọn thanh công cụ (Ẩn)' : 'Mở rộng thanh công cụ (Hiện)'}
+        >
+          <PanelLeft className="w-3.5 h-3.5" />
+          <span className="hidden md:inline text-[11px]">Công cụ</span>
+        </button>
 
         <div className={`h-5 w-[1px] ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
 
@@ -577,6 +605,26 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
             </div>
           )}
         </div>
+
+        <div className={`h-5 w-[1px] hidden sm:block ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
+
+        {/* Toggle Right Inspector */}
+        <button
+          onClick={onToggleRightInspector}
+          className={`p-1.5 px-2 rounded-lg border transition text-xs flex items-center gap-1.5 font-medium ${
+            isRightInspectorOpen
+              ? isDark
+                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-700'
+              : isDark
+              ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border-slate-800'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border-slate-200'
+          }`}
+          title={isRightInspectorOpen ? 'Thu gọn bảng thuộc tính (Ẩn)' : 'Mở rộng bảng thuộc tính (Hiện)'}
+        >
+          <PanelRight className="w-3.5 h-3.5" />
+          <span className="hidden md:inline text-[11px]">Thuộc tính</span>
+        </button>
       </div>
     </header>
   );

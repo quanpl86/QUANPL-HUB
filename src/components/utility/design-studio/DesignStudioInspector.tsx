@@ -27,11 +27,14 @@ import {
   Droplets,
   Layers2,
   Type,
+  ChevronRight,
 } from 'lucide-react';
 import { ImageAdjustments } from '@/types/design-studio';
 import { GRADIENT_PRESETS } from './templates/background-presets';
 
 interface InspectorProps {
+  width: number;
+  onToggleCollapse: () => void;
   selectedObject: Record<string, unknown> | null;
   selectedType: string | null;
   canvasBgColor: string;
@@ -85,6 +88,8 @@ const FILTER_PRESETS: Array<{ id: string; label: string }> = [
 ];
 
 export const DesignStudioInspector: React.FC<InspectorProps> = ({
+  width,
+  onToggleCollapse,
   selectedObject,
   selectedType,
   canvasBgColor,
@@ -121,13 +126,27 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
   // 1. CHƯA CHỌN VẬT THỂ: HIỂN THỊ THUỘC TÍNH CANVAS
   if (!selectedObject || !selectedType) {
     return (
-      <aside className={`w-72 border-l p-4 overflow-y-auto shrink-0 select-none z-20 space-y-4 text-xs transition-colors ${panelBg}`}>
-        <div>
-          <h3 className={`font-semibold text-sm flex items-center gap-1.5 ${headingColor}`}>
-            <Palette className="w-4 h-4 text-emerald-500" />
-            Cài Đặt Nền Canvas
-          </h3>
-          <p className={`text-[11px] mt-0.5 ${subtextColor}`}>Bấm vào bất kỳ vật thể nào trên canvas để chỉnh sửa thuộc tính</p>
+      <aside
+        style={{ width: `${width}px` }}
+        className={`border-l p-4 overflow-y-auto shrink-0 select-none z-20 space-y-4 text-xs transition-[width] duration-75 relative ${panelBg}`}
+      >
+        <div className="flex items-center justify-between pb-1 border-b">
+          <div>
+            <h3 className={`font-semibold text-sm flex items-center gap-1.5 ${headingColor}`}>
+              <Palette className="w-4 h-4 text-emerald-500" />
+              Cài Đặt Nền Canvas
+            </h3>
+            <p className={`text-[11px] mt-0.5 ${subtextColor}`}>Bấm vào bất kỳ vật thể nào trên canvas để chỉnh sửa thuộc tính</p>
+          </div>
+          <button
+            onClick={onToggleCollapse}
+            className={`p-1 rounded-md transition ${
+              isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-800'
+            }`}
+            title="Thu gọn bảng thuộc tính (Ẩn)"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Quick transparent & basic color options */}
@@ -304,7 +323,25 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
   );
 
   return (
-    <aside className={`w-72 border-l p-4 overflow-y-auto shrink-0 select-none z-20 space-y-4 text-xs transition-colors ${panelBg}`}>
+    <aside
+      style={{ width: `${width}px` }}
+      className={`border-l p-4 overflow-y-auto shrink-0 select-none z-20 space-y-4 text-xs transition-[width] duration-75 relative ${panelBg}`}
+    >
+      {/* Top Header with Collapse Button */}
+      <div className="flex items-center justify-between pb-2 border-b">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          Thuộc Tính & Lớp
+        </span>
+        <button
+          onClick={onToggleCollapse}
+          className={`p-1 rounded-md transition ${
+            isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-800'
+          }`}
+          title="Thu gọn bảng thuộc tính (Ẩn)"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
       {/* 2. KHI ĐANG CHỌN HÌNH ẢNH (PHOTO EDITOR & AI TÁCH NỀN) */}
       {selectedType === 'image' && (
         <div className="space-y-4">

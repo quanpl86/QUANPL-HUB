@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   Loader2,
   Palette,
+  ChevronLeft,
 } from 'lucide-react';
 import { ToolTab, DesignTemplate, DesignLayout, StickerItem } from '@/types/design-studio';
 import { PRESET_TEMPLATES } from './templates/preset-templates';
@@ -26,6 +27,8 @@ import { DESIGN_LAYOUTS, LUCIDE_ICONS, STEM_BADGES } from './templates/stickers-
 import { QUICK_BACKGROUNDS, SOLID_PALETTES, GRADIENT_PRESETS } from './templates/background-presets';
 
 interface SidebarProps {
+  width: number;
+  onToggleCollapse: () => void;
   activeTab: ToolTab;
   onTabChange: (tab: ToolTab) => void;
   onAddText: (type: 'title' | 'subtitle' | 'body' | 'neon') => void;
@@ -43,6 +46,8 @@ interface SidebarProps {
 }
 
 export const DesignStudioSidebar: React.FC<SidebarProps> = ({
+  width,
+  onToggleCollapse,
   activeTab,
   onTabChange,
   onAddText,
@@ -97,9 +102,28 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   const headingColor = isDark ? 'text-slate-200' : 'text-slate-800';
 
   return (
-    <aside className={`w-80 border-r flex flex-col shrink-0 select-none z-20 h-full transition-colors ${sidebarBg}`}>
-      {/* Tab Navigation Icons without scrollbar */}
-      <div className={`flex border-b p-1.5 gap-1 shrink-0 ${tabHeaderBg}`}>
+    <aside
+      style={{ width: `${width}px` }}
+      className={`border-r flex flex-col shrink-0 select-none z-20 h-full transition-[width] duration-75 relative ${sidebarBg}`}
+    >
+      {/* Sidebar Top Header with Collapse Button */}
+      <div className={`flex items-center justify-between px-3.5 py-2.5 border-b shrink-0 ${tabHeaderBg}`}>
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          Bảng Công Cụ
+        </span>
+        <button
+          onClick={onToggleCollapse}
+          className={`p-1 rounded-md transition ${
+            isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-slate-200' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-800'
+          }`}
+          title="Thu gọn bảng công cụ (Ẩn)"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Tab Navigation Icons - 2 responsive rows (4x2) */}
+      <div className={`grid grid-cols-4 gap-1 p-2 border-b shrink-0 ${tabHeaderBg}`}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -107,16 +131,16 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex-1 py-1.5 px-0.5 rounded-lg flex flex-col items-center gap-1 transition text-[10px] font-medium ${
+              className={`py-1.5 px-1 rounded-lg flex flex-col items-center justify-center gap-1 transition text-[11px] font-medium min-w-0 ${
                 isActive
-                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-xs'
                   : isDark
-                  ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                  ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-transparent'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 border border-transparent'
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
-              <span className="truncate">{tab.label}</span>
+              <Icon className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate w-full text-center tracking-tight text-[11px]">{tab.label}</span>
             </button>
           );
         })}
@@ -212,14 +236,14 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
               <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                 Kiểu nền thông dụng
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-2">
                 {QUICK_BACKGROUNDS.map((item) => {
                   const isSelected = canvasBgColor === item.value;
                   return (
                     <button
                       key={item.id}
                       onClick={() => onCanvasBgColorChange(item.value)}
-                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 transition text-left group ${
+                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 transition text-left group min-w-0 ${
                         isSelected
                           ? 'border-emerald-500 bg-emerald-500/10'
                           : cardBg
@@ -236,12 +260,12 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
                         }}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className={`text-xs font-semibold truncate ${
+                        <div className={`text-xs font-semibold leading-snug break-words ${
                           isSelected ? 'text-emerald-600 dark:text-emerald-400' : headingColor
                         }`}>
                           {item.name}
                         </div>
-                        <div className="text-[9px] text-slate-500 truncate">
+                        <div className="text-[10px] text-slate-500 truncate mt-0.5">
                           {item.id === 'transparent' ? 'PNG trong suốt' : item.value}
                         </div>
                       </div>
@@ -282,26 +306,26 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
               <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                 Màu Gradient Chuyển Sắc (Đa Chiều)
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-2">
                 {GRADIENT_PRESETS.map((grad) => {
                   const isSelected = canvasBgColor === grad.value;
                   return (
                     <button
                       key={grad.id}
                       onClick={() => onCanvasBgColorChange(grad.value, grad.gradientStops)}
-                      className={`p-2 rounded-xl border flex items-center gap-2 transition text-left group ${
+                      className={`p-2 rounded-xl border flex items-center gap-2.5 transition text-left group min-w-0 ${
                         isSelected
                           ? 'border-emerald-500 ring-2 ring-emerald-500/30'
                           : cardBg
                       }`}
                     >
                       <div
-                        className="w-7 h-7 rounded-lg border border-white/20 shrink-0 shadow-sm"
+                        className="w-6 h-6 rounded-lg border border-white/20 shrink-0 shadow-xs"
                         style={{
                           background: `linear-gradient(135deg, ${grad.gradientStops?.[0]}, ${grad.gradientStops?.[1]})`,
                         }}
                       />
-                      <span className={`text-[11px] font-medium truncate ${
+                      <span className={`text-[11px] font-medium leading-tight break-words flex-1 ${
                         isSelected ? 'text-emerald-600 dark:text-emerald-400' : headingColor
                       }`}>
                         {grad.name}

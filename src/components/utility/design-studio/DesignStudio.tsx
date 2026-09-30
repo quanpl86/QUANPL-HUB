@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import { toast } from 'sonner';
 import { ToolTab, ImageAdjustments, DesignTemplate, DesignLayout, HubDesignFile } from '@/types/design-studio';
+import { PanelLeft, PanelRight } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { DesignStudioTopBar } from './DesignStudioTopBar';
 import { DesignStudioSidebar } from './DesignStudioSidebar';
@@ -85,16 +86,73 @@ export const DesignStudio: React.FC = () => {
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiProgressMessage, setAiProgressMessage] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+
+  // Resizable Panels States (Left Sidebar & Right Inspector)
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(360);
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true);
+  const [rightInspectorWidth, setRightInspectorWidth] = useState(320);
+  const [isRightInspectorOpen, setIsRightInspectorOpen] = useState(true);
+  const [isDraggingLeft, setIsDraggingLeft] = useState(false);
+  const [isDraggingRight, setIsDraggingRight] = useState(false);
+
+  // Drag handler for left sidebar divider
+  const handleLeftDividerMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingLeft(true);
+    const startX = e.clientX;
+    const startWidth = leftSidebarWidth;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      const newWidth = Math.min(560, Math.max(280, startWidth + delta));
+      setLeftSidebarWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      setIsDraggingLeft(false);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
+  // Drag handler for right inspector divider
+  const handleRightDividerMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingRight(true);
+    const startX = e.clientX;
+    const startWidth = rightInspectorWidth;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = startX - moveEvent.clientX;
+      const newWidth = Math.min(520, Math.max(260, startWidth + delta));
+      setRightInspectorWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      setIsDraggingRight(false);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
   // Calculate responsive zoom so canvas always fits 100% inside available workspace without clipping
   const calculateFitZoom = useCallback((w: number, h: number) => {
     if (typeof window === 'undefined') return 0.85;
-    const availableW = Math.max(300, window.innerWidth - 320 - 288 - 64);
-    const availableH = Math.max(300, window.innerHeight - 56 - 64);
+    const currentLeft = isLeftSidebarOpen ? leftSidebarWidth : 0;
+    const currentRight = isRightInspectorOpen ? rightInspectorWidth : 0;
+    const availableW = Math.max(300, window.innerWidth - currentLeft - currentRight - 48);
+    const availableH = Math.max(300, window.innerHeight - 56 - 48);
     const fitW = (availableW - 32) / w;
     const fitH = (availableH - 32) / h;
     const fit = Math.min(1, Math.min(fitW, fitH));
     return Number(Math.max(0.2, fit).toFixed(2));
-  }, []);
+  }, [isLeftSidebarOpen, leftSidebarWidth, isRightInspectorOpen, rightInspectorWidth]);
 
   // Save current canvas state to history stack
   const saveHistory = useCallback(() => {
@@ -802,64 +860,157 @@ export const DesignStudio: React.FC = () => {
         canvasBgColor={canvasBgColor}
         onCanvasBgColorChange={handleCanvasBgColorChange}
         onOpenBackgroundTab={() => setActiveTab('background')}
+        isLeftSidebarOpen={isLeftSidebarOpen}
+        onToggleLeftSidebar={() => setIsLeftSidebarOpen((prev) => !prev)}
+        isRightInspectorOpen={isRightInspectorOpen}
+        onToggleRightInspector={() => setIsRightInspectorOpen((prev) => !prev)}
       />
 
       {/* 2. MAIN 3-ZONE STUDIO WORKSPACE */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* LEFT SIDEBAR (Templates, Layouts, Background, Text, Shapes, Stickers, Uploads, AI Tools) */}
-        <DesignStudioSidebar
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onAddText={handleAddText}
-          onAddShape={handleAddShape}
-          onUploadImage={handleUploadImage}
-          onSelectTemplate={handleSelectTemplate}
-          onApplyLayout={handleApplyLayout}
-          onAddSvgSticker={handleAddSvgSticker}
-          onQuickAiRemoveBg={handleQuickAiRemoveBg}
-          isAiProcessing={isAiProcessing}
-          aiProgressMessage={aiProgressMessage}
-          isDark={isDark}
-          canvasBgColor={canvasBgColor}
-          onCanvasBgColorChange={handleCanvasBgColorChange}
-        />
+        {/* Transparent global drag overlay to ensure smooth dragging over canvas */}
+        {(isDraggingLeft || isDraggingRight) && (
+          <div className="fixed inset-0 z-50 cursor-col-resize select-none" />
+        )}
 
-        {/* CENTER CANVAS WORKSPACE */}
-        <DesignStudioCanvas
-          canvasRef={canvasElRef}
-          canvasWidth={canvasWidth}
-          canvasHeight={canvasHeight}
-          zoom={zoom}
-          onDropImage={handleUploadImage}
-          isDark={isDark}
-          canvasBgColor={canvasBgColor}
-        />
+        {/* LEFT SIDEBAR (Templates, Layouts, Background, Text, Shapes, Stickers, Uploads, AI Tools) */}
+        {isLeftSidebarOpen && (
+          <DesignStudioSidebar
+            width={leftSidebarWidth}
+            onToggleCollapse={() => setIsLeftSidebarOpen(false)}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onAddText={handleAddText}
+            onAddShape={handleAddShape}
+            onUploadImage={handleUploadImage}
+            onSelectTemplate={handleSelectTemplate}
+            onApplyLayout={handleApplyLayout}
+            onAddSvgSticker={handleAddSvgSticker}
+            onQuickAiRemoveBg={handleQuickAiRemoveBg}
+            isAiProcessing={isAiProcessing}
+            aiProgressMessage={aiProgressMessage}
+            isDark={isDark}
+            canvasBgColor={canvasBgColor}
+            onCanvasBgColorChange={handleCanvasBgColorChange}
+          />
+        )}
+
+        {/* LEFT DRAG DIVIDER */}
+        {isLeftSidebarOpen && (
+          <div
+            onMouseDown={handleLeftDividerMouseDown}
+            className={`w-1.5 hover:w-2 z-30 cursor-col-resize select-none shrink-0 transition-all flex items-center justify-center group ${
+              isDraggingLeft
+                ? 'bg-emerald-500 w-2'
+                : isDark
+                ? 'bg-slate-850 hover:bg-emerald-500/60'
+                : 'bg-slate-300 hover:bg-emerald-500/60'
+            }`}
+            title="Kéo sang trái/phải để đổi độ rộng bảng công cụ"
+          >
+            <div
+              className={`h-8 w-0.5 rounded-full transition-colors ${
+                isDraggingLeft ? 'bg-white' : 'bg-slate-500/40 group-hover:bg-white'
+              }`}
+            />
+          </div>
+        )}
+
+        {/* CENTER CANVAS WORKSPACE WITH FLOATING TOGGLE BUTTONS */}
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Quick Floating Reopen Button (Left) */}
+          {!isLeftSidebarOpen && (
+            <button
+              onClick={() => setIsLeftSidebarOpen(true)}
+              className={`absolute top-3 left-3 z-30 p-2 px-2.5 rounded-xl shadow-lg border flex items-center gap-1.5 text-xs font-semibold backdrop-blur-md transition group ${
+                isDark
+                  ? 'bg-slate-900/90 border-slate-700 text-slate-200 hover:text-emerald-400 hover:border-emerald-500/50'
+                  : 'bg-white/95 border-slate-200 text-slate-700 hover:text-emerald-600 hover:border-emerald-500/50'
+              }`}
+              title="Mở thanh công cụ (Trái)"
+            >
+              <PanelLeft className="w-4 h-4 text-emerald-500" />
+              <span className="hidden sm:inline">Công cụ</span>
+            </button>
+          )}
+
+          {/* Quick Floating Reopen Button (Right) */}
+          {!isRightInspectorOpen && (
+            <button
+              onClick={() => setIsRightInspectorOpen(true)}
+              className={`absolute top-3 right-3 z-30 p-2 px-2.5 rounded-xl shadow-lg border flex items-center gap-1.5 text-xs font-semibold backdrop-blur-md transition group ${
+                isDark
+                  ? 'bg-slate-900/90 border-slate-700 text-slate-200 hover:text-emerald-400 hover:border-emerald-500/50'
+                  : 'bg-white/95 border-slate-200 text-slate-700 hover:text-emerald-600 hover:border-emerald-500/50'
+              }`}
+              title="Mở bảng thuộc tính (Phải)"
+            >
+              <PanelRight className="w-4 h-4 text-emerald-500" />
+              <span className="hidden sm:inline">Thuộc tính</span>
+            </button>
+          )}
+
+          <DesignStudioCanvas
+            canvasRef={canvasElRef}
+            canvasWidth={canvasWidth}
+            canvasHeight={canvasHeight}
+            zoom={zoom}
+            onDropImage={handleUploadImage}
+            isDark={isDark}
+            canvasBgColor={canvasBgColor}
+          />
+        </div>
+
+        {/* RIGHT DRAG DIVIDER */}
+        {isRightInspectorOpen && (
+          <div
+            onMouseDown={handleRightDividerMouseDown}
+            className={`w-1.5 hover:w-2 z-30 cursor-col-resize select-none shrink-0 transition-all flex items-center justify-center group ${
+              isDraggingRight
+                ? 'bg-emerald-500 w-2'
+                : isDark
+                ? 'bg-slate-850 hover:bg-emerald-500/60'
+                : 'bg-slate-300 hover:bg-emerald-500/60'
+            }`}
+            title="Kéo sang trái/phải để đổi độ rộng bảng thuộc tính"
+          >
+            <div
+              className={`h-8 w-0.5 rounded-full transition-colors ${
+                isDraggingRight ? 'bg-white' : 'bg-slate-500/40 group-hover:bg-white'
+              }`}
+            />
+          </div>
+        )}
 
         {/* RIGHT INSPECTOR PANEL (Photo Editor Sliders, AI 1-Click Rembg, Typography, Styles) */}
-        <DesignStudioInspector
-          selectedObject={selectedObject}
-          selectedType={selectedType}
-          canvasBgColor={canvasBgColor}
-          onCanvasBgColorChange={handleCanvasBgColorChange}
-          onUpdateTextProps={updateActiveObjectProperties}
-          onUpdateShapeProps={updateActiveObjectProperties}
-          onAddTextToShape={handleAddTextToShape}
-          onApplyImageAdjustments={handleApplyImageAdjustments}
-          imageAdjustments={imageAdjustments}
-          onResetImageAdjustments={handleResetImageAdjustments}
-          onRotate={handleRotate}
-          onFlip={handleFlip}
-          onBringForward={handleBringForward}
-          onSendBackward={handleSendBackward}
-          onBringToFront={handleBringToFront}
-          onSendToBack={handleSendToBack}
-          onDuplicate={handleDuplicate}
-          onDelete={handleDelete}
-          onAiRemoveBgSelected={handleAiRemoveBgSelected}
-          isAiProcessing={isAiProcessing}
-          aiProgressMessage={aiProgressMessage}
-          isDark={isDark}
-        />
+        {isRightInspectorOpen && (
+          <DesignStudioInspector
+            width={rightInspectorWidth}
+            onToggleCollapse={() => setIsRightInspectorOpen(false)}
+            selectedObject={selectedObject}
+            selectedType={selectedType}
+            canvasBgColor={canvasBgColor}
+            onCanvasBgColorChange={handleCanvasBgColorChange}
+            onUpdateTextProps={updateActiveObjectProperties}
+            onUpdateShapeProps={updateActiveObjectProperties}
+            onAddTextToShape={handleAddTextToShape}
+            onApplyImageAdjustments={handleApplyImageAdjustments}
+            imageAdjustments={imageAdjustments}
+            onResetImageAdjustments={handleResetImageAdjustments}
+            onRotate={handleRotate}
+            onFlip={handleFlip}
+            onBringForward={handleBringForward}
+            onSendBackward={handleSendBackward}
+            onBringToFront={handleBringToFront}
+            onSendToBack={handleSendToBack}
+            onDuplicate={handleDuplicate}
+            onDelete={handleDelete}
+            onAiRemoveBgSelected={handleAiRemoveBgSelected}
+            isAiProcessing={isAiProcessing}
+            aiProgressMessage={aiProgressMessage}
+            isDark={isDark}
+          />
+        )}
       </div>
     </div>
   );
