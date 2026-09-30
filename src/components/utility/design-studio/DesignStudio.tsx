@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import { toast } from 'sonner';
 import { ToolTab, ImageAdjustments, DesignTemplate, DesignLayout, HubDesignFile } from '@/types/design-studio';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import { DesignStudioTopBar } from './DesignStudioTopBar';
 import { DesignStudioSidebar } from './DesignStudioSidebar';
 import { DesignStudioCanvas } from './DesignStudioCanvas';
@@ -49,6 +50,9 @@ const DEFAULT_IMAGE_ADJUSTMENTS: ImageAdjustments = {
 };
 
 export const DesignStudio: React.FC = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   // References
   const canvasElRef = useRef<HTMLCanvasElement | null>(null);
   const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
@@ -58,7 +62,7 @@ export const DesignStudio: React.FC = () => {
   const [activePresetName, setActivePresetName] = useState('YouTube Thumbnail');
   const [canvasWidth, setCanvasWidth] = useState(DEFAULT_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(DEFAULT_HEIGHT);
-  const [canvasBgColor, setCanvasBgColor] = useState('#090d16');
+  const [canvasBgColor, setCanvasBgColor] = useState(isDark ? '#090d16' : '#ffffff');
   const [zoom, setZoom] = useState(0.85);
 
   // Tab & Selection States
@@ -80,6 +84,16 @@ export const DesignStudio: React.FC = () => {
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiProgressMessage, setAiProgressMessage] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  // Calculate responsive zoom so canvas always fits 100% inside available workspace without clipping
+  const calculateFitZoom = useCallback((w: number, h: number) => {
+    if (typeof window === 'undefined') return 0.85;
+    const availableW = Math.max(300, window.innerWidth - 320 - 288 - 64);
+    const availableH = Math.max(300, window.innerHeight - 56 - 64);
+    const fitW = (availableW - 32) / w;
+    const fitH = (availableH - 32) / h;
+    const fit = Math.min(1, Math.min(fitW, fitH));
+    return Number(Math.max(0.2, fit).toFixed(2));
+  }, []);
 
   // Save current canvas state to history stack
   const saveHistory = useCallback(() => {
@@ -229,15 +243,8 @@ export const DesignStudio: React.FC = () => {
     });
 
     // Calculate initial responsive zoom to fit container
-    const autoFitZoom = () => {
-      const availableW = window.innerWidth - 320 - 288 - 64;
-      const availableH = window.innerHeight - 56 - 64;
-      const fitW = availableW / DEFAULT_WIDTH;
-      const fitH = availableH / DEFAULT_HEIGHT;
-      const calculated = Math.min(1, Math.max(0.3, Math.min(fitW, fitH)));
-      setZoom(Number(calculated.toFixed(2)));
-    };
-    autoFitZoom();
+    const initialFit = calculateFitZoom(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    setZoom(initialFit);
 
     // Initial default heading with ample width and NO grapheme splitting
     addText(canvas, 'TIÊU ĐỀ BÀI HỌC STEM', {
@@ -262,7 +269,7 @@ export const DesignStudio: React.FC = () => {
       canvas.dispose();
       fabricCanvasRef.current = null;
     };
-  }, [syncSelectionState, saveHistory, handleShapeDoubleClick]);
+  }, [syncSelectionState, saveHistory, handleShapeDoubleClick, calculateFitZoom]);
 
   // Window Paste listener (Ctrl+V image) & Keyboard Shortcuts
   useEffect(() => {
@@ -337,6 +344,10 @@ export const DesignStudio: React.FC = () => {
 
     fabricCanvasRef.current.setDimensions({ width, height });
     fabricCanvasRef.current.requestRenderAll();
+
+    const newFit = calculateFitZoom(width, height);
+    setZoom(newFit);
+
     saveHistory();
     toast.success(`Đã đổi kích thước canvas: ${width} × ${height} px`);
   };
@@ -473,14 +484,18 @@ export const DesignStudio: React.FC = () => {
       setCanvasHeight(template.dimensions.height);
       fabricCanvasRef.current.setDimensions(template.dimensions);
 
-      if (template.data.background) {
-        setCanvasBgColor(template.data.background as string);
-        fabricCanvasRef.current.backgroundColor = template.data.background as string;
-      }
+      const targetBg = (template.data.background as string) || (isDark ? '#090d16' : '#ffffff');
+      setCanvasBgColor(targetBg);
+      fabricCanvasRef.current.backgroundColor = targetBg;
 
       await fabricCanvasRef.current.loadFromJSON(template.data);
       fabricCanvasRef.current.requestRenderAll();
       setProjectName(template.name);
+
+      // Auto-fit zoom so newly selected template is immediately balanced & centered in screen
+      const newFit = calculateFitZoom(template.dimensions.width, template.dimensions.height);
+      setZoom(newFit);
+
       saveHistory();
       toast.success(`Đã áp dụng mẫu: ${template.name}`);
     } catch (e) {
@@ -749,7 +764,9 @@ export const DesignStudio: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors">
+    <div className={`flex flex-col h-screen overflow-hidden font-sans transition-colors ${
+      isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
       {/* 1. TOP BAR */}
       <DesignStudioTopBar
         projectName={projectName}
@@ -762,10 +779,8 @@ export const DesignStudio: React.FC = () => {
         onZoomIn={() => setZoom((z) => Math.min(3, Number((z + 0.1).toFixed(2))))}
         onZoomOut={() => setZoom((z) => Math.max(0.2, Number((z - 0.1).toFixed(2))))}
         onZoomFit={() => {
-          const availableW = window.innerWidth - 320 - 288 - 64;
-          const availableH = window.innerHeight - 56 - 64;
-          const fit = Math.min(availableW / canvasWidth, availableH / canvasHeight);
-          setZoom(Number(Math.min(1.5, Math.max(0.2, fit)).toFixed(2)));
+          const fit = calculateFitZoom(canvasWidth, canvasHeight);
+          setZoom(fit);
         }}
         onZoomReset={() => setZoom(1)}
         canvasWidth={canvasWidth}
@@ -776,6 +791,7 @@ export const DesignStudio: React.FC = () => {
         onExportImage={handleExportImage}
         isExporting={isExporting}
         activePresetName={activePresetName}
+        isDark={isDark}
       />
 
       {/* 2. MAIN 3-ZONE STUDIO WORKSPACE */}
@@ -793,6 +809,7 @@ export const DesignStudio: React.FC = () => {
           onQuickAiRemoveBg={handleQuickAiRemoveBg}
           isAiProcessing={isAiProcessing}
           aiProgressMessage={aiProgressMessage}
+          isDark={isDark}
         />
 
         {/* CENTER CANVAS WORKSPACE */}
@@ -802,6 +819,7 @@ export const DesignStudio: React.FC = () => {
           canvasHeight={canvasHeight}
           zoom={zoom}
           onDropImage={handleUploadImage}
+          isDark={isDark}
         />
 
         {/* RIGHT INSPECTOR PANEL (Photo Editor Sliders, AI 1-Click Rembg, Typography, Styles) */}
@@ -827,6 +845,7 @@ export const DesignStudio: React.FC = () => {
           onAiRemoveBgSelected={handleAiRemoveBgSelected}
           isAiProcessing={isAiProcessing}
           aiProgressMessage={aiProgressMessage}
+          isDark={isDark}
         />
       </div>
     </div>

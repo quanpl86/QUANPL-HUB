@@ -6,17 +6,38 @@ import jsPDF from 'jspdf';
  * Configure default styling for Fabric controls (bounding box, rotation and scale handles)
  */
 export function configureFabricDefaults() {
-  fabric.FabricObject.ownDefaults = {
-    ...fabric.FabricObject.ownDefaults,
+  const commonDefaults = {
+    originX: 'left' as const,
+    originY: 'top' as const,
     transparentCorners: false,
     cornerColor: '#10b981',
     cornerStrokeColor: '#064e3b',
     borderColor: '#10b981',
     cornerSize: 10,
-    cornerStyle: 'circle',
+    cornerStyle: 'circle' as const,
     borderScaleFactor: 1.5,
     padding: 6,
   };
+
+  fabric.FabricObject.ownDefaults = {
+    ...fabric.FabricObject.ownDefaults,
+    ...commonDefaults,
+  };
+  if (fabric.Rect) {
+    fabric.Rect.ownDefaults = { ...fabric.Rect.ownDefaults, ...commonDefaults };
+  }
+  if (fabric.Circle) {
+    fabric.Circle.ownDefaults = { ...fabric.Circle.ownDefaults, ...commonDefaults };
+  }
+  if (fabric.Triangle) {
+    fabric.Triangle.ownDefaults = { ...fabric.Triangle.ownDefaults, ...commonDefaults };
+  }
+  if (fabric.Textbox) {
+    fabric.Textbox.ownDefaults = { ...fabric.Textbox.ownDefaults, ...commonDefaults, splitByGrapheme: false };
+  }
+  if (fabric.FabricImage) {
+    fabric.FabricImage.ownDefaults = { ...fabric.FabricImage.ownDefaults, ...commonDefaults };
+  }
 }
 
 /**
@@ -32,6 +53,8 @@ export function addText(
   const targetWidth = Math.min(600, canvasW * 0.75);
 
   const textbox = new fabric.Textbox(text, {
+    originX: 'left',
+    originY: 'top',
     left: canvasW / 2 - targetWidth / 2,
     top: canvasH / 2 - 25,
     width: targetWidth,
@@ -60,6 +83,8 @@ export function addRect(
   const canvasH = canvas.height || 600;
 
   const rect = new fabric.Rect({
+    originX: 'left',
+    originY: 'top',
     left: canvasW / 2 - 120,
     top: canvasH / 2 - 90,
     width: 240,
@@ -89,6 +114,8 @@ export function addCircle(
   const canvasH = canvas.height || 600;
 
   const circle = new fabric.Circle({
+    originX: 'left',
+    originY: 'top',
     left: canvasW / 2 - 90,
     top: canvasH / 2 - 90,
     radius: 90,
@@ -115,6 +142,8 @@ export function addTriangle(
   const canvasH = canvas.height || 600;
 
   const triangle = new fabric.Triangle({
+    originX: 'left',
+    originY: 'top',
     left: canvasW / 2 - 90,
     top: canvasH / 2 - 80,
     width: 180,

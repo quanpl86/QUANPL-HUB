@@ -35,6 +35,7 @@ interface SidebarProps {
   onQuickAiRemoveBg: (file: File) => void;
   isAiProcessing: boolean;
   aiProgressMessage: string;
+  isDark: boolean;
 }
 
 export const DesignStudioSidebar: React.FC<SidebarProps> = ({
@@ -49,6 +50,7 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   onQuickAiRemoveBg,
   isAiProcessing,
   aiProgressMessage,
+  isDark,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const aiFileInputRef = useRef<HTMLInputElement>(null);
@@ -81,10 +83,16 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
       ? STEM_BADGES
       : [...STEM_BADGES, ...LUCIDE_ICONS];
 
+  const sidebarBg = isDark ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900';
+  const tabHeaderBg = isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200';
+  const cardBg = isDark ? 'bg-slate-900/60 border-slate-800 hover:bg-slate-900' : 'bg-slate-50 border-slate-200 hover:bg-slate-100';
+  const subtextColor = isDark ? 'text-slate-400' : 'text-slate-500';
+  const headingColor = isDark ? 'text-slate-200' : 'text-slate-800';
+
   return (
-    <aside className="w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col shrink-0 select-none z-20 h-full text-slate-800 dark:text-slate-100 transition-colors">
-      {/* Tab Navigation Icons */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-1.5 gap-1 shrink-0 overflow-x-auto">
+    <aside className={`w-80 border-r flex flex-col shrink-0 select-none z-20 h-full transition-colors ${sidebarBg}`}>
+      {/* Tab Navigation Icons without scrollbar */}
+      <div className={`flex border-b p-1.5 gap-1 shrink-0 ${tabHeaderBg}`}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -92,10 +100,12 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex-1 py-1.5 px-1 rounded-lg flex flex-col items-center gap-1 transition text-[10px] font-medium min-w-[42px] ${
+              className={`flex-1 py-1.5 px-0.5 rounded-lg flex flex-col items-center gap-1 transition text-[10px] font-medium ${
                 isActive
                   ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
+                  : isDark
+                  ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -111,8 +121,8 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
         {activeTab === 'templates' && (
           <div className="space-y-3">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Mẫu STEM Thiết kế sẵn</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Chọn mẫu để áp dụng ngay vào canvas</p>
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Mẫu STEM Thiết kế sẵn</h3>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>Chọn mẫu để áp dụng ngay vào canvas</p>
             </div>
 
             <div className="space-y-2.5">
@@ -120,16 +130,18 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
                 <div
                   key={tmpl.id}
                   onClick={() => onSelectTemplate(tmpl)}
-                  className="group p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-emerald-500/50 cursor-pointer transition flex items-start gap-3"
+                  className={`group p-3 rounded-xl border hover:border-emerald-500/50 cursor-pointer transition flex items-start gap-3 ${cardBg}`}
                 >
-                  <div className="text-2xl p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 group-hover:scale-105 transition shrink-0">
+                  <div className={`text-2xl p-2 rounded-lg border group-hover:scale-105 transition shrink-0 ${
+                    isDark ? 'bg-slate-800 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'
+                  }`}>
                     {tmpl.thumbnail}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition truncate">
+                    <h4 className={`font-semibold group-hover:text-emerald-500 transition truncate ${headingColor}`}>
                       {tmpl.name}
                     </h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">
+                    <p className={`text-[11px] line-clamp-2 mt-0.5 leading-relaxed ${subtextColor}`}>
                       {tmpl.description}
                     </p>
                     <span className="inline-block mt-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
@@ -146,8 +158,8 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
         {activeTab === 'layouts' && (
           <div className="space-y-3">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Bố Cục Chia Khung Hình</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Bố Cục Chia Khung Hình</h3>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>
                 Tạo khung sẵn kiểu Canva để ghép ảnh và chỉnh sửa nhanh chóng
               </p>
             </div>
@@ -157,16 +169,18 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
                 <div
                   key={layout.id}
                   onClick={() => onApplyLayout(layout)}
-                  className="group p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-900 hover:border-emerald-500/50 cursor-pointer transition flex items-start gap-3"
+                  className={`group p-3 rounded-xl border hover:border-emerald-500/50 cursor-pointer transition flex items-start gap-3 ${cardBg}`}
                 >
-                  <div className="text-2xl p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 group-hover:scale-105 transition shrink-0">
+                  <div className={`text-2xl p-2 rounded-lg border group-hover:scale-105 transition shrink-0 ${
+                    isDark ? 'bg-slate-800 border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'
+                  }`}>
                     {layout.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition truncate">
+                    <h4 className={`font-semibold group-hover:text-emerald-500 transition truncate ${headingColor}`}>
                       {layout.name}
                     </h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 leading-relaxed">
+                    <p className={`text-[11px] line-clamp-2 mt-0.5 leading-relaxed ${subtextColor}`}>
                       {layout.description}
                     </p>
                   </div>
@@ -180,17 +194,17 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
         {activeTab === 'text' && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Chèn Văn Bản</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Bấm vào khối chữ để chèn vào giữa màn hình</p>
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Chèn Văn Bản</h3>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>Bấm vào khối chữ để chèn vào giữa màn hình</p>
             </div>
 
             <div className="space-y-2">
               <button
                 onClick={() => onAddText('title')}
-                className="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-emerald-500/40 text-left transition flex items-center justify-between group"
+                className={`w-full py-3 px-4 rounded-xl border hover:border-emerald-500/40 text-left transition flex items-center justify-between group ${cardBg}`}
               >
                 <div>
-                  <div className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">Tiêu đề lớn (Heading 1)</div>
+                  <div className={`text-base font-bold group-hover:text-emerald-500 ${headingColor}`}>Tiêu đề lớn (Heading 1)</div>
                   <div className="text-[10px] text-slate-500 font-mono">Font 48px • Đậm</div>
                 </div>
                 <Plus className="w-4 h-4 text-slate-400 group-hover:text-emerald-500" />
@@ -198,10 +212,10 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => onAddText('subtitle')}
-                className="w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-emerald-500/40 text-left transition flex items-center justify-between group"
+                className={`w-full py-2.5 px-4 rounded-xl border hover:border-emerald-500/40 text-left transition flex items-center justify-between group ${cardBg}`}
               >
                 <div>
-                  <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">Tiêu đề phụ (Heading 2)</div>
+                  <div className={`text-sm font-semibold group-hover:text-emerald-500 ${headingColor}`}>Tiêu đề phụ (Heading 2)</div>
                   <div className="text-[10px] text-slate-500 font-mono">Font 28px • Trung bình</div>
                 </div>
                 <Plus className="w-4 h-4 text-slate-400 group-hover:text-emerald-500" />
@@ -209,10 +223,10 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={() => onAddText('body')}
-                className="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-emerald-500/40 text-left transition flex items-center justify-between group"
+                className={`w-full py-2 px-4 rounded-xl border hover:border-emerald-500/40 text-left transition flex items-center justify-between group ${cardBg}`}
               >
                 <div>
-                  <div className="text-xs font-normal text-slate-700 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">Đoạn nội dung (Body text)</div>
+                  <div className={`text-xs font-normal group-hover:text-emerald-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Đoạn nội dung (Body text)</div>
                   <div className="text-[10px] text-slate-500 font-mono">Font 18px • Thường</div>
                 </div>
                 <Plus className="w-4 h-4 text-slate-400 group-hover:text-emerald-500" />
@@ -238,8 +252,8 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
         {activeTab === 'shapes' && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Hình Khối & Vector</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Hình Khối & Vector</h3>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>
                 Thêm hình học làm khung. <strong>Nhấp đúp vào hình</strong> để gõ chữ trực tiếp vào giữa!
               </p>
             </div>
@@ -247,42 +261,42 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => onAddShape('rect')}
-                className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-emerald-500/40 flex flex-col items-center gap-2 group transition"
+                className={`p-3 rounded-xl border hover:border-emerald-500/40 flex flex-col items-center gap-2 group transition ${cardBg}`}
               >
                 <div className="w-10 h-8 rounded bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
                   <Square className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Hình chữ nhật</span>
+                <span className={`text-[11px] font-medium group-hover:text-emerald-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Hình chữ nhật</span>
               </button>
 
               <button
                 onClick={() => onAddShape('circle')}
-                className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-sky-500/40 flex flex-col items-center gap-2 group transition"
+                className={`p-3 rounded-xl border hover:border-sky-500/40 flex flex-col items-center gap-2 group transition ${cardBg}`}
               >
                 <div className="w-10 h-10 rounded-full bg-sky-500/20 border border-sky-500 flex items-center justify-center">
                   <Circle className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 </div>
-                <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Hình tròn</span>
+                <span className={`text-[11px] font-medium group-hover:text-sky-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Hình tròn</span>
               </button>
 
               <button
                 onClick={() => onAddShape('triangle')}
-                className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-amber-500/40 flex flex-col items-center gap-2 group transition"
+                className={`p-3 rounded-xl border hover:border-amber-500/40 flex flex-col items-center gap-2 group transition ${cardBg}`}
               >
                 <div className="w-10 h-8 flex items-center justify-center">
                   <Triangle className="w-6 h-6 text-amber-500" />
                 </div>
-                <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Hình tam giác</span>
+                <span className={`text-[11px] font-medium group-hover:text-amber-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Hình tam giác</span>
               </button>
 
               <button
                 onClick={() => onAddShape('line')}
-                className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-slate-400 flex flex-col items-center gap-2 group transition"
+                className={`p-3 rounded-xl border hover:border-slate-400 flex flex-col items-center gap-2 group transition ${cardBg}`}
               >
                 <div className="w-10 h-8 flex items-center justify-center">
                   <Minus className="w-6 h-6 text-slate-500" />
                 </div>
-                <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">Đường kẻ ngang</span>
+                <span className={`text-[11px] font-medium group-hover:text-slate-900 dark:group-hover:text-white ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Đường kẻ ngang</span>
               </button>
             </div>
           </div>
@@ -292,20 +306,22 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
         {activeTab === 'stickers' && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Huy Hiệu & Sticker SVG</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Huy Hiệu & Sticker SVG</h3>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>
                 Bấm vào biểu tượng hoặc huy hiệu để chèn vector chuẩn nét vào canvas
               </p>
             </div>
 
             {/* Filter pills */}
-            <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+            <div className={`flex gap-1 p-1 rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-100'}`}>
               <button
                 onClick={() => setStickerFilter('all')}
                 className={`flex-1 py-1 rounded text-[11px] font-medium transition ${
                   stickerFilter === 'all'
-                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? isDark
+                      ? 'bg-slate-800 text-emerald-400 shadow-sm'
+                      : 'bg-white text-emerald-600 shadow-sm'
+                    : isDark ? 'text-slate-400' : 'text-slate-600'
                 }`}
               >
                 Tất cả
@@ -314,8 +330,10 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
                 onClick={() => setStickerFilter('badge')}
                 className={`flex-1 py-1 rounded text-[11px] font-medium transition ${
                   stickerFilter === 'badge'
-                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? isDark
+                      ? 'bg-slate-800 text-emerald-400 shadow-sm'
+                      : 'bg-white text-emerald-600 shadow-sm'
+                    : isDark ? 'text-slate-400' : 'text-slate-600'
                 }`}
               >
                 Huy hiệu STEM
@@ -324,8 +342,10 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
                 onClick={() => setStickerFilter('lucide')}
                 className={`flex-1 py-1 rounded text-[11px] font-medium transition ${
                   stickerFilter === 'lucide'
-                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? isDark
+                      ? 'bg-slate-800 text-emerald-400 shadow-sm'
+                      : 'bg-white text-emerald-600 shadow-sm'
+                    : isDark ? 'text-slate-400' : 'text-slate-600'
                 }`}
               >
                 Lucide Icons
@@ -338,14 +358,14 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onAddSvgSticker(item.svg)}
-                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-emerald-500/50 hover:bg-slate-100 dark:hover:bg-slate-850 flex flex-col items-center justify-center gap-1.5 transition group"
+                  className={`p-2.5 rounded-xl border hover:border-emerald-500/50 flex flex-col items-center justify-center gap-1.5 transition group ${cardBg}`}
                   title={item.name}
                 >
                   <div
                     className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition shrink-0"
                     dangerouslySetInnerHTML={{ __html: item.svg }}
                   />
-                  <span className="text-[10px] text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white truncate max-w-full">
+                  <span className={`text-[10px] group-hover:text-emerald-500 truncate max-w-full ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                     {item.name}
                   </span>
                 </button>
@@ -358,8 +378,8 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
         {activeTab === 'images' && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Tải Ảnh Lên</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Kéo thả, dán (Ctrl+V) hoặc chọn từ máy</p>
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Tải Ảnh Lên</h3>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>Kéo thả, dán (Ctrl+V) hoặc chọn từ máy</p>
             </div>
 
             <input
@@ -385,14 +405,18 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
               className={`p-6 rounded-2xl border-2 border-dashed text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 ${
                 isDragOver
                   ? 'border-emerald-500 bg-emerald-500/10'
-                  : 'border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 bg-slate-50 dark:bg-slate-900/60'
+                  : isDark
+                  ? 'border-slate-800 hover:border-slate-700 bg-slate-900/60'
+                  : 'border-slate-300 hover:border-slate-400 bg-slate-50'
               }`}
             >
-              <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400">
-                <Upload className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${
+                isDark ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-500 shadow-sm'
+              }`}>
+                <Upload className="w-6 h-6 text-emerald-500" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Bấm để chọn file hoặc kéo thả</p>
+                <p className={`text-xs font-semibold ${headingColor}`}>Bấm để chọn file hoặc kéo thả</p>
                 <p className="text-[10px] text-slate-500 mt-1">Hỗ trợ PNG, JPG, WebP, SVG (Có thể dán Ctrl+V)</p>
               </div>
             </div>
@@ -403,14 +427,13 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
         {activeTab === 'ai' && (
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm flex items-center gap-1.5">
+              <h3 className={`font-semibold text-sm flex items-center gap-1.5 ${headingColor}`}>
                 <Sparkles className="w-4 h-4 text-emerald-500" />
                 Công cụ Trí Tuệ Nhân Tạo (AI)
               </h3>
-              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Xử lý ảnh bằng model IS-Net chạy cục bộ trong trình duyệt</p>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>Xử lý ảnh bằng model IS-Net chạy cục bộ trong trình duyệt</p>
             </div>
 
-            {/* Tách nền AI từ ảnh mới */}
             <input
               type="file"
               ref={aiFileInputRef}
@@ -425,10 +448,10 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
 
             <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 space-y-3">
               <div className="flex items-center gap-2">
-                <Wand2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <Wand2 className="w-4 h-4 text-emerald-500 shrink-0" />
                 <h4 className="font-semibold text-emerald-700 dark:text-emerald-300 text-xs">Tải ảnh lên & Tự động tách nền AI</h4>
               </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 Tải ảnh bất kỳ từ máy tính, AI sẽ tự động cô lập nhân vật, sản phẩm, linh kiện robot thành ảnh PNG trong suốt và đưa ngay vào thiết kế.
               </p>
 
@@ -451,9 +474,10 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
 
-            {/* Mẹo sử dụng */}
-            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 space-y-1.5 text-slate-500 dark:text-slate-400 text-[11px]">
-              <div className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <div className={`p-3.5 rounded-xl border space-y-1.5 text-[11px] ${
+              isDark ? 'border-slate-800 bg-slate-900/40 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600'
+            }`}>
+              <div className={`font-semibold flex items-center gap-1.5 ${headingColor}`}>
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                 Tách nền layer đang chọn trên Canvas
               </div>

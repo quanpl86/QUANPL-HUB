@@ -39,6 +39,7 @@ interface TopBarProps {
   onExportImage: (format: 'png' | 'jpeg' | 'webp' | 'svg' | 'pdf') => void;
   isExporting: boolean;
   activePresetName: string;
+  isDark: boolean;
 }
 
 export const DesignStudioTopBar: React.FC<TopBarProps> = ({
@@ -61,6 +62,7 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
   onExportImage,
   isExporting,
   activePresetName,
+  isDark,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
@@ -100,20 +102,29 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
     setCustomH(temp);
   };
 
+  const headerBg = isDark ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900 shadow-sm';
+  const controlBox = isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200';
+  const btnHover = isDark ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-200 text-slate-700';
+  const dropdownBg = isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800 shadow-2xl';
+
   return (
-    <header className="h-14 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/90 backdrop-blur px-4 flex items-center justify-between gap-3 select-none z-30 shrink-0 text-slate-800 dark:text-slate-100 transition-colors">
+    <header className={`h-14 border-b px-4 flex items-center justify-between gap-3 select-none z-30 shrink-0 transition-colors ${headerBg}`}>
       {/* Left: Back & Project Title */}
       <div className="flex items-center gap-3">
         <Link
           href="/utility-hub"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 transition text-xs font-medium"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition text-xs font-medium ${
+            isDark
+              ? 'text-slate-400 hover:text-emerald-400 hover:bg-slate-900 border-slate-800'
+              : 'text-slate-600 hover:text-emerald-600 hover:bg-slate-100 border-slate-200'
+          }`}
           title="Quay lại Utility Hub"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Hub</span>
         </Link>
 
-        <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-800" />
+        <div className={`h-5 w-[1px] ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
 
         {/* Project Name */}
         {isEditingName ? (
@@ -127,11 +138,13 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
                 if (e.key === 'Escape') setIsEditingName(false);
               }}
               autoFocus
-              className="bg-slate-100 dark:bg-slate-900 border border-emerald-500 rounded px-2 py-0.5 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:outline-none w-48"
+              className={`border border-emerald-500 rounded px-2 py-0.5 text-xs font-semibold focus:outline-none w-48 ${
+                isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
+              }`}
             />
             <button
               onClick={handleNameSubmit}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-emerald-600 dark:text-emerald-400"
+              className={`p-1 rounded ${isDark ? 'hover:bg-slate-800 text-emerald-400' : 'hover:bg-slate-100 text-emerald-600'}`}
             >
               <Check className="w-3.5 h-3.5" />
             </button>
@@ -142,13 +155,17 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
               setTempName(projectName);
               setIsEditingName(true);
             }}
-            className="group flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-900 text-left transition-colors"
+            className={`group flex items-center gap-1.5 px-2 py-1 rounded text-left transition-colors ${
+              isDark ? 'hover:bg-slate-900' : 'hover:bg-slate-100'
+            }`}
             title="Bấm để đổi tên dự án"
           >
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 max-w-[180px] sm:max-w-xs truncate">
+            <span className={`text-xs font-semibold max-w-[180px] sm:max-w-xs truncate ${
+              isDark ? 'text-slate-200 group-hover:text-emerald-400' : 'text-slate-800 group-hover:text-emerald-600'
+            }`}>
               {projectName}
             </span>
-            <Edit2 className="w-3 h-3 text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Edit2 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         )}
 
@@ -160,17 +177,21 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
               setCustomH(canvasHeight);
               setShowPresetsMenu(!showPresetsMenu);
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-700 transition"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] transition ${
+              isDark
+                ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-slate-300'
+            }`}
           >
-            <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+            <span className={isDark ? 'text-emerald-400 font-medium' : 'text-emerald-600 font-medium'}>
               {activePresetName || `${canvasWidth}×${canvasHeight}`}
             </span>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <ChevronDown className="w-3 h-3 opacity-60" />
           </button>
 
           {showPresetsMenu && (
-            <div className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-2.5 z-50 text-slate-800 dark:text-slate-200">
-              <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1 py-1">
+            <div className={`absolute top-full left-0 mt-1 w-72 border rounded-xl shadow-2xl p-2.5 z-50 ${dropdownBg}`}>
+              <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-1 py-1">
                 Kích thước Chuẩn
               </div>
               <div className="space-y-1 mt-1 max-h-52 overflow-y-auto">
@@ -183,8 +204,10 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
                     }}
                     className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition flex items-center justify-between ${
                       canvasWidth === preset.width && canvasHeight === preset.height
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                        : isDark
+                        ? 'text-slate-300 hover:bg-slate-800'
+                        : 'text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <div>
@@ -198,8 +221,8 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
               </div>
 
               {/* Custom Size Form */}
-              <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-800">
-                <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              <div className={`mt-3 pt-2.5 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                   Nhập kích thước tùy chỉnh
                 </div>
                 <div className="flex items-center gap-2">
@@ -211,12 +234,16 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
                       max="8000"
                       value={customW}
                       onChange={(e) => setCustomW(parseInt(e.target.value) || 0)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono"
+                      className={`w-full border rounded px-2 py-1 text-xs font-mono ${
+                        isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-900'
+                      }`}
                     />
                   </div>
                   <button
                     onClick={handleSwapDimensions}
-                    className="p-1.5 mt-3 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-emerald-500 transition"
+                    className={`p-1.5 mt-3 rounded transition ${
+                      isDark ? 'hover:bg-slate-800 text-slate-400 hover:text-emerald-400' : 'hover:bg-slate-100 text-slate-500 hover:text-emerald-600'
+                    }`}
                     title="Đảo chiều (W ⇄ H)"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -229,7 +256,9 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
                       max="8000"
                       value={customH}
                       onChange={(e) => setCustomH(parseInt(e.target.value) || 0)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs font-mono"
+                      className={`w-full border rounded px-2 py-1 text-xs font-mono ${
+                        isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-900'
+                      }`}
                     />
                   </div>
                 </div>
@@ -247,11 +276,11 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
       </div>
 
       {/* Center: Undo / Redo & Zoom Controls */}
-      <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1">
+      <div className={`flex items-center gap-1 border rounded-lg p-1 ${controlBox}`}>
         <button
           onClick={onUndo}
           disabled={!canUndo}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition"
+          className={`p-1.5 rounded disabled:opacity-30 disabled:hover:bg-transparent transition ${btnHover}`}
           title="Hoàn tác (Ctrl+Z)"
         >
           <Undo2 className="w-3.5 h-3.5" />
@@ -259,38 +288,38 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
         <button
           onClick={onRedo}
           disabled={!canRedo}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition"
+          className={`p-1.5 rounded disabled:opacity-30 disabled:hover:bg-transparent transition ${btnHover}`}
           title="Làm lại (Ctrl+Y)"
         >
           <Redo2 className="w-3.5 h-3.5" />
         </button>
 
-        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
+        <div className={`h-4 w-[1px] mx-1 ${isDark ? 'bg-slate-800' : 'bg-slate-300'}`} />
 
         <button
           onClick={onZoomOut}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition"
+          className={`p-1.5 rounded transition ${btnHover}`}
           title="Thu nhỏ"
         >
           <ZoomOut className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={onZoomReset}
-          className="px-2 py-0.5 rounded text-[11px] font-mono text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition"
+          className={`px-2 py-0.5 rounded text-[11px] font-mono transition ${btnHover}`}
           title="Tỉ lệ 100%"
         >
           {Math.round(zoom * 100)}%
         </button>
         <button
           onClick={onZoomIn}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition"
+          className={`p-1.5 rounded transition ${btnHover}`}
           title="Phóng to"
         >
           <ZoomIn className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={onZoomFit}
-          className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition"
+          className={`p-1.5 rounded transition ${btnHover}`}
           title="Vừa màn hình"
         >
           <Maximize2 className="w-3.5 h-3.5" />
@@ -299,7 +328,6 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
 
       {/* Right: Save Project & Export */}
       <div className="flex items-center gap-2">
-        {/* Hidden File Input for Open Project */}
         <input
           type="file"
           ref={fileInputRef}
@@ -310,19 +338,27 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
 
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-medium transition"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${
+            isDark
+              ? 'text-slate-300 hover:bg-slate-900 border-slate-800'
+              : 'text-slate-700 hover:bg-slate-100 border-slate-200'
+          }`}
           title="Mở file thiết kế .hubdesign đã lưu"
         >
-          <FolderOpen className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+          <FolderOpen className="w-3.5 h-3.5 text-sky-500" />
           <span className="hidden md:inline">Mở dự án</span>
         </button>
 
         <button
           onClick={onSaveProject}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-medium transition"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${
+            isDark
+              ? 'text-slate-300 hover:bg-slate-900 border-slate-800'
+              : 'text-slate-700 hover:bg-slate-100 border-slate-200'
+          }`}
           title="Lưu toàn bộ layer và vector thành file .hubdesign"
         >
-          <Save className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+          <Save className="w-3.5 h-3.5 text-amber-500" />
           <span className="hidden md:inline">Lưu JSON</span>
         </button>
 
@@ -339,57 +375,67 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
           </button>
 
           {showExportMenu && (
-            <div className="absolute top-full right-0 mt-1 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 text-slate-800 dark:text-slate-200">
+            <div className={`absolute top-full right-0 mt-1 w-52 border rounded-xl shadow-2xl p-1.5 z-50 ${dropdownBg}`}>
               <button
                 onClick={() => {
                   onExportImage('png');
                   setShowExportMenu(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center justify-between"
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs transition flex items-center justify-between ${
+                  isDark ? 'text-slate-200 hover:bg-slate-800 hover:text-emerald-400' : 'text-slate-700 hover:bg-slate-100 hover:text-emerald-600'
+                }`}
               >
                 <span>Ảnh PNG (Chuẩn nét)</span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">.PNG</span>
+                <span className="text-[10px] text-emerald-500 font-mono">.PNG</span>
               </button>
               <button
                 onClick={() => {
                   onExportImage('jpeg');
                   setShowExportMenu(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center justify-between"
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs transition flex items-center justify-between ${
+                  isDark ? 'text-slate-200 hover:bg-slate-800 hover:text-emerald-400' : 'text-slate-700 hover:bg-slate-100 hover:text-emerald-600'
+                }`}
               >
                 <span>Ảnh JPEG (Nhẹ)</span>
-                <span className="text-[10px] text-sky-600 dark:text-sky-400 font-mono">.JPG</span>
+                <span className="text-[10px] text-sky-500 font-mono">.JPG</span>
               </button>
               <button
                 onClick={() => {
                   onExportImage('webp');
                   setShowExportMenu(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center justify-between"
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs transition flex items-center justify-between ${
+                  isDark ? 'text-slate-200 hover:bg-slate-800 hover:text-emerald-400' : 'text-slate-700 hover:bg-slate-100 hover:text-emerald-600'
+                }`}
               >
                 <span>Ảnh WebP (Web tối ưu)</span>
-                <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono">.WEBP</span>
+                <span className="text-[10px] text-purple-500 font-mono">.WEBP</span>
               </button>
               <button
                 onClick={() => {
                   onExportImage('svg');
                   setShowExportMenu(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center justify-between"
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs transition flex items-center justify-between ${
+                  isDark ? 'text-slate-200 hover:bg-slate-800 hover:text-emerald-400' : 'text-slate-700 hover:bg-slate-100 hover:text-emerald-600'
+                }`}
               >
                 <span>Vector SVG</span>
-                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-mono">.SVG</span>
+                <span className="text-[10px] text-amber-500 font-mono">.SVG</span>
               </button>
-              <div className="h-[1px] bg-slate-200 dark:bg-slate-800 my-1" />
+              <div className={`h-[1px] my-1 ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
               <button
                 onClick={() => {
                   onExportImage('pdf');
                   setShowExportMenu(false);
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-rose-600 dark:hover:text-rose-400 transition flex items-center justify-between"
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs transition flex items-center justify-between ${
+                  isDark ? 'text-slate-200 hover:bg-slate-800 hover:text-rose-400' : 'text-slate-700 hover:bg-slate-100 hover:text-rose-600'
+                }`}
               >
                 <span>Tài liệu PDF</span>
-                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-mono">.PDF</span>
+                <span className="text-[10px] text-rose-500 font-mono">.PDF</span>
               </button>
             </div>
           )}
