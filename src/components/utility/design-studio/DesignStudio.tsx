@@ -3,8 +3,21 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import { toast } from 'sonner';
-import { ToolTab, ImageAdjustments, DesignTemplate, DesignLayout, HubDesignFile, ShapeType } from '@/types/design-studio';
-import { PanelLeft, PanelRight } from 'lucide-react';
+import {
+  ToolTab,
+  ImageAdjustments,
+  DesignTemplate,
+  DesignLayout,
+  HubDesignFile,
+  ShapeType,
+  DrawingSettings,
+  DrawingTool,
+  BrushType,
+  BrushLineCap,
+  BrushDashStyle,
+  EraserType,
+} from '@/types/design-studio';
+import { PanelLeft, PanelRight, Eraser, PenTool, Paintbrush, Trash2, Check } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { DesignStudioTopBar } from './DesignStudioTopBar';
 import { DesignStudioSidebar } from './DesignStudioSidebar';
@@ -15,6 +28,8 @@ import {
   addText,
   addShape,
   setCanvasDrawingMode,
+  applyCanvasDrawingSettings,
+  clearAllDrawings,
   addSvgIcon,
   addTextInsideShape,
   applyLayoutToCanvas,
@@ -188,37 +203,68 @@ export const DesignStudio: React.FC = () => {
   // Focus Mode (Chế độ tập trung - Toàn màn hình)
   const [isFocusMode, setIsFocusMode] = useState(false);
 
-  // Freehand Vector Drawing Brush States
-  const [isDrawingMode, setIsDrawingMode] = useState(false);
-  const [drawingColor, setDrawingColor] = useState('#10b981');
-  const [drawingWidth, setDrawingWidth] = useState(4);
+  // Freehand Vector Drawing & Eraser States
+  const [drawingSettings, setDrawingSettings] = useState<DrawingSettings>({
+    isDrawingMode: false,
+    tool: 'brush',
+    brushType: 'pencil',
+    color: '#10b981',
+    opacity: 1,
+    width: 4,
+    lineCap: 'round',
+    dashStyle: 'solid',
+    eraserType: 'brush',
+    eraserWidth: 24,
+  });
 
-  const handleToggleDrawingMode = useCallback((enabled: boolean) => {
-    setIsDrawingMode(enabled);
-    if (fabricCanvasRef.current) {
-      setCanvasDrawingMode(fabricCanvasRef.current, enabled, drawingColor, drawingWidth);
-      if (enabled) {
-        toast.info('Đã bật Bút Vẽ Vector. Rê chuột trên canvas để vẽ tự do!');
-      } else {
-        toast.info('Đã tắt Bút Vẽ. Nét vẽ là một layer vector có thể chọn và di chuyển.');
-        saveHistory();
-      }
-    }
-  }, [drawingColor, drawingWidth, saveHistory]);
+  const drawingSettingsRef = useRef<DrawingSettings>(drawingSettings);
+  useEffect(() => {
+    drawingSettingsRef.current = drawingSettings;
+  }, [drawingSettings]);
 
-  const handleDrawingColorChange = useCallback((color: string) => {
-    setDrawingColor(color);
-    if (fabricCanvasRef.current?.freeDrawingBrush) {
-      fabricCanvasRef.current.freeDrawingBrush.color = color;
-    }
-  }, []);
+  const updateDrawingSettings = useCallback(
+    (updater: Partial<DrawingSettings> | ((prev: DrawingSettings) => DrawingSettings)) => {
+      setDrawingSettings((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
+        if (fabricCanvasRef.current) {
+          applyCanvasDrawingSettings(fabricCanvasRef.current, next, canvasBgColor);
+        }
+        return next;
+      });
+    },
+    [canvasBgColor]
+  );
 
-  const handleDrawingWidthChange = useCallback((width: number) => {
-    setDrawingWidth(width);
-    if (fabricCanvasRef.current?.freeDrawingBrush) {
-      fabricCanvasRef.current.freeDrawingBrush.width = width;
+  const handleToggleDrawingMode = useCallback(
+    (enabled: boolean) => {
+      updateDrawingSettings((prev) => {
+        const next = { ...prev, isDrawingMode: enabled };
+        if (enabled) {
+          if (next.tool === 'eraser') {
+            toast.info('Đã bật Dụng cụ Tẩy. Kéo chuột hoặc bấm vào nét để tẩy xóa!');
+          } else {
+            toast.info('Đã bật Bút Vẽ Vector. Rê chuột trên canvas để vẽ tự do!');
+          }
+        } else {
+          toast.info('Đã tắt vẽ/tẩy. Nét vẽ là một layer vector có thể chọn và di chuyển.');
+          saveHistory();
+        }
+        return next;
+      });
+    },
+    [updateDrawingSettings, saveHistory]
+  );
+
+  const handleClearAllDrawings = useCallback(() => {
+    if (!fabricCanvasRef.current) return;
+    const count = clearAllDrawings(fabricCanvasRef.current);
+    if (count > 0) {
+      saveHistory();
+      toast.success(`Đã xóa sạch ${count} nét vẽ tự do.`);
+    } else {
+      toast.info('Không có nét vẽ tự do nào trên canvas.');
     }
-  }, []);
+  }, [saveHistory]);
 
   const handleToggleFocusMode = useCallback(() => {
     setIsFocusMode((prev) => {
@@ -461,7 +507,37 @@ export const DesignStudio: React.FC = () => {
 
     canvas.on('object:added', () => saveHistory());
     canvas.on('object:removed', () => saveHistory());
-    canvas.on('path:created', () => saveHistory());
+    canvas.on('path:created', (e: any) => {
+      const current = drawingSettingsRef.current;
+      if (current.isDrawingMode && current.tool === 'eraser' && current.eraserType === 'brush') {
+        if (e.path) {
+          e.path.set({
+            globalCompositeOperation: 'destination-out',
+            isEraserStroke: true,
+            selectable: false,
+            evented: false,
+          });
+          canvas.requestRenderAll();
+        }
+      } else if (e.path) {
+        e.path.set('isUserDrawing', true);
+      }
+      saveHistory();
+    });
+
+    // Stroke Eraser click handler: click to erase drawn stroke or object
+    canvas.on('mouse:down', (e: any) => {
+      const current = drawingSettingsRef.current;
+      if (current.isDrawingMode && current.tool === 'eraser' && current.eraserType === 'stroke') {
+        if (e.target) {
+          canvas.remove(e.target);
+          canvas.discardActiveObject();
+          canvas.requestRenderAll();
+          saveHistory();
+          toast.success('Đã tẩy nét vẽ / vật thể');
+        }
+      }
+    });
 
     // Double click on shape event
     canvas.on('mouse:dblclick', (e) => {
@@ -1154,12 +1230,15 @@ export const DesignStudio: React.FC = () => {
             isDark={isDark}
             canvasBgColor={canvasBgColor}
             onCanvasBgColorChange={handleCanvasBgColorChange}
-            isDrawingMode={isDrawingMode}
+            drawingSettings={drawingSettings}
+            onUpdateDrawingSettings={updateDrawingSettings}
+            onClearAllDrawings={handleClearAllDrawings}
+            isDrawingMode={drawingSettings.isDrawingMode}
             onToggleDrawingMode={handleToggleDrawingMode}
-            drawingColor={drawingColor}
-            onDrawingColorChange={handleDrawingColorChange}
-            drawingWidth={drawingWidth}
-            onDrawingWidthChange={handleDrawingWidthChange}
+            drawingColor={drawingSettings.color}
+            onDrawingColorChange={(color) => updateDrawingSettings({ color })}
+            drawingWidth={drawingSettings.width}
+            onDrawingWidthChange={(width) => updateDrawingSettings({ width })}
           />
         )}
 
@@ -1227,6 +1306,100 @@ export const DesignStudio: React.FC = () => {
             isDark={isDark}
             canvasBgColor={canvasBgColor}
           />
+
+          {/* FLOATING MINI-TOOLBAR WHEN DRAWING / ERASER IS ACTIVE */}
+          {drawingSettings.isDrawingMode && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur-md border border-slate-700/80 shadow-2xl text-white select-none">
+              {/* Brush / Eraser Mode Toggle */}
+              <div className="flex items-center bg-slate-800/80 rounded-xl p-0.5 border border-slate-700">
+                <button
+                  onClick={() => updateDrawingSettings({ tool: 'brush' })}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                    drawingSettings.tool === 'brush'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Chế độ Bút Vẽ Vector"
+                >
+                  <PenTool className="w-3.5 h-3.5" />
+                  <span>Bút vẽ</span>
+                </button>
+                <button
+                  onClick={() => updateDrawingSettings({ tool: 'eraser' })}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                    drawingSettings.tool === 'eraser'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Chế độ Dụng Cụ Tẩy"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                  <span>Tẩy</span>
+                </button>
+              </div>
+
+              <div className="h-5 w-px bg-slate-700" />
+
+              {/* Quick Size Indicator & Slider */}
+              <div className="flex items-center gap-1.5 text-xs font-mono">
+                <span className="text-slate-400 text-[11px]">Size:</span>
+                <span className="font-bold text-emerald-400 min-w-8 text-center">
+                  {drawingSettings.tool === 'eraser' ? drawingSettings.eraserWidth : drawingSettings.width}px
+                </span>
+                <input
+                  type="range"
+                  min={drawingSettings.tool === 'eraser' ? 2 : 1}
+                  max={drawingSettings.tool === 'eraser' ? 120 : 100}
+                  value={drawingSettings.tool === 'eraser' ? drawingSettings.eraserWidth : drawingSettings.width}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (drawingSettings.tool === 'eraser') {
+                      updateDrawingSettings({ eraserWidth: val });
+                    } else {
+                      updateDrawingSettings({ width: val });
+                    }
+                  }}
+                  className="w-20 accent-emerald-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              {/* Color swatch if brush */}
+              {drawingSettings.tool === 'brush' && (
+                <>
+                  <div className="h-5 w-px bg-slate-700" />
+                  <label className="relative w-5 h-5 rounded-full border border-white/60 cursor-pointer overflow-hidden shadow-xs hover:scale-110 transition shrink-0" style={{ backgroundColor: drawingSettings.color }} title="Đổi màu vẽ">
+                    <input
+                      type="color"
+                      value={drawingSettings.color}
+                      onChange={(e) => updateDrawingSettings({ color: e.target.value })}
+                      className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                    />
+                  </label>
+                </>
+              )}
+
+              <div className="h-5 w-px bg-slate-700" />
+
+              {/* Clear All Drawings Button */}
+              <button
+                onClick={handleClearAllDrawings}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition"
+                title="Xóa nhanh tất cả nét vẽ tự do"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+
+              {/* Done button to exit drawing mode */}
+              <button
+                onClick={() => handleToggleDrawingMode(false)}
+                className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 transition shadow-xs"
+                title="Hoàn tất vẽ/tẩy và trở về chế độ chỉnh sửa đối tượng"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Xong</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* RIGHT DRAG DIVIDER */}

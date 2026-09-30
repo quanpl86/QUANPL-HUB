@@ -1,5 +1,17 @@
 import * as fabric from 'fabric';
-import { ImageAdjustments, HubDesignFile, DesignProjectMeta, DesignLayout, ShapeType } from '@/types/design-studio';
+import {
+  ImageAdjustments,
+  HubDesignFile,
+  DesignProjectMeta,
+  DesignLayout,
+  ShapeType,
+  DrawingSettings,
+  DrawingTool,
+  BrushType,
+  BrushLineCap,
+  BrushDashStyle,
+  EraserType,
+} from '@/types/design-studio';
 import jsPDF from 'jspdf';
 
 /**
@@ -73,7 +85,138 @@ export function addText(
 }
 
 /**
- * Set Canvas Freehand Vector Drawing Mode
+ * Convert color (hex, rgb, named) to RGBA with specific opacity
+ */
+export function hexToRgba(color: string, opacity = 1): string {
+  if (!color) return `rgba(16, 185, 129, ${opacity})`;
+  if (color.startsWith('rgba')) {
+    return color.replace(/[\d\.]+\)$/, `${opacity})`);
+  }
+  if (color.startsWith('rgb')) {
+    return color.replace('rgb', 'rgba').replace(')', `, ${opacity})`);
+  }
+  let hex = color.replace('#', '');
+  if (hex.length === 3) {
+    hex = hex.split('').map((c) => c + c).join('');
+  }
+  if (hex.length >= 6) {
+    const num = parseInt(hex.slice(0, 6), 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return color;
+}
+
+/**
+ * Apply Full Drawing & Eraser Settings to Canvas
+ */
+export function applyCanvasDrawingSettings(
+  canvas: fabric.Canvas,
+  settings: DrawingSettings,
+  canvasBgColor = '#ffffff'
+): void {
+  if (!settings.isDrawingMode) {
+    canvas.isDrawingMode = false;
+    canvas.defaultCursor = 'default';
+    return;
+  }
+
+  // Stroke Eraser mode: clicks on canvas will remove objects directly
+  if (settings.tool === 'eraser' && settings.eraserType === 'stroke') {
+    canvas.isDrawingMode = false;
+    canvas.defaultCursor = 'crosshair';
+    return;
+  }
+
+  // Freehand Brush & Eraser Brush mode
+  canvas.isDrawingMode = true;
+  canvas.defaultCursor = 'crosshair';
+
+  if (settings.tool === 'eraser' && settings.eraserType === 'brush') {
+    // Eraser Brush Mode: uses a brush colored to canvas background or transparent
+    const eraser = new fabric.PencilBrush(canvas);
+    const bgEffective = canvasBgColor && canvasBgColor !== 'transparent' ? canvasBgColor : '#ffffff';
+    eraser.color = bgEffective;
+    eraser.width = settings.eraserWidth;
+    eraser.strokeLineCap = settings.lineCap || 'round';
+    canvas.freeDrawingBrush = eraser;
+    return;
+  }
+
+  // Normal Brush Mode
+  const effectiveColor = hexToRgba(settings.color, settings.opacity);
+
+  switch (settings.brushType) {
+    case 'highlighter': {
+      const brush = new fabric.PencilBrush(canvas);
+      brush.color = hexToRgba(settings.color, Math.min(settings.opacity, 0.45));
+      brush.width = Math.max(settings.width, 16);
+      brush.strokeLineCap = 'square';
+      canvas.freeDrawingBrush = brush;
+      break;
+    }
+
+    case 'circle': {
+      const brush = new fabric.CircleBrush(canvas);
+      brush.color = effectiveColor;
+      brush.width = settings.width;
+      canvas.freeDrawingBrush = brush;
+      break;
+    }
+
+    case 'spray': {
+      const brush = new fabric.SprayBrush(canvas);
+      brush.color = effectiveColor;
+      brush.width = Math.max(12, settings.width * 2);
+      brush.density = 25;
+      brush.dotWidth = Math.max(1, Math.round(settings.width / 4));
+      brush.dotWidthVariance = 2;
+      canvas.freeDrawingBrush = brush;
+      break;
+    }
+
+    case 'pencil':
+    default: {
+      const brush = new fabric.PencilBrush(canvas);
+      brush.color = effectiveColor;
+      brush.width = settings.width;
+      brush.strokeLineCap = settings.lineCap || 'round';
+      if (settings.dashStyle === 'dashed') {
+        brush.strokeDashArray = [settings.width * 2, settings.width * 1.5];
+      } else if (settings.dashStyle === 'dotted') {
+        brush.strokeDashArray = [1, settings.width * 1.5];
+      } else {
+        brush.strokeDashArray = null;
+      }
+      canvas.freeDrawingBrush = brush;
+      break;
+    }
+  }
+}
+
+/**
+ * Clear All Freehand Drawings from Canvas
+ */
+export function clearAllDrawings(canvas: fabric.Canvas): number {
+  const objects = canvas.getObjects();
+  const drawnObjects = objects.filter((obj) => {
+    return (
+      obj.get('isUserDrawing') === true ||
+      obj.get('isEraserStroke') === true ||
+      (obj.type === 'path' && !obj.get('isTemplateShape') && !obj.get('isQuickVector'))
+    );
+  });
+
+  drawnObjects.forEach((obj) => canvas.remove(obj));
+  canvas.discardActiveObject();
+  canvas.requestRenderAll();
+  return drawnObjects.length;
+}
+
+/**
+ * Backward compatible toggle for Drawing Mode
  */
 export function setCanvasDrawingMode(
   canvas: fabric.Canvas,
@@ -81,14 +224,18 @@ export function setCanvasDrawingMode(
   color = '#10b981',
   width = 4
 ): void {
-  canvas.isDrawingMode = isDrawing;
-  if (isDrawing) {
-    if (!canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-    }
-    canvas.freeDrawingBrush.color = color;
-    canvas.freeDrawingBrush.width = width;
-  }
+  applyCanvasDrawingSettings(canvas, {
+    isDrawingMode: isDrawing,
+    tool: 'brush',
+    brushType: 'pencil',
+    color,
+    opacity: 1,
+    width,
+    lineCap: 'round',
+    dashStyle: 'solid',
+    eraserType: 'brush',
+    eraserWidth: 20,
+  });
 }
 
 /**

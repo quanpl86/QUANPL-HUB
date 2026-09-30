@@ -20,8 +20,25 @@ import {
   Paintbrush,
   Search,
   X,
+  Eraser,
+  Highlighter,
+  CircleDot,
+  Sparkle,
+  Trash2,
 } from 'lucide-react';
-import { ToolTab, DesignTemplate, DesignLayout, StickerItem, ShapeType } from '@/types/design-studio';
+import {
+  ToolTab,
+  DesignTemplate,
+  DesignLayout,
+  StickerItem,
+  ShapeType,
+  DrawingSettings,
+  DrawingTool,
+  BrushType,
+  BrushLineCap,
+  BrushDashStyle,
+  EraserType,
+} from '@/types/design-studio';
 import { PRESET_TEMPLATES } from './templates/preset-templates';
 import { DESIGN_LAYOUTS, LUCIDE_ICONS, STEM_BADGES, buildLucideSvg } from './templates/stickers-badges';
 import { QUICK_BACKGROUNDS, SOLID_PALETTES, GRADIENT_PRESETS } from './templates/background-presets';
@@ -44,6 +61,9 @@ interface SidebarProps {
   isDark: boolean;
   canvasBgColor: string;
   onCanvasBgColorChange: (color: string, gradientStops?: [string, string]) => void;
+  drawingSettings?: DrawingSettings;
+  onUpdateDrawingSettings?: (updater: Partial<DrawingSettings> | ((prev: DrawingSettings) => DrawingSettings)) => void;
+  onClearAllDrawings?: () => void;
   isDrawingMode?: boolean;
   onToggleDrawingMode?: (enabled: boolean) => void;
   drawingColor?: string;
@@ -69,6 +89,9 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   isDark,
   canvasBgColor,
   onCanvasBgColorChange,
+  drawingSettings,
+  onUpdateDrawingSettings,
+  onClearAllDrawings,
   isDrawingMode = false,
   onToggleDrawingMode,
   drawingColor = '#10b981',
@@ -131,6 +154,27 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   const cardBg = isDark ? 'bg-slate-900/60 border-slate-800 hover:bg-slate-900' : 'bg-slate-50 border-slate-200 hover:bg-slate-100';
   const subtextColor = isDark ? 'text-slate-400' : 'text-slate-500';
   const headingColor = isDark ? 'text-slate-200' : 'text-slate-800';
+
+  const effectiveIsDrawing = drawingSettings?.isDrawingMode ?? isDrawingMode;
+  const currentTool = drawingSettings?.tool ?? 'brush';
+  const currentBrushType = drawingSettings?.brushType ?? 'pencil';
+  const currentColor = drawingSettings?.color ?? drawingColor;
+  const currentOpacity = drawingSettings?.opacity ?? 1;
+  const currentWidth = drawingSettings?.width ?? drawingWidth;
+  const currentLineCap = drawingSettings?.lineCap ?? 'round';
+  const currentDashStyle = drawingSettings?.dashStyle ?? 'solid';
+  const currentEraserType = drawingSettings?.eraserType ?? 'brush';
+  const currentEraserWidth = drawingSettings?.eraserWidth ?? 24;
+
+  const updateSettings = (partial: Partial<DrawingSettings>) => {
+    if (onUpdateDrawingSettings) {
+      onUpdateDrawingSettings(partial);
+    } else {
+      if (partial.isDrawingMode !== undefined) onToggleDrawingMode?.(partial.isDrawingMode);
+      if (partial.color !== undefined) onDrawingColorChange?.(partial.color);
+      if (partial.width !== undefined) onDrawingWidthChange?.(partial.width);
+    }
+  };
 
   return (
     <aside
@@ -466,21 +510,30 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
               </p>
             </div>
 
-            {/* 1. FREEHAND VECTOR PEN / BRUSH TOOL */}
-            <div className={`p-3 rounded-xl border space-y-2.5 transition ${
-              isDrawingMode
+            {/* 1. FREEHAND VECTOR PEN & ERASER TOOL */}
+            <div className={`p-3 rounded-xl border space-y-3 transition ${
+              effectiveIsDrawing
                 ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20'
                 : cardBg
             }`}>
+              {/* Header with Master Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 font-semibold text-xs text-emerald-600 dark:text-emerald-400">
-                  <PenTool className="w-4 h-4" />
-                  <span>Bút Vẽ Vector Tự Do</span>
+                  {currentTool === 'eraser' ? (
+                    <Eraser className="w-4 h-4 text-amber-500" />
+                  ) : (
+                    <PenTool className="w-4 h-4" />
+                  )}
+                  <span>{currentTool === 'eraser' ? 'Dụng Cụ Tẩy Nét' : 'Bút Vẽ Vector Tự Do'}</span>
                 </div>
                 <button
-                  onClick={() => onToggleDrawingMode?.(!isDrawingMode)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 ${
-                    isDrawingMode
+                  onClick={() => {
+                    const nextMode = !effectiveIsDrawing;
+                    updateSettings({ isDrawingMode: nextMode });
+                    onToggleDrawingMode?.(nextMode);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${
+                    effectiveIsDrawing
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : isDark
                       ? 'bg-slate-800 text-slate-200 hover:bg-slate-700'
@@ -488,52 +541,390 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
                   }`}
                 >
                   <Paintbrush className="w-3.5 h-3.5" />
-                  <span>{isDrawingMode ? 'Đang vẽ (Tắt)' : 'Bật vẽ bút'}</span>
+                  <span>{effectiveIsDrawing ? 'Đang bật (Tắt)' : 'Bật vẽ/tẩy'}</span>
                 </button>
               </div>
 
-              {isDrawingMode && (
-                <div className="space-y-2 pt-1 border-t border-emerald-500/20">
-                  {/* Brush Color Swatches */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400 font-medium">Màu nét vẽ:</span>
-                    <div className="flex items-center gap-1.5">
-                      {['#10b981', '#38bdf8', '#f59e0b', '#ef4444', '#a855f7', '#ffffff', '#000000'].map((col) => (
-                        <button
-                          key={col}
-                          onClick={() => onDrawingColorChange?.(col)}
-                          style={{ backgroundColor: col }}
-                          className={`w-5 h-5 rounded-full border transition ${
-                            drawingColor === col ? 'scale-125 ring-2 ring-emerald-400' : 'hover:scale-110'
-                          }`}
-                        />
-                      ))}
-                    </div>
+              {effectiveIsDrawing && (
+                <div className="space-y-3 pt-2 border-t border-emerald-500/20">
+                  {/* Tool Switcher: Brush vs Eraser */}
+                  <div className={`flex rounded-lg p-0.5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-200/80 border-slate-300'}`}>
+                    <button
+                      onClick={() => updateSettings({ tool: 'brush' })}
+                      className={`flex-1 py-1 px-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                        currentTool === 'brush'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <PenTool className="w-3.5 h-3.5" />
+                      <span>Bút Vẽ</span>
+                    </button>
+                    <button
+                      onClick={() => updateSettings({ tool: 'eraser' })}
+                      className={`flex-1 py-1 px-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                        currentTool === 'eraser'
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Eraser className="w-3.5 h-3.5" />
+                      <span>Dụng Cụ Tẩy</span>
+                    </button>
                   </div>
 
-                  {/* Brush Stroke Width */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400 font-medium">Độ đậm nét:</span>
-                    <div className="flex items-center gap-1">
-                      {[2, 4, 8, 14].map((sz) => (
-                        <button
-                          key={sz}
-                          onClick={() => onDrawingWidthChange?.(sz)}
-                          className={`px-2 py-0.5 rounded text-[10px] font-mono transition ${
-                            drawingWidth === sz
-                              ? 'bg-emerald-600 text-white font-bold'
-                              : isDark
-                              ? 'bg-slate-800 text-slate-300'
-                              : 'bg-slate-200 text-slate-700'
-                          }`}
-                        >
-                          {sz}px
-                        </button>
-                      ))}
+                  {/* BRUSH MODE CONTROLS */}
+                  {currentTool === 'brush' && (
+                    <div className="space-y-2.5">
+                      {/* 1. Brush Types */}
+                      <div>
+                        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                          Dạng Bút Vẽ
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {[
+                            { id: 'pencil' as BrushType, label: 'Bút mực / chì', desc: 'Chuẩn nét', icon: PenTool },
+                            { id: 'highlighter' as BrushType, label: 'Dạ quang', desc: 'Nhớ dòng mờ', icon: Highlighter },
+                            { id: 'circle' as BrushType, label: 'Cọ tròn', desc: 'Chấm đốm', icon: CircleDot },
+                            { id: 'spray' as BrushType, label: 'Phun sương', desc: 'Bụi lấp lánh', icon: Sparkle },
+                          ].map((b) => {
+                            const IconComponent = b.icon;
+                            const isSel = currentBrushType === b.id;
+                            return (
+                              <button
+                                key={b.id}
+                                onClick={() => updateSettings({ brushType: b.id })}
+                                className={`p-1.5 rounded-lg border text-left flex items-center gap-2 transition ${
+                                  isSel
+                                    ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold'
+                                    : isDark ? 'border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-slate-300' : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-700'
+                                }`}
+                              >
+                                <IconComponent className="w-3.5 h-3.5 shrink-0" />
+                                <div className="min-w-0">
+                                  <div className="text-[11px] leading-tight truncate">{b.label}</div>
+                                  <div className="text-[9px] text-slate-400 leading-none truncate">{b.desc}</div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 2. Brush Tip Cap & Dash Style */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-medium block mb-1">Đầu bút:</span>
+                          <div className={`flex rounded-md p-0.5 border text-[10px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
+                            {[
+                              { id: 'round' as BrushLineCap, label: 'Tròn' },
+                              { id: 'square' as BrushLineCap, label: 'Vuông' },
+                              { id: 'butt' as BrushLineCap, label: 'Phẳng' },
+                            ].map((c) => (
+                              <button
+                                key={c.id}
+                                onClick={() => updateSettings({ lineCap: c.id })}
+                                className={`flex-1 py-0.5 rounded transition ${
+                                  currentLineCap === c.id
+                                    ? 'bg-emerald-600 text-white font-bold'
+                                    : isDark ? 'text-slate-400' : 'text-slate-600'
+                                }`}
+                              >
+                                {c.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-medium block mb-1">Kiểu nét:</span>
+                          <div className={`flex rounded-md p-0.5 border text-[10px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
+                            {[
+                              { id: 'solid' as BrushDashStyle, label: 'Liền' },
+                              { id: 'dashed' as BrushDashStyle, label: 'Đứt' },
+                              { id: 'dotted' as BrushDashStyle, label: 'Chấm' },
+                            ].map((d) => (
+                              <button
+                                key={d.id}
+                                onClick={() => updateSettings({ dashStyle: d.id })}
+                                className={`flex-1 py-0.5 rounded transition ${
+                                  currentDashStyle === d.id
+                                    ? 'bg-emerald-600 text-white font-bold'
+                                    : isDark ? 'text-slate-400' : 'text-slate-600'
+                                }`}
+                              >
+                                {d.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 3. Detailed Opacity Adjustment */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400 font-medium">Độ đậm nhạt (Opacity):</span>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={5}
+                              max={100}
+                              value={Math.round(currentOpacity * 100)}
+                              onChange={(e) => {
+                                const val = Math.min(100, Math.max(5, Number(e.target.value) || 100));
+                                updateSettings({ opacity: val / 100 });
+                              }}
+                              className={`w-12 px-1.5 py-0.5 text-center text-xs rounded border font-mono outline-none ${
+                                isDark ? 'bg-slate-900 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700'
+                              }`}
+                            />
+                            <span className="text-[10px] text-slate-500 font-mono">%</span>
+                          </div>
+                        </div>
+                        <input
+                          type="range"
+                          min={5}
+                          max={100}
+                          value={Math.round(currentOpacity * 100)}
+                          onChange={(e) => updateSettings({ opacity: Number(e.target.value) / 100 })}
+                          className="w-full accent-emerald-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer"
+                        />
+                      </div>
+
+                      {/* 4. Detailed Brush Width Adjustment */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400 font-medium">Độ dày nét bút:</span>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={1}
+                              max={100}
+                              value={currentWidth}
+                              onChange={(e) => {
+                                const val = Math.min(100, Math.max(1, Number(e.target.value) || 4));
+                                updateSettings({ width: val });
+                                onDrawingWidthChange?.(val);
+                              }}
+                              className={`w-12 px-1.5 py-0.5 text-center text-xs rounded border font-mono outline-none ${
+                                isDark ? 'bg-slate-900 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700'
+                              }`}
+                            />
+                            <span className="text-[10px] text-slate-500 font-mono">px</span>
+                          </div>
+                        </div>
+                        <input
+                          type="range"
+                          min={1}
+                          max={100}
+                          value={currentWidth}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            updateSettings({ width: val });
+                            onDrawingWidthChange?.(val);
+                          }}
+                          className="w-full accent-emerald-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer"
+                        />
+
+                        {/* Quick Width Chips */}
+                        <div className="flex items-center gap-1 pt-0.5">
+                          {[2, 4, 8, 16, 32].map((sz) => (
+                            <button
+                              key={sz}
+                              onClick={() => {
+                                updateSettings({ width: sz });
+                                onDrawingWidthChange?.(sz);
+                              }}
+                              className={`flex-1 py-0.5 rounded text-[10px] font-mono transition ${
+                                currentWidth === sz
+                                  ? 'bg-emerald-600 text-white font-bold'
+                                  : isDark
+                                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                              }`}
+                            >
+                              {sz}px
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 5. Brush Color Swatches */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400 font-medium">Màu nét vẽ:</span>
+                          <span className="font-mono text-[10px] text-emerald-500 font-semibold">{currentColor}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#ef4444', '#f59e0b', '#ffffff', '#000000'].map((col) => (
+                            <button
+                              key={col}
+                              onClick={() => {
+                                updateSettings({ color: col });
+                                onDrawingColorChange?.(col);
+                              }}
+                              style={{ backgroundColor: col }}
+                              className={`w-5 h-5 rounded-full border transition ${
+                                currentColor === col
+                                  ? 'scale-125 ring-2 ring-emerald-500 ring-offset-1 ring-offset-slate-900 border-white'
+                                  : 'border-slate-400/40 hover:scale-110'
+                              }`}
+                              title={col}
+                            />
+                          ))}
+                          <label className="relative w-5 h-5 rounded-full border border-dashed border-slate-400 cursor-pointer flex items-center justify-center overflow-hidden hover:scale-110 transition shrink-0" title="Chọn màu tự do">
+                            <input
+                              type="color"
+                              value={currentColor}
+                              onChange={(e) => {
+                                updateSettings({ color: e.target.value });
+                                onDrawingColorChange?.(e.target.value);
+                              }}
+                              className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                            />
+                            <span className="text-[9px] font-bold text-slate-400">+</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Live Brush Preview Box */}
+                      <div className={`p-2 rounded-lg border flex items-center justify-between ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-100 border-slate-300'}`}>
+                        <span className="text-[10px] text-slate-400">Xem trước đầu bút:</span>
+                        <div className="h-6 flex items-center justify-center px-4 overflow-hidden">
+                          <div
+                            style={{
+                              width: `${Math.min(currentWidth, 40)}px`,
+                              height: `${Math.min(currentWidth, 40)}px`,
+                              backgroundColor: currentColor,
+                              opacity: currentOpacity,
+                              borderRadius: currentLineCap === 'round' ? '50%' : currentLineCap === 'square' ? '2px' : '0px',
+                            }}
+                            className="shadow-xs transition-all"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* ERASER MODE CONTROLS */}
+                  {currentTool === 'eraser' && (
+                    <div className="space-y-2.5">
+                      {/* 1. Eraser Sub-Type */}
+                      <div>
+                        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                          Chế Độ Tẩy
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            onClick={() => updateSettings({ eraserType: 'brush' })}
+                            className={`p-2 rounded-lg border text-left transition flex items-center gap-1.5 ${
+                              currentEraserType === 'brush'
+                                ? 'border-amber-500 bg-amber-500/15 text-amber-500 font-semibold'
+                                : isDark ? 'border-slate-800 bg-slate-900/60 text-slate-300' : 'border-slate-200 bg-white text-slate-700'
+                            }`}
+                          >
+                            <Paintbrush className="w-3.5 h-3.5 shrink-0" />
+                            <div className="min-w-0">
+                              <div className="text-[11px] leading-tight font-medium">Tẩy kéo tự do</div>
+                              <div className="text-[9px] text-slate-400">Kéo chuột tẩy vùng</div>
+                            </div>
+                          </button>
+
+                          <button
+                            onClick={() => updateSettings({ eraserType: 'stroke' })}
+                            className={`p-2 rounded-lg border text-left transition flex items-center gap-1.5 ${
+                              currentEraserType === 'stroke'
+                                ? 'border-amber-500 bg-amber-500/15 text-amber-500 font-semibold'
+                                : isDark ? 'border-slate-800 bg-slate-900/60 text-slate-300' : 'border-slate-200 bg-white text-slate-700'
+                            }`}
+                          >
+                            <Eraser className="w-3.5 h-3.5 shrink-0" />
+                            <div className="min-w-0">
+                              <div className="text-[11px] leading-tight font-medium">Tẩy chạm xóa nét</div>
+                              <div className="text-[9px] text-slate-400">Bấm nét là xóa ngay</div>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 2. Detailed Eraser Width */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400 font-medium">Kích thước đầu tẩy:</span>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={2}
+                              max={120}
+                              value={currentEraserWidth}
+                              onChange={(e) => {
+                                const val = Math.min(120, Math.max(2, Number(e.target.value) || 20));
+                                updateSettings({ eraserWidth: val });
+                              }}
+                              className={`w-12 px-1.5 py-0.5 text-center text-xs rounded border font-mono outline-none ${
+                                isDark ? 'bg-slate-900 border-slate-700 text-amber-400' : 'bg-white border-slate-300 text-amber-700'
+                              }`}
+                            />
+                            <span className="text-[10px] text-slate-500 font-mono">px</span>
+                          </div>
+                        </div>
+                        <input
+                          type="range"
+                          min={2}
+                          max={120}
+                          value={currentEraserWidth}
+                          onChange={(e) => updateSettings({ eraserWidth: Number(e.target.value) })}
+                          className="w-full accent-amber-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer"
+                        />
+
+                        {/* Quick Eraser Width Chips */}
+                        <div className="flex items-center gap-1 pt-0.5">
+                          {[8, 16, 24, 48, 80].map((sz) => (
+                            <button
+                              key={sz}
+                              onClick={() => updateSettings({ eraserWidth: sz })}
+                              className={`flex-1 py-0.5 rounded text-[10px] font-mono transition ${
+                                currentEraserWidth === sz
+                                  ? 'bg-amber-600 text-white font-bold'
+                                  : isDark
+                                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                              }`}
+                            >
+                              {sz}px
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Live Eraser Preview Box */}
+                      <div className={`p-2 rounded-lg border flex items-center justify-between ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-100 border-slate-300'}`}>
+                        <span className="text-[10px] text-slate-400">Kích thước đầu tẩy:</span>
+                        <div className="h-8 flex items-center justify-center px-4">
+                          <div
+                            style={{
+                              width: `${Math.min(currentEraserWidth, 50)}px`,
+                              height: `${Math.min(currentEraserWidth, 50)}px`,
+                            }}
+                            className="rounded-full border-2 border-dashed border-amber-500 bg-amber-500/20 shadow-xs transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Clear All Drawings Action Button */}
+                      <button
+                        onClick={onClearAllDrawings}
+                        className="w-full py-2 px-3 rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+                        title="Xóa nhanh mọi nét vẽ tự do trên canvas mà không ảnh hưởng ảnh hay chữ"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Xóa Sạch Tất Cả Nét Vẽ</span>
+                      </button>
+                    </div>
+                  )}
+
                   <p className="text-[10px] text-emerald-600 dark:text-emerald-400 italic">
-                    💡 Rê chuột vẽ tự do trên canvas. Tắt bút vẽ để chỉnh sửa và di chuyển hình vẽ.
+                    💡 Rê chuột trên canvas để vẽ/tẩy. Tắt bút để chọn và di chuyển nét vẽ như vật thể vector.
                   </p>
                 </div>
               )}

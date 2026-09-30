@@ -108,3 +108,22 @@ export interface VectorShapeItem {
   svg: string;
 }
 
+export type DrawingTool = 'brush' | 'eraser';
+export type BrushType = 'pencil' | 'highlighter' | 'circle' | 'spray';
+export type BrushLineCap = 'round' | 'square' | 'butt';
+export type BrushDashStyle = 'solid' | 'dashed' | 'dotted';
+export type EraserType = 'brush' | 'stroke';
+
+export interface DrawingSettings {
+  isDrawingMode: boolean;
+  tool: DrawingTool;
+  brushType: BrushType;
+  color: string;
+  opacity: number; // 0.05 to 1.0 (5% - 100%)
+  width: number;   // 1 to 100
+  lineCap: BrushLineCap;
+  dashStyle: BrushDashStyle;
+  eraserType: EraserType;
+  eraserWidth: number; // 2 to 120
+}
+
