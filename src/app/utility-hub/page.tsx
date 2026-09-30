@@ -67,6 +67,16 @@ const featuredTools = [
     category: 'Tiện ích sa bàn Robotics'
   },
   {
+    title: 'Design Studio & Chỉnh ảnh AI',
+    description: 'Trạm thiết kế đồ họa kiểu Canva kết hợp Photoshop Lite: Canvas đa layer, chèn Text/Shape, bộ lọc màu, tách nền AI 1-click và lưu file dự án .hubdesign.',
+    icon: Sparkles,
+    status: 'SẴN SÀNG',
+    formats: 'CANVAS MULTI-LAYER + AI',
+    href: '/utility-hub/design-studio',
+    color: 'from-emerald-500/25 to-emerald-500/5',
+    category: 'Bộ công cụ xử lý ảnh'
+  },
+  {
     title: 'Chuyển ảnh sang vector',
     description: 'Biến logo, icon hoặc hình minh họa raster thành SVG/vector để dùng trong bài giảng, thiết kế và STEM kit.',
     icon: Wand2,
