@@ -1,4 +1,4 @@
-export type ToolTab = 'templates' | 'text' | 'shapes' | 'images' | 'filters' | 'ai';
+export type ToolTab = 'templates' | 'layouts' | 'text' | 'shapes' | 'stickers' | 'images' | 'ai';
 
 export interface CanvasDimensions {
   width: number;
@@ -50,4 +50,27 @@ export interface DesignTemplate {
   thumbnail: string;
   description: string;
   data: Record<string, unknown>; // Fabric JSON representation
+}
+
+export interface DesignLayout {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  boxes: Array<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    label: string;
+    fill: string;
+    stroke: string;
+  }>;
+}
+
+export interface StickerItem {
+  id: string;
+  name: string;
+  category: 'lucide' | 'badge' | 'stem' | 'ribbon';
+  svg: string;
 }

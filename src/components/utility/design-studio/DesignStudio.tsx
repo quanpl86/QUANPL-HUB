@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import { toast } from 'sonner';
-import { ToolTab, ImageAdjustments, DesignTemplate, HubDesignFile } from '@/types/design-studio';
+import { ToolTab, ImageAdjustments, DesignTemplate, DesignLayout, HubDesignFile } from '@/types/design-studio';
 import { DesignStudioTopBar } from './DesignStudioTopBar';
 import { DesignStudioSidebar } from './DesignStudioSidebar';
 import { DesignStudioCanvas } from './DesignStudioCanvas';
@@ -15,6 +15,9 @@ import {
   addCircle,
   addTriangle,
   addLine,
+  addSvgIcon,
+  addTextInsideShape,
+  applyLayoutToCanvas,
   addImageFromUrl,
   applyImageAdjustments,
   rotateObject,
@@ -83,11 +86,9 @@ export const DesignStudio: React.FC = () => {
     if (!fabricCanvasRef.current || isHistoryActionRef.current) return;
     try {
       const jsonStr = JSON.stringify(fabricCanvasRef.current.toObject());
-      // Truncate future states if we performed an action after undoing
       const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
       newHistory.push(jsonStr);
 
-      // Limit history to 30 steps
       if (newHistory.length > 30) {
         newHistory.shift();
       }
@@ -110,7 +111,7 @@ export const DesignStudio: React.FC = () => {
       return;
     }
 
-    setSelectedObject(target as unknown as Record<string, unknown>);
+    setSelectedObject(target.toObject() as Record<string, unknown>);
     const type = target.type?.toLowerCase() || '';
 
     if (type === 'fabricimage' || type === 'image') {
@@ -121,6 +122,20 @@ export const DesignStudio: React.FC = () => {
       setSelectedType(type || 'shape');
     }
   }, []);
+
+  // Reactive property update function: updates BOTH fabric canvas and React state
+  const updateActiveObjectProperties = useCallback((props: Record<string, unknown>) => {
+    const activeObj = fabricCanvasRef.current?.getActiveObject();
+    if (!activeObj || !fabricCanvasRef.current) return;
+
+    activeObj.set(props);
+    activeObj.setCoords();
+    fabricCanvasRef.current.requestRenderAll();
+
+    // Immediately reflect new values in Inspector state so sliders & inputs update in real time
+    setSelectedObject((prev) => (prev ? { ...prev, ...props } : (activeObj.toObject() as Record<string, unknown>)));
+    saveHistory();
+  }, [saveHistory]);
 
   // Undo Function
   const handleUndo = async () => {
@@ -160,6 +175,17 @@ export const DesignStudio: React.FC = () => {
     }
   };
 
+  // Double click shape handler: adds or edits centered text inside the shape
+  const handleShapeDoubleClick = useCallback((shape: fabric.FabricObject) => {
+    if (!fabricCanvasRef.current) return;
+    const type = shape.type?.toLowerCase() || '';
+    if (type === 'rect' || type === 'circle' || type === 'triangle') {
+      addTextInsideShape(fabricCanvasRef.current, shape);
+      saveHistory();
+      toast.success('Đã thêm chữ vào giữa hình. Hãy nhập nội dung!');
+    }
+  }, [saveHistory]);
+
   // Initialize Fabric Canvas
   useEffect(() => {
     if (!canvasElRef.current || fabricCanvasRef.current) return;
@@ -182,13 +208,29 @@ export const DesignStudio: React.FC = () => {
     canvas.on('selection:created', (e) => syncSelectionState(e.selected?.[0] || null));
     canvas.on('selection:updated', (e) => syncSelectionState(e.selected?.[0] || null));
     canvas.on('selection:cleared', () => syncSelectionState(null));
-    canvas.on('object:modified', () => saveHistory());
+
+    // Update selection state on transform events
+    canvas.on('object:modified', (e) => {
+      syncSelectionState(e.target || null);
+      saveHistory();
+    });
+    canvas.on('object:scaling', (e) => syncSelectionState(e.target || null));
+    canvas.on('object:rotating', (e) => syncSelectionState(e.target || null));
+    canvas.on('object:moving', (e) => syncSelectionState(e.target || null));
+
     canvas.on('object:added', () => saveHistory());
     canvas.on('object:removed', () => saveHistory());
 
+    // Double click on shape event
+    canvas.on('mouse:dblclick', (e) => {
+      if (e.target) {
+        handleShapeDoubleClick(e.target);
+      }
+    });
+
     // Calculate initial responsive zoom to fit container
     const autoFitZoom = () => {
-      const availableW = window.innerWidth - 320 - 288 - 64; // Subtracted sidebars and margins
+      const availableW = window.innerWidth - 320 - 288 - 64;
       const availableH = window.innerHeight - 56 - 64;
       const fitW = availableW / DEFAULT_WIDTH;
       const fitH = availableH / DEFAULT_HEIGHT;
@@ -197,17 +239,21 @@ export const DesignStudio: React.FC = () => {
     };
     autoFitZoom();
 
-    // Initial default heading to guide user
+    // Initial default heading with ample width and NO grapheme splitting
     addText(canvas, 'TIÊU ĐỀ BÀI HỌC STEM', {
       top: 180,
+      width: 800,
       fontSize: 54,
       fontWeight: 'bold',
       fill: '#10b981',
+      splitByGrapheme: false,
     });
     addText(canvas, 'Nhấp đúp chuột để chỉnh sửa văn bản hoặc chọn ảnh để tách nền AI', {
       top: 270,
+      width: 760,
       fontSize: 22,
       fill: '#94a3b8',
+      splitByGrapheme: false,
     });
 
     saveHistory();
@@ -216,7 +262,7 @@ export const DesignStudio: React.FC = () => {
       canvas.dispose();
       fabricCanvasRef.current = null;
     };
-  }, [syncSelectionState, saveHistory]);
+  }, [syncSelectionState, saveHistory, handleShapeDoubleClick]);
 
   // Window Paste listener (Ctrl+V image) & Keyboard Shortcuts
   useEffect(() => {
@@ -248,7 +294,6 @@ export const DesignStudio: React.FC = () => {
       // Delete key
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isInput) {
         const activeObj = fabricCanvasRef.current?.getActiveObject();
-        // Check if editing text inside textbox
         if (activeObj && (activeObj as unknown as { isEditing?: boolean }).isEditing) return;
 
         if (activeObj && fabricCanvasRef.current) {
@@ -312,26 +357,33 @@ export const DesignStudio: React.FC = () => {
       case 'title':
         addText(fabricCanvasRef.current, 'Tiêu đề lớn', {
           fontSize: 48,
+          width: 700,
           fontWeight: 'bold',
           fill: '#ffffff',
+          splitByGrapheme: false,
         });
         break;
       case 'subtitle':
         addText(fabricCanvasRef.current, 'Tiêu đề phụ', {
           fontSize: 28,
+          width: 600,
           fontWeight: '600',
           fill: '#38bdf8',
+          splitByGrapheme: false,
         });
         break;
       case 'body':
         addText(fabricCanvasRef.current, 'Nội dung bài viết chi tiết ở đây...', {
           fontSize: 18,
+          width: 500,
           fill: '#cbd5e1',
+          splitByGrapheme: false,
         });
         break;
       case 'neon':
         addText(fabricCanvasRef.current, 'ROBOTICS CYBER 2026', {
           fontSize: 44,
+          width: 750,
           fontWeight: 'bold',
           fill: '#34d399',
           shadow: new fabric.Shadow({
@@ -340,6 +392,7 @@ export const DesignStudio: React.FC = () => {
             offsetX: 0,
             offsetY: 0,
           }),
+          splitByGrapheme: false,
         });
         break;
     }
@@ -347,7 +400,7 @@ export const DesignStudio: React.FC = () => {
   };
 
   // Add Shape Handler
-  const handleAddShape = (type: 'rect' | 'circle' | 'triangle' | 'line' | 'star' | 'arrow') => {
+  const handleAddShape = (type: 'rect' | 'circle' | 'triangle' | 'line') => {
     if (!fabricCanvasRef.current) return;
     switch (type) {
       case 'rect':
@@ -366,7 +419,36 @@ export const DesignStudio: React.FC = () => {
         addRect(fabricCanvasRef.current);
         break;
     }
-    toast.success('Đã thêm hình vào canvas');
+    toast.success('Đã thêm hình vào canvas (Nhấp đúp để gõ chữ vào trong)');
+  };
+
+  // Add Text inside Selected Shape (From Inspector button)
+  const handleAddTextToShape = () => {
+    const activeObj = fabricCanvasRef.current?.getActiveObject();
+    if (activeObj && fabricCanvasRef.current) {
+      handleShapeDoubleClick(activeObj);
+    }
+  };
+
+  // Add SVG Sticker or Badge
+  const handleAddSvgSticker = async (svgString: string) => {
+    if (!fabricCanvasRef.current) return;
+    try {
+      await addSvgIcon(fabricCanvasRef.current, svgString);
+      saveHistory();
+      toast.success('Đã chèn huy hiệu / sticker SVG vào canvas');
+    } catch (e) {
+      console.error('Add SVG sticker error:', e);
+      toast.error('Lỗi khi nạp SVG sticker.');
+    }
+  };
+
+  // Apply Layout
+  const handleApplyLayout = (layout: DesignLayout) => {
+    if (!fabricCanvasRef.current) return;
+    applyLayoutToCanvas(fabricCanvasRef.current, layout);
+    saveHistory();
+    toast.success(`Đã áp dụng bố cục: ${layout.name}`);
   };
 
   // Upload and Add Image Handler
@@ -449,17 +531,14 @@ export const DesignStudio: React.FC = () => {
     setAiProgressMessage('Đang trích xuất ảnh layer...');
 
     try {
-      // 1. Export active image to temporary dataUrl
       const dataUrl = (activeObj as fabric.FabricImage).toDataURL({ format: 'png' });
 
-      // 2. Run local AI background removal
       const transparentBlob = await removeImageBackground(dataUrl, {
         onProgress: (percent, msg) => {
           setAiProgressMessage(`${percent}% - ${msg}`);
         },
       });
 
-      // 3. Save position & transformation metrics
       const left = activeObj.left;
       const top = activeObj.top;
       const scaleX = activeObj.scaleX;
@@ -468,7 +547,6 @@ export const DesignStudio: React.FC = () => {
       const flipX = activeObj.flipX;
       const flipY = activeObj.flipY;
 
-      // 4. Create new transparent image element
       const newImgUrl = URL.createObjectURL(transparentBlob);
       const newImage = await fabric.FabricImage.fromURL(newImgUrl, {
         crossOrigin: 'anonymous',
@@ -484,7 +562,6 @@ export const DesignStudio: React.FC = () => {
         flipY,
       });
 
-      // 5. Replace on canvas
       const canvas = fabricCanvasRef.current;
       canvas.remove(activeObj);
       canvas.add(newImage);
@@ -518,24 +595,6 @@ export const DesignStudio: React.FC = () => {
 
   const handleResetImageAdjustments = async () => {
     handleApplyImageAdjustments(DEFAULT_IMAGE_ADJUSTMENTS);
-  };
-
-  // Text Properties Update Handler
-  const handleUpdateTextProps = (props: Record<string, unknown>) => {
-    const activeObj = fabricCanvasRef.current?.getActiveObject();
-    if (!activeObj || !fabricCanvasRef.current) return;
-    activeObj.set(props);
-    fabricCanvasRef.current.requestRenderAll();
-    saveHistory();
-  };
-
-  // Shape Properties Update Handler
-  const handleUpdateShapeProps = (props: Record<string, unknown>) => {
-    const activeObj = fabricCanvasRef.current?.getActiveObject();
-    if (!activeObj || !fabricCanvasRef.current) return;
-    activeObj.set(props);
-    fabricCanvasRef.current.requestRenderAll();
-    saveHistory();
   };
 
   // Layer & Transform actions
@@ -690,7 +749,7 @@ export const DesignStudio: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans transition-colors">
       {/* 1. TOP BAR */}
       <DesignStudioTopBar
         projectName={projectName}
@@ -721,7 +780,7 @@ export const DesignStudio: React.FC = () => {
 
       {/* 2. MAIN 3-ZONE STUDIO WORKSPACE */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* LEFT SIDEBAR (Templates, Text, Shapes, Uploads, AI Tools) */}
+        {/* LEFT SIDEBAR (Templates, Layouts, Text, Shapes, Stickers, Uploads, AI Tools) */}
         <DesignStudioSidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -729,6 +788,8 @@ export const DesignStudio: React.FC = () => {
           onAddShape={handleAddShape}
           onUploadImage={handleUploadImage}
           onSelectTemplate={handleSelectTemplate}
+          onApplyLayout={handleApplyLayout}
+          onAddSvgSticker={handleAddSvgSticker}
           onQuickAiRemoveBg={handleQuickAiRemoveBg}
           isAiProcessing={isAiProcessing}
           aiProgressMessage={aiProgressMessage}
@@ -749,8 +810,9 @@ export const DesignStudio: React.FC = () => {
           selectedType={selectedType}
           canvasBgColor={canvasBgColor}
           onCanvasBgColorChange={handleCanvasBgColorChange}
-          onUpdateTextProps={handleUpdateTextProps}
-          onUpdateShapeProps={handleUpdateShapeProps}
+          onUpdateTextProps={updateActiveObjectProperties}
+          onUpdateShapeProps={updateActiveObjectProperties}
+          onAddTextToShape={handleAddTextToShape}
           onApplyImageAdjustments={handleApplyImageAdjustments}
           imageAdjustments={imageAdjustments}
           onResetImageAdjustments={handleResetImageAdjustments}

@@ -1,5 +1,5 @@
 import * as fabric from 'fabric';
-import { ImageAdjustments, HubDesignFile, DesignProjectMeta } from '@/types/design-studio';
+import { ImageAdjustments, HubDesignFile, DesignProjectMeta, DesignLayout } from '@/types/design-studio';
 import jsPDF from 'jspdf';
 
 /**
@@ -20,22 +20,26 @@ export function configureFabricDefaults() {
 }
 
 /**
- * Create a new Textbox
+ * Create a new Textbox with proper word wrapping (splitByGrapheme = false)
  */
 export function addText(
   canvas: fabric.Canvas,
   text = 'Nội dung văn bản',
   options: Record<string, unknown> = {}
 ): fabric.Textbox {
+  const canvasW = canvas.width || 800;
+  const canvasH = canvas.height || 600;
+  const targetWidth = Math.min(600, canvasW * 0.75);
+
   const textbox = new fabric.Textbox(text, {
-    left: canvas.width ? canvas.width / 2 - 150 : 100,
-    top: canvas.height ? canvas.height / 2 - 25 : 100,
-    width: 300,
-    fontSize: 32,
+    left: canvasW / 2 - targetWidth / 2,
+    top: canvasH / 2 - 25,
+    width: targetWidth,
+    fontSize: 36,
     fontFamily: 'Inter',
     fill: '#ffffff',
     textAlign: 'center',
-    splitByGrapheme: true,
+    splitByGrapheme: false,
     ...options,
   });
 
@@ -52,14 +56,19 @@ export function addRect(
   canvas: fabric.Canvas,
   options: Record<string, unknown> = {}
 ): fabric.Rect {
+  const canvasW = canvas.width || 800;
+  const canvasH = canvas.height || 600;
+
   const rect = new fabric.Rect({
-    left: canvas.width ? canvas.width / 2 - 100 : 100,
-    top: canvas.height ? canvas.height / 2 - 75 : 100,
-    width: 200,
-    height: 150,
+    left: canvasW / 2 - 120,
+    top: canvasH / 2 - 90,
+    width: 240,
+    height: 180,
     fill: '#10b981',
     rx: 8,
     ry: 8,
+    stroke: '#ffffff',
+    strokeWidth: 0,
     ...options,
   });
 
@@ -76,11 +85,16 @@ export function addCircle(
   canvas: fabric.Canvas,
   options: Record<string, unknown> = {}
 ): fabric.Circle {
+  const canvasW = canvas.width || 800;
+  const canvasH = canvas.height || 600;
+
   const circle = new fabric.Circle({
-    left: canvas.width ? canvas.width / 2 - 75 : 100,
-    top: canvas.height ? canvas.height / 2 - 75 : 100,
-    radius: 75,
+    left: canvasW / 2 - 90,
+    top: canvasH / 2 - 90,
+    radius: 90,
     fill: '#38bdf8',
+    stroke: '#ffffff',
+    strokeWidth: 0,
     ...options,
   });
 
@@ -97,12 +111,17 @@ export function addTriangle(
   canvas: fabric.Canvas,
   options: Record<string, unknown> = {}
 ): fabric.Triangle {
+  const canvasW = canvas.width || 800;
+  const canvasH = canvas.height || 600;
+
   const triangle = new fabric.Triangle({
-    left: canvas.width ? canvas.width / 2 - 75 : 100,
-    top: canvas.height ? canvas.height / 2 - 75 : 100,
-    width: 150,
-    height: 130,
+    left: canvasW / 2 - 90,
+    top: canvasH / 2 - 80,
+    width: 180,
+    height: 160,
     fill: '#f59e0b',
+    stroke: '#ffffff',
+    strokeWidth: 0,
     ...options,
   });
 
@@ -119,12 +138,15 @@ export function addLine(
   canvas: fabric.Canvas,
   options: Record<string, unknown> = {}
 ): fabric.Line {
+  const canvasW = canvas.width || 800;
+  const canvasH = canvas.height || 600;
+
   const line = new fabric.Line(
     [
-      canvas.width ? canvas.width / 2 - 100 : 50,
-      canvas.height ? canvas.height / 2 : 100,
-      canvas.width ? canvas.width / 2 + 100 : 250,
-      canvas.height ? canvas.height / 2 : 100,
+      canvasW / 2 - 150,
+      canvasH / 2,
+      canvasW / 2 + 150,
+      canvasH / 2,
     ],
     {
       stroke: '#e2e8f0',
@@ -137,6 +159,122 @@ export function addLine(
   canvas.setActiveObject(line);
   canvas.requestRenderAll();
   return line;
+}
+
+/**
+ * Add SVG Icon or Badge to Canvas
+ */
+export async function addSvgIcon(
+  canvas: fabric.Canvas,
+  svgString: string,
+  options: Record<string, unknown> = {}
+): Promise<fabric.FabricObject> {
+  const canvasW = canvas.width || 800;
+  const canvasH = canvas.height || 600;
+
+  // Use DataURL for highest SVG rendering fidelity across all browsers
+  const encoded = encodeURIComponent(svgString);
+  const dataUrl = `data:image/svg+xml;charset=utf-8,${encoded}`;
+
+  const img = await fabric.FabricImage.fromURL(dataUrl);
+  img.set({
+    left: canvasW / 2 - ((img.width || 100) * (img.scaleX || 1)) / 2,
+    top: canvasH / 2 - ((img.height || 100) * (img.scaleY || 1)) / 2,
+    ...options,
+  });
+
+  canvas.add(img);
+  canvas.setActiveObject(img);
+  canvas.requestRenderAll();
+  return img;
+}
+
+/**
+ * Add Text inside a Shape (Centered text)
+ */
+export function addTextInsideShape(
+  canvas: fabric.Canvas,
+  shape: fabric.FabricObject,
+  initialText = 'Nhập văn bản...'
+): fabric.Textbox {
+  const bound = shape.getBoundingRect();
+  const shapeWidth = bound.width;
+  const targetWidth = Math.max(100, shapeWidth - 24);
+
+  const textbox = new fabric.Textbox(initialText, {
+    left: bound.left + (bound.width / 2) - (targetWidth / 2),
+    top: bound.top + (bound.height / 2) - 16,
+    width: targetWidth,
+    fontSize: Math.min(24, Math.max(14, Math.round(bound.height / 4))),
+    fontFamily: 'Inter',
+    fill: shape.fill === '#ffffff' ? '#0f172a' : '#ffffff',
+    textAlign: 'center',
+    splitByGrapheme: false,
+  });
+
+  canvas.add(textbox);
+  canvas.setActiveObject(textbox);
+  const editableText = textbox as unknown as { enterEditing?: () => void; selectAll?: () => void };
+  editableText.enterEditing?.();
+  editableText.selectAll?.();
+  canvas.requestRenderAll();
+  return textbox;
+}
+
+/**
+ * Apply a structured Layout to the Canvas
+ */
+export function applyLayoutToCanvas(
+  canvas: fabric.Canvas,
+  layout: DesignLayout
+): void {
+  canvas.clear();
+  const canvasW = canvas.width || 1280;
+  const canvasH = canvas.height || 720;
+
+  // Base canvas dimensions used in design layout template: 1280 x 720
+  const scaleX = canvasW / 1280;
+  const scaleY = canvasH / 720;
+
+  layout.boxes.forEach((box) => {
+    const left = box.left * scaleX;
+    const top = box.top * scaleY;
+    const width = box.width * scaleX;
+    const height = box.height * scaleY;
+
+    // Background frame
+    const rect = new fabric.Rect({
+      left,
+      top,
+      width,
+      height,
+      fill: box.fill,
+      stroke: box.stroke,
+      strokeWidth: 2,
+      strokeDashArray: [8, 6],
+      rx: 12,
+      ry: 12,
+    });
+
+    // Centered label inside frame
+    const label = new fabric.Textbox(box.label, {
+      left: left + 20,
+      top: top + height / 2 - 14,
+      width: width - 40,
+      fontSize: Math.max(14, Math.min(20, Math.round(width / 24))),
+      fontFamily: 'Inter',
+      fontWeight: 'bold',
+      fill: box.stroke,
+      textAlign: 'center',
+      splitByGrapheme: false,
+      selectable: false,
+    });
+
+    canvas.add(rect);
+    canvas.add(label);
+  });
+
+  canvas.requestRenderAll();
 }
 
 /**

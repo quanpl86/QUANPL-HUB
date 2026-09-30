@@ -26,6 +26,7 @@ import {
   Contrast,
   Droplets,
   Layers2,
+  Type,
 } from 'lucide-react';
 import { ImageAdjustments } from '@/types/design-studio';
 
@@ -36,6 +37,7 @@ interface InspectorProps {
   onCanvasBgColorChange: (color: string) => void;
   onUpdateTextProps: (props: Record<string, unknown>) => void;
   onUpdateShapeProps: (props: Record<string, unknown>) => void;
+  onAddTextToShape: () => void;
   onApplyImageAdjustments: (adjustments: ImageAdjustments) => void;
   imageAdjustments: ImageAdjustments;
   onResetImageAdjustments: () => void;
@@ -87,6 +89,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
   onCanvasBgColorChange,
   onUpdateTextProps,
   onUpdateShapeProps,
+  onAddTextToShape,
   onApplyImageAdjustments,
   imageAdjustments,
   onResetImageAdjustments,
@@ -105,30 +108,30 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
   // 1. CHƯA CHỌN VẬT THỂ: HIỂN THỊ THUỘC TÍNH CANVAS
   if (!selectedObject || !selectedType) {
     return (
-      <aside className="w-72 border-l border-slate-800 bg-slate-950 p-4 overflow-y-auto shrink-0 select-none z-20 space-y-5 text-xs">
+      <aside className="w-72 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 overflow-y-auto shrink-0 select-none z-20 space-y-5 text-xs text-slate-800 dark:text-slate-100 transition-colors">
         <div>
-          <h3 className="font-semibold text-slate-200 text-sm flex items-center gap-1.5">
-            <Palette className="w-4 h-4 text-emerald-400" />
+          <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm flex items-center gap-1.5">
+            <Palette className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             Cài Đặt Nền Canvas
           </h3>
-          <p className="text-slate-400 text-[11px] mt-0.5">Bấm vào bất kỳ vật thể nào trên canvas để chỉnh sửa thuộc tính</p>
+          <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Bấm vào bất kỳ vật thể nào trên canvas để chỉnh sửa thuộc tính</p>
         </div>
 
         {/* Canvas Background Color */}
         <div className="space-y-2">
-          <label className="text-[11px] font-medium text-slate-300">Màu nền thiết kế</label>
+          <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Màu nền thiết kế</label>
           <div className="flex items-center gap-2">
             <input
               type="color"
               value={canvasBgColor.startsWith('#') ? canvasBgColor : '#0f172a'}
               onChange={(e) => onCanvasBgColorChange(e.target.value)}
-              className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer p-0.5"
+              className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent cursor-pointer p-0.5"
             />
             <input
               type="text"
               value={canvasBgColor}
               onChange={(e) => onCanvasBgColorChange(e.target.value)}
-              className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 font-mono text-xs focus:outline-none focus:border-emerald-500"
+              className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 font-mono text-xs focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -139,7 +142,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                 onClick={() => onCanvasBgColorChange(c)}
                 style={{ backgroundColor: c }}
                 className={`w-6 h-6 rounded-md border transition ${
-                  canvasBgColor === c ? 'border-emerald-400 scale-110 shadow-md shadow-emerald-500/30' : 'border-slate-800 hover:scale-105'
+                  canvasBgColor === c ? 'border-emerald-500 scale-110 shadow-sm' : 'border-slate-300 dark:border-slate-800 hover:scale-105'
                 }`}
               />
             ))}
@@ -147,13 +150,13 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
         </div>
 
         {/* Quick Tips */}
-        <div className="p-3 rounded-xl border border-slate-800/80 bg-slate-900/40 space-y-2 text-slate-400 text-[11px]">
-          <div className="font-semibold text-slate-300">Phím tắt nhanh:</div>
-          <ul className="space-y-1 text-slate-400 font-mono text-[10px]">
-            <li>• <kbd className="bg-slate-800 px-1 py-0.5 rounded text-slate-300">Ctrl + Z</kbd>: Hoàn tác</li>
-            <li>• <kbd className="bg-slate-800 px-1 py-0.5 rounded text-slate-300">Ctrl + Y</kbd>: Làm lại</li>
-            <li>• <kbd className="bg-slate-800 px-1 py-0.5 rounded text-slate-300">Delete</kbd>: Xóa vật thể</li>
-            <li>• <kbd className="bg-slate-800 px-1 py-0.5 rounded text-slate-300">Ctrl + V</kbd>: Dán ảnh từ clipboard</li>
+        <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/40 space-y-2 text-slate-500 dark:text-slate-400 text-[11px]">
+          <div className="font-semibold text-slate-700 dark:text-slate-300">Mẹo thao tác:</div>
+          <ul className="space-y-1 font-mono text-[10px]">
+            <li>• <kbd className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-800 dark:text-slate-200">Nhấp đúp hình</kbd>: Gõ chữ vào giữa hình</li>
+            <li>• <kbd className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-800 dark:text-slate-200">Ctrl + Z</kbd>: Hoàn tác</li>
+            <li>• <kbd className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-800 dark:text-slate-200">Delete</kbd>: Xóa vật thể</li>
+            <li>• <kbd className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-800 dark:text-slate-200">Ctrl + V</kbd>: Dán ảnh từ clipboard</li>
           </ul>
         </div>
       </aside>
@@ -162,14 +165,14 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
 
   // Common Layer Order & Action Buttons
   const renderCommonActions = () => (
-    <div className="space-y-2 pt-2 border-t border-slate-800">
-      <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+    <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+      <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
         Thứ tự lớp & Thao tác
       </div>
       <div className="grid grid-cols-4 gap-1">
         <button
           onClick={onBringForward}
-          className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex flex-col items-center gap-1 transition"
+          className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 transition"
           title="Lên trên 1 lớp"
         >
           <ArrowUp className="w-3.5 h-3.5" />
@@ -177,7 +180,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
         </button>
         <button
           onClick={onSendBackward}
-          className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex flex-col items-center gap-1 transition"
+          className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 transition"
           title="Xuống dưới 1 lớp"
         >
           <ArrowDown className="w-3.5 h-3.5" />
@@ -185,7 +188,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
         </button>
         <button
           onClick={onBringToFront}
-          className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex flex-col items-center gap-1 transition"
+          className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 transition"
           title="Lên trên cùng"
         >
           <ChevronsUp className="w-3.5 h-3.5" />
@@ -193,7 +196,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
         </button>
         <button
           onClick={onSendToBack}
-          className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex flex-col items-center gap-1 transition"
+          className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex flex-col items-center gap-1 transition"
           title="Xuống đáy cùng"
         >
           <ChevronsDown className="w-3.5 h-3.5" />
@@ -204,14 +207,14 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
       <div className="flex gap-2 pt-1">
         <button
           onClick={onDuplicate}
-          className="flex-1 py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-medium flex items-center justify-center gap-1.5 transition"
+          className="flex-1 py-2 px-3 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium flex items-center justify-center gap-1.5 transition"
         >
-          <Copy className="w-3.5 h-3.5 text-sky-400" />
+          <Copy className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
           <span>Nhân bản</span>
         </button>
         <button
           onClick={onDelete}
-          className="py-2 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-medium flex items-center justify-center gap-1.5 transition"
+          className="py-2 px-3 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-medium flex items-center justify-center gap-1.5 transition"
         >
           <Trash2 className="w-3.5 h-3.5" />
           <span>Xóa</span>
@@ -221,24 +224,24 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
   );
 
   return (
-    <aside className="w-72 border-l border-slate-800 bg-slate-950 p-4 overflow-y-auto shrink-0 select-none z-20 space-y-4 text-xs">
+    <aside className="w-72 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 overflow-y-auto shrink-0 select-none z-20 space-y-4 text-xs text-slate-800 dark:text-slate-100 transition-colors">
       {/* 2. KHI ĐANG CHỌN HÌNH ẢNH (PHOTO EDITOR & AI TÁCH NỀN) */}
       {selectedType === 'image' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-slate-200 text-sm">Chỉnh Sửa Hình Ảnh</h3>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Chỉnh Sửa Hình Ảnh</h3>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono">
               PHOTO
             </span>
           </div>
 
           {/* AI REMOVE BACKGROUND 1-CLICK */}
           <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 space-y-2">
-            <div className="flex items-center gap-1.5 text-emerald-300 font-semibold text-xs">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
+            <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-semibold text-xs">
+              <Sparkles className="w-4 h-4 text-emerald-500" />
               <span>Tách Nền AI 1-Click</span>
             </div>
-            <p className="text-[10px] text-slate-300 leading-tight">
+            <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-tight">
               Tách vật thể và biến nền ảnh này thành trong suốt ngay tại vị trí cũ.
             </p>
             <button
@@ -262,34 +265,34 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
 
           {/* Transform Controls: Rotate & Flip */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Xoay & Lật ảnh
             </label>
             <div className="grid grid-cols-4 gap-1.5">
               <button
                 onClick={() => onRotate(-90)}
-                className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex items-center justify-center transition"
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center transition"
                 title="Xoay trái 90 độ"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onRotate(90)}
-                className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex items-center justify-center transition"
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center transition"
                 title="Xoay phải 90 độ"
               >
                 <RotateCw className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onFlip('horizontal')}
-                className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex items-center justify-center transition"
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center transition"
                 title="Lật gương ngang"
               >
                 <FlipHorizontal className="w-4 h-4" />
               </button>
               <button
                 onClick={() => onFlip('vertical')}
-                className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 flex items-center justify-center transition"
+                className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center transition"
                 title="Lật gương dọc"
               >
                 <FlipVertical className="w-4 h-4" />
@@ -299,7 +302,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
 
           {/* Preset Filters */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Bộ lọc màu cài sẵn
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -314,8 +317,8 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                   }
                   className={`py-1.5 px-2 rounded-lg text-[11px] font-medium border transition ${
                     imageAdjustments.presetFilter === filter.id
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                      : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+                      ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/50'
+                      : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
                   }`}
                 >
                   {filter.label}
@@ -327,12 +330,12 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
           {/* Photoshop Lite Sliders */}
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+              <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Tinh chỉnh màu sắc
               </label>
               <button
                 onClick={onResetImageAdjustments}
-                className="text-[10px] text-emerald-400 hover:underline"
+                className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline"
               >
                 Đặt lại
               </button>
@@ -340,11 +343,11 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
 
             {/* Brightness */}
             <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-300">
+              <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
                 <span className="flex items-center gap-1">
-                  <Sun className="w-3 h-3 text-amber-400" /> Độ sáng
+                  <Sun className="w-3 h-3 text-amber-500" /> Độ sáng
                 </span>
-                <span className="font-mono text-slate-400">
+                <span className="font-mono text-slate-500">
                   {Math.round(imageAdjustments.brightness * 100)}%
                 </span>
               </div>
@@ -360,17 +363,17 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                     brightness: parseFloat(e.target.value),
                   })
                 }
-                className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-emerald-500 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
             {/* Contrast */}
             <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-300">
+              <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
                 <span className="flex items-center gap-1">
-                  <Contrast className="w-3 h-3 text-sky-400" /> Độ tương phản
+                  <Contrast className="w-3 h-3 text-sky-500" /> Độ tương phản
                 </span>
-                <span className="font-mono text-slate-400">
+                <span className="font-mono text-slate-500">
                   {Math.round(imageAdjustments.contrast * 100)}%
                 </span>
               </div>
@@ -386,17 +389,17 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                     contrast: parseFloat(e.target.value),
                   })
                 }
-                className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-emerald-500 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
             {/* Saturation */}
             <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-300">
+              <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
                 <span className="flex items-center gap-1">
-                  <Droplets className="w-3 h-3 text-purple-400" /> Độ bão hòa màu
+                  <Droplets className="w-3 h-3 text-purple-500" /> Độ bão hòa màu
                 </span>
-                <span className="font-mono text-slate-400">
+                <span className="font-mono text-slate-500">
                   {Math.round(imageAdjustments.saturation * 100)}%
                 </span>
               </div>
@@ -412,17 +415,17 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                     saturation: parseFloat(e.target.value),
                   })
                 }
-                className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-emerald-500 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
             {/* Blur */}
             <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-300">
+              <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
                 <span className="flex items-center gap-1">
-                  <Layers2 className="w-3 h-3 text-emerald-400" /> Làm mờ (Blur)
+                  <Layers2 className="w-3 h-3 text-emerald-500" /> Làm mờ (Blur)
                 </span>
-                <span className="font-mono text-slate-400">
+                <span className="font-mono text-slate-500">
                   {Math.round(imageAdjustments.blur * 100)}%
                 </span>
               </div>
@@ -438,16 +441,16 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                     blur: parseFloat(e.target.value),
                   })
                 }
-                className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-emerald-500 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
             </div>
           </div>
 
           {/* Opacity */}
           <div className="space-y-1 pt-1">
-            <div className="flex justify-between text-[11px] text-slate-300">
+            <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
               <span>Độ trong suốt (Opacity)</span>
-              <span className="font-mono text-slate-400">
+              <span className="font-mono text-slate-500">
                 {Math.round(((selectedObject.opacity as number) ?? 1) * 100)}%
               </span>
             </div>
@@ -458,7 +461,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
               step="0.05"
               value={(selectedObject.opacity as number) ?? 1}
               onChange={(e) => onUpdateShapeProps({ opacity: parseFloat(e.target.value) })}
-              className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+              className="w-full accent-emerald-500 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
             />
           </div>
 
@@ -470,19 +473,19 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
       {selectedType === 'textbox' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-slate-200 text-sm">Thuộc Tính Chữ</h3>
-            <span className="text-[10px] text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded font-mono">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Thuộc Tính Chữ</h3>
+            <span className="text-[10px] text-sky-600 dark:text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded font-mono">
               TEXT
             </span>
           </div>
 
           {/* Font Family */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-300">Phông chữ</label>
+            <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Phông chữ</label>
             <select
               value={(selectedObject.fontFamily as string) || 'Inter'}
               onChange={(e) => onUpdateTextProps({ fontFamily: e.target.value })}
-              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none focus:border-emerald-500"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs focus:outline-none focus:border-emerald-500"
             >
               {FONTS.map((f) => (
                 <option key={f} value={f}>
@@ -495,19 +498,19 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
           {/* Font Size & Weight */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-slate-300">Cỡ chữ</label>
+              <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Cỡ chữ</label>
               <input
                 type="number"
                 min="10"
                 max="200"
                 value={(selectedObject.fontSize as number) || 32}
                 onChange={(e) => onUpdateTextProps({ fontSize: parseInt(e.target.value) || 32 })}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none focus:border-emerald-500 font-mono"
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 text-xs focus:outline-none focus:border-emerald-500 font-mono"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-slate-300">Định dạng</label>
+              <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Định dạng</label>
               <div className="flex gap-1 h-8">
                 <button
                   onClick={() =>
@@ -517,8 +520,8 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                   }
                   className={`flex-1 rounded border flex items-center justify-center transition ${
                     selectedObject.fontWeight === 'bold'
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                      ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/50'
+                      : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
                   }`}
                 >
                   <Bold className="w-3.5 h-3.5" />
@@ -531,8 +534,8 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                   }
                   className={`flex-1 rounded border flex items-center justify-center transition ${
                     selectedObject.fontStyle === 'italic'
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                      ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/50'
+                      : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
                   }`}
                 >
                   <Italic className="w-3.5 h-3.5" />
@@ -545,8 +548,8 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                   }
                   className={`flex-1 rounded border flex items-center justify-center transition ${
                     selectedObject.underline
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                      ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/50'
+                      : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
                   }`}
                 >
                   <Underline className="w-3.5 h-3.5" />
@@ -557,14 +560,14 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
 
           {/* Text Alignment */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-slate-300">Căn lề</label>
+            <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Căn lề</label>
             <div className="grid grid-cols-3 gap-1">
               <button
                 onClick={() => onUpdateTextProps({ textAlign: 'left' })}
                 className={`py-1.5 rounded border flex items-center justify-center transition ${
                   selectedObject.textAlign === 'left'
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/50'
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
                 }`}
               >
                 <AlignLeft className="w-3.5 h-3.5" />
@@ -573,8 +576,8 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                 onClick={() => onUpdateTextProps({ textAlign: 'center' })}
                 className={`py-1.5 rounded border flex items-center justify-center transition ${
                   selectedObject.textAlign === 'center'
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/50'
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
                 }`}
               >
                 <AlignCenter className="w-3.5 h-3.5" />
@@ -583,8 +586,8 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                 onClick={() => onUpdateTextProps({ textAlign: 'right' })}
                 className={`py-1.5 rounded border flex items-center justify-center transition ${
                   selectedObject.textAlign === 'right'
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/50'
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800'
                 }`}
               >
                 <AlignRight className="w-3.5 h-3.5" />
@@ -594,19 +597,19 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
 
           {/* Text Color */}
           <div className="space-y-2">
-            <label className="text-[11px] font-medium text-slate-300">Màu chữ</label>
+            <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Màu chữ</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={selectedObject.fill?.toString().startsWith('#') ? (selectedObject.fill as string) : '#ffffff'}
                 onChange={(e) => onUpdateTextProps({ fill: e.target.value })}
-                className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer p-0.5"
+                className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent cursor-pointer p-0.5"
               />
               <input
                 type="text"
                 value={(selectedObject.fill as string) || '#ffffff'}
                 onChange={(e) => onUpdateTextProps({ fill: e.target.value })}
-                className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 font-mono text-xs focus:outline-none focus:border-emerald-500"
+                className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 font-mono text-xs focus:outline-none focus:border-emerald-500"
               />
             </div>
             <div className="grid grid-cols-8 gap-1.5 pt-1">
@@ -615,7 +618,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                   key={c}
                   onClick={() => onUpdateTextProps({ fill: c })}
                   style={{ backgroundColor: c }}
-                  className="w-6 h-6 rounded-md border border-slate-800 hover:scale-105 transition"
+                  className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-800 hover:scale-105 transition"
                 />
               ))}
             </div>
@@ -629,25 +632,34 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
       {selectedType !== 'image' && selectedType !== 'textbox' && selectedObject && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-slate-200 text-sm">Thuộc Tính Hình Khối</h3>
-            <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded font-mono uppercase">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-200 text-sm">Thuộc Tính Hình Khối</h3>
+            <span className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded font-mono uppercase">
               {selectedType}
             </span>
           </div>
 
+          {/* Quick Button: Add Text inside Shape */}
+          <button
+            onClick={onAddTextToShape}
+            className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium flex items-center justify-center gap-1.5 transition text-xs shadow-sm"
+          >
+            <Type className="w-3.5 h-3.5" />
+            <span>➕ Thêm chữ vào giữa hình</span>
+          </button>
+
           {/* Fill Color */}
           <div className="space-y-2">
-            <label className="text-[11px] font-medium text-slate-300">Màu đổ (Fill)</label>
+            <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Màu đổ (Fill)</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={selectedObject.fill?.toString().startsWith('#') ? (selectedObject.fill as string) : '#10b981'}
                 onChange={(e) => onUpdateShapeProps({ fill: e.target.value })}
-                className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer p-0.5"
+                className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent cursor-pointer p-0.5"
               />
               <button
                 onClick={() => onUpdateShapeProps({ fill: 'transparent' })}
-                className="px-2 py-1 bg-slate-900 border border-slate-800 rounded text-[11px] text-slate-300 hover:text-white"
+                className="px-2.5 py-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-emerald-500"
               >
                 Trong suốt
               </button>
@@ -658,7 +670,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                   key={c}
                   onClick={() => onUpdateShapeProps({ fill: c })}
                   style={{ backgroundColor: c }}
-                  className="w-6 h-6 rounded-md border border-slate-800 hover:scale-105 transition"
+                  className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-800 hover:scale-105 transition"
                 />
               ))}
             </div>
@@ -666,21 +678,21 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
 
           {/* Stroke / Viền */}
           <div className="space-y-2">
-            <label className="text-[11px] font-medium text-slate-300">Màu viền & Độ dày</label>
+            <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Màu viền & Độ dày</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={selectedObject.stroke?.toString().startsWith('#') ? (selectedObject.stroke as string) : '#ffffff'}
                 onChange={(e) => onUpdateShapeProps({ stroke: e.target.value })}
-                className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer p-0.5"
+                className="w-8 h-8 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent cursor-pointer p-0.5"
               />
               <input
                 type="number"
                 min="0"
                 max="20"
-                value={(selectedObject.strokeWidth as number) || 0}
+                value={(selectedObject.strokeWidth as number) ?? 0}
                 onChange={(e) => onUpdateShapeProps({ strokeWidth: parseInt(e.target.value) || 0 })}
-                className="w-20 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 text-xs font-mono"
+                className="w-20 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 text-xs font-mono"
                 placeholder="Độ dày"
               />
               <span className="text-slate-500 text-[10px]">px</span>
@@ -690,9 +702,9 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
           {/* Corner Radius (for rect) */}
           {selectedType === 'rect' && (
             <div className="space-y-1">
-              <div className="flex justify-between text-[11px] text-slate-300">
+              <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
                 <span>Bo tròn góc (Radius)</span>
-                <span className="font-mono text-slate-400">{(selectedObject.rx as number) || 0}px</span>
+                <span className="font-mono text-slate-500">{(selectedObject.rx as number) || 0}px</span>
               </div>
               <input
                 type="range"
@@ -703,16 +715,16 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                   const val = parseInt(e.target.value) || 0;
                   onUpdateShapeProps({ rx: val, ry: val });
                 }}
-                className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-emerald-500 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
               />
             </div>
           )}
 
           {/* Opacity */}
           <div className="space-y-1">
-            <div className="flex justify-between text-[11px] text-slate-300">
+            <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
               <span>Độ trong suốt</span>
-              <span className="font-mono text-slate-400">
+              <span className="font-mono text-slate-500">
                 {Math.round(((selectedObject.opacity as number) ?? 1) * 100)}%
               </span>
             </div>
@@ -723,7 +735,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
               step="0.05"
               value={(selectedObject.opacity as number) ?? 1}
               onChange={(e) => onUpdateShapeProps({ opacity: parseFloat(e.target.value) })}
-              className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+              className="w-full accent-emerald-500 bg-slate-200 dark:bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
             />
           </div>
 
