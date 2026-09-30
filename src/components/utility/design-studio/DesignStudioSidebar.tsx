@@ -18,10 +18,12 @@ import {
   ChevronLeft,
   PenTool,
   Paintbrush,
+  Search,
+  X,
 } from 'lucide-react';
 import { ToolTab, DesignTemplate, DesignLayout, StickerItem, ShapeType } from '@/types/design-studio';
 import { PRESET_TEMPLATES } from './templates/preset-templates';
-import { DESIGN_LAYOUTS, LUCIDE_ICONS, STEM_BADGES } from './templates/stickers-badges';
+import { DESIGN_LAYOUTS, LUCIDE_ICONS, STEM_BADGES, buildLucideSvg } from './templates/stickers-badges';
 import { QUICK_BACKGROUNDS, SOLID_PALETTES, GRADIENT_PRESETS } from './templates/background-presets';
 import { QUICK_VECTOR_SHAPES } from './templates/vector-shapes';
 
@@ -77,7 +79,9 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const aiFileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [stickerFilter, setStickerFilter] = useState<'all' | 'lucide' | 'badge'>('all');
+  const [stickerFilter, setStickerFilter] = useState<'all' | 'stem' | 'education' | 'badge' | 'arrow' | 'ui'>('all');
+  const [stickerSearchQuery, setStickerSearchQuery] = useState('');
+  const [iconColor, setIconColor] = useState('#10b981');
   const [shapeCategory, setShapeCategory] = useState<'all' | 'basic' | 'polygon' | 'arrows' | 'callouts' | 'lines'>('all');
   const [vectorCategory, setVectorCategory] = useState<'all' | 'flowchart' | 'stem' | 'arrows' | 'badges'>('all');
 
@@ -87,7 +91,7 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
     { id: 'background', label: 'Nền', icon: Palette },
     { id: 'text', label: 'Văn bản', icon: Type },
     { id: 'shapes', label: 'Hình học', icon: Shapes },
-    { id: 'stickers', label: 'Huy hiệu', icon: Award },
+    { id: 'stickers', label: 'Icon & Sticker', icon: Award },
     { id: 'images', label: 'Tải ảnh', icon: ImageIcon },
     { id: 'ai', label: 'AI Studio', icon: Sparkles },
   ];
@@ -101,12 +105,26 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const filteredStickers: StickerItem[] =
-    stickerFilter === 'lucide'
-      ? LUCIDE_ICONS
-      : stickerFilter === 'badge'
-      ? STEM_BADGES
-      : [...STEM_BADGES, ...LUCIDE_ICONS];
+  const allStickersAndIcons: StickerItem[] = [...STEM_BADGES, ...LUCIDE_ICONS];
+  const query = stickerSearchQuery.trim().toLowerCase();
+
+  const filteredStickers = allStickersAndIcons.filter((item) => {
+    if (stickerFilter !== 'all') {
+      if (stickerFilter === 'badge') {
+        if (item.category !== 'badge' && item.category !== 'ribbon') return false;
+      } else if (item.category !== stickerFilter) {
+        return false;
+      }
+    }
+
+    if (query) {
+      const matchName = item.name.toLowerCase().includes(query);
+      const matchTag = item.tags ? item.tags.some((t) => t.toLowerCase().includes(query)) : false;
+      return matchName || matchTag;
+    }
+
+    return true;
+  });
 
   const sidebarBg = isDark ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900';
   const tabHeaderBg = isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200';
@@ -679,73 +697,152 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
 
         {/* TAB 5: HUY HIỆU & LUCIDE STICKERS */}
         {activeTab === 'stickers' && (
-          <div className="space-y-4">
-            <div>
-              <h3 className={`font-semibold text-sm ${headingColor}`}>Huy Hiệu & Sticker SVG</h3>
-              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>
-                Bấm vào biểu tượng hoặc huy hiệu để chèn vector chuẩn nét vào canvas
-              </p>
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className={`font-semibold text-sm ${headingColor}`}>Kho Icon & Sticker Chuẩn Lucide</h3>
+                <p className={`text-[11px] mt-0.5 ${subtextColor}`}>
+                  Tìm kiếm icon vector, đổi màu và chèn trực tiếp vào canvas
+                </p>
+              </div>
+              <span className="text-[10px] text-emerald-500 font-mono font-semibold shrink-0">
+                {filteredStickers.length} icon
+              </span>
             </div>
 
-            {/* Filter pills */}
-            <div className={`flex gap-1 p-1 rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-100'}`}>
-              <button
-                onClick={() => setStickerFilter('all')}
-                className={`flex-1 py-1 rounded text-[11px] font-medium transition ${
-                  stickerFilter === 'all'
-                    ? isDark
-                      ? 'bg-slate-800 text-emerald-400 shadow-sm'
-                      : 'bg-white text-emerald-600 shadow-sm'
-                    : isDark ? 'text-slate-400' : 'text-slate-600'
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={stickerSearchQuery}
+                onChange={(e) => setStickerSearchQuery(e.target.value)}
+                placeholder="Tìm icon (robot, cúp, sao, code, sách...)"
+                className={`w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border outline-none transition ${
+                  isDark
+                    ? 'bg-slate-900 border-slate-700 text-slate-200 focus:border-emerald-500'
+                    : 'bg-white border-slate-300 text-slate-800 focus:border-emerald-500'
                 }`}
-              >
-                Tất cả
-              </button>
-              <button
-                onClick={() => setStickerFilter('badge')}
-                className={`flex-1 py-1 rounded text-[11px] font-medium transition ${
-                  stickerFilter === 'badge'
-                    ? isDark
-                      ? 'bg-slate-800 text-emerald-400 shadow-sm'
-                      : 'bg-white text-emerald-600 shadow-sm'
-                    : isDark ? 'text-slate-400' : 'text-slate-600'
-                }`}
-              >
-                Huy hiệu STEM
-              </button>
-              <button
-                onClick={() => setStickerFilter('lucide')}
-                className={`flex-1 py-1 rounded text-[11px] font-medium transition ${
-                  stickerFilter === 'lucide'
-                    ? isDark
-                      ? 'bg-slate-800 text-emerald-400 shadow-sm'
-                      : 'bg-white text-emerald-600 shadow-sm'
-                    : isDark ? 'text-slate-400' : 'text-slate-600'
-                }`}
-              >
-                Lucide Icons
-              </button>
-            </div>
-
-            {/* Sticker Grid */}
-            <div className="grid grid-cols-3 gap-2">
-              {filteredStickers.map((item) => (
+              />
+              {stickerSearchQuery && (
                 <button
-                  key={item.id}
-                  onClick={() => onAddSvgSticker(item.svg)}
-                  className={`p-2.5 rounded-xl border hover:border-emerald-500/50 flex flex-col items-center justify-center gap-1.5 transition group ${cardBg}`}
-                  title={item.name}
+                  onClick={() => setStickerSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
-                  <div
-                    className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition shrink-0"
-                    dangerouslySetInnerHTML={{ __html: item.svg }}
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Pre-insert Color Palette */}
+            <div className={`p-2.5 rounded-xl border space-y-1.5 ${cardBg}`}>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className={`font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Màu viền Icon:
+                </span>
+                <span className="font-mono text-[10px] text-emerald-500 font-bold">{iconColor}</span>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  '#10b981', // emerald
+                  '#06b6d4', // cyan
+                  '#3b82f6', // blue
+                  '#a855f7', // purple
+                  '#ec4899', // pink
+                  '#ef4444', // red
+                  '#f59e0b', // amber
+                  '#ffffff', // white
+                  '#0f172a', // dark slate
+                ].map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setIconColor(color)}
+                    style={{ backgroundColor: color }}
+                    className={`w-5 h-5 rounded-full border transition transform hover:scale-110 ${
+                      iconColor === color
+                        ? 'ring-2 ring-emerald-500 ring-offset-1 ring-offset-slate-900 border-white'
+                        : 'border-slate-400/40'
+                    }`}
+                    title={color}
                   />
-                  <span className={`text-[10px] group-hover:text-emerald-500 truncate max-w-full ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    {item.name}
-                  </span>
+                ))}
+                {/* Custom Color Input */}
+                <label className="relative w-5 h-5 rounded-full border border-dashed border-slate-400 cursor-pointer flex items-center justify-center overflow-hidden hover:scale-110 transition shrink-0" title="Chọn màu tự do">
+                  <input
+                    type="color"
+                    value={iconColor}
+                    onChange={(e) => setIconColor(e.target.value)}
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                  />
+                  <span className="text-[9px] font-bold text-slate-400">+</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className={`flex flex-wrap gap-1 p-1 rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-100'}`}>
+              {[
+                { id: 'all', label: 'Tất cả' },
+                { id: 'stem', label: 'STEM & Robot' },
+                { id: 'education', label: 'Giáo dục' },
+                { id: 'badge', label: 'Huy hiệu' },
+                { id: 'arrow', label: 'Mũi tên' },
+                { id: 'ui', label: 'UI & Đồ họa' },
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setStickerFilter(cat.id as typeof stickerFilter)}
+                  className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
+                    stickerFilter === cat.id
+                      ? isDark
+                        ? 'bg-slate-800 text-emerald-400 shadow-xs'
+                        : 'bg-white text-emerald-600 shadow-xs'
+                      : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {cat.label}
                 </button>
               ))}
             </div>
+
+            {/* Sticker / Icon Grid */}
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(84px,1fr))] gap-2 max-h-80 overflow-y-auto pr-0.5">
+              {filteredStickers.map((item) => {
+                const previewSvg = item.paths
+                  ? buildLucideSvg(item.paths, iconColor, 'none', 2, 40)
+                  : item.svg;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      const finalSvg = item.paths
+                        ? buildLucideSvg(item.paths, iconColor, 'none', 2, 96)
+                        : item.svg;
+                      onAddSvgSticker(finalSvg);
+                    }}
+                    className={`p-2 rounded-xl border hover:border-emerald-500/50 flex flex-col items-center justify-center gap-1.5 transition group text-center min-w-0 ${cardBg}`}
+                    title={item.name}
+                  >
+                    <div
+                      className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition shrink-0"
+                      dangerouslySetInnerHTML={{ __html: previewSvg }}
+                    />
+                    <span className={`text-[10px] font-medium leading-tight truncate w-full group-hover:text-emerald-500 ${
+                      isDark ? 'text-slate-300' : 'text-slate-700'
+                    }`}>
+                      {item.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {filteredStickers.length === 0 && (
+              <div className="text-center py-8 text-slate-400 text-xs">
+                Không tìm thấy icon hoặc sticker phù hợp
+              </div>
+            )}
           </div>
         )}
 

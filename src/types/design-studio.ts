@@ -71,8 +71,10 @@ export interface DesignLayout {
 export interface StickerItem {
   id: string;
   name: string;
-  category: 'lucide' | 'badge' | 'stem' | 'ribbon';
+  category: 'lucide' | 'badge' | 'stem' | 'ribbon' | 'education' | 'arrow' | 'ui' | 'science';
+  tags?: string[];
   svg: string;
+  paths?: string;
 }
 
 export type ShapeType =

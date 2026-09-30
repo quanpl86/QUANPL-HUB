@@ -531,24 +531,62 @@ export async function addSvgIcon(
   svgString: string,
   options: Record<string, unknown> = {}
 ): Promise<fabric.FabricObject> {
-  const canvasW = canvas.width || 800;
-  const canvasH = canvas.height || 600;
+  const canvasW = canvas.width || 1280;
+  const canvasH = canvas.height || 720;
 
-  // Use DataURL for highest SVG rendering fidelity across all browsers
-  const encoded = encodeURIComponent(svgString);
-  const dataUrl = `data:image/svg+xml;charset=utf-8,${encoded}`;
+  try {
+    const { objects, options: svgOptions } = await fabric.loadSVGFromString(svgString);
+    const validObjects = (objects || []).filter(Boolean) as fabric.FabricObject[];
 
-  const img = await fabric.FabricImage.fromURL(dataUrl);
-  img.set({
-    left: canvasW / 2 - ((img.width || 100) * (img.scaleX || 1)) / 2,
-    top: canvasH / 2 - ((img.height || 100) * (img.scaleY || 1)) / 2,
-    ...options,
-  });
+    let vectorObj: fabric.FabricObject;
+    if (validObjects.length === 1) {
+      vectorObj = validObjects[0];
+    } else if (validObjects.length > 1) {
+      vectorObj = fabric.util.groupSVGElements(validObjects, svgOptions);
+    } else {
+      throw new Error('No parseable vector objects found in SVG');
+    }
 
-  canvas.add(img);
-  canvas.setActiveObject(img);
-  canvas.requestRenderAll();
-  return img;
+    const targetSize = 130;
+    const currentW = vectorObj.width || 24;
+    const currentH = vectorObj.height || 24;
+    const scale = targetSize / Math.max(currentW, currentH);
+
+    vectorObj.set({
+      left: canvasW / 2 - (currentW * scale) / 2,
+      top: canvasH / 2 - (currentH * scale) / 2,
+      scaleX: scale,
+      scaleY: scale,
+      ...options,
+    });
+
+    canvas.add(vectorObj);
+    canvas.setActiveObject(vectorObj);
+    canvas.calcOffset();
+    canvas.requestRenderAll();
+    return vectorObj;
+  } catch (err) {
+    console.warn('loadSVGFromString fallback to FabricImage:', err);
+    const encoded = encodeURIComponent(svgString);
+    const dataUrl = `data:image/svg+xml;charset=utf-8,${encoded}`;
+    const img = await fabric.FabricImage.fromURL(dataUrl);
+    const targetSize = 130;
+    const currentW = img.width || 100;
+    const currentH = img.height || 100;
+    const scale = targetSize / Math.max(currentW, currentH);
+    img.set({
+      left: canvasW / 2 - (currentW * scale) / 2,
+      top: canvasH / 2 - (currentH * scale) / 2,
+      scaleX: scale,
+      scaleY: scale,
+      ...options,
+    });
+    canvas.add(img);
+    canvas.setActiveObject(img);
+    canvas.calcOffset();
+    canvas.requestRenderAll();
+    return img;
+  }
 }
 
 /**

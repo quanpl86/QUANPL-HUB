@@ -139,7 +139,7 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
   const dropdownBg = isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-slate-200 text-slate-800 shadow-2xl';
 
   return (
-    <header className={`h-14 border-b px-4 flex items-center justify-between gap-3 select-none z-30 shrink-0 transition-colors ${headerBg}`}>
+    <header className={`h-14 border-b px-4 flex items-center justify-between gap-3 select-none relative z-50 shrink-0 transition-colors ${headerBg}`}>
       {/* Left: Back & Project Title */}
       <div className="flex items-center gap-2 sm:gap-3">
         <Link
@@ -588,7 +588,7 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
           </button>
 
           {showExportMenu && (
-            <div className={`absolute top-full right-0 mt-1 w-52 border rounded-xl shadow-2xl p-1.5 z-50 ${dropdownBg}`}>
+            <div className={`absolute top-full right-0 mt-2 w-56 border rounded-xl shadow-2xl p-1.5 z-[100] ${dropdownBg}`}>
               <button
                 onClick={() => {
                   onExportImage('png');

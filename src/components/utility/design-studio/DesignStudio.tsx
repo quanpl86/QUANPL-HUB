@@ -353,12 +353,23 @@ export const DesignStudio: React.FC = () => {
     }
   }, []);
 
-  // Reactive property update function: updates BOTH fabric canvas and React state
+  // Reactive property update function: updates BOTH fabric canvas and React state (Supports single shapes & vector groups)
   const updateActiveObjectProperties = useCallback((props: Record<string, unknown>) => {
     const activeObj = fabricCanvasRef.current?.getActiveObject();
     if (!activeObj || !fabricCanvasRef.current) return;
 
     activeObj.set(props);
+
+    // If it's a vector group (such as a Lucide icon or SVG sticker/badge), recursively update child paths
+    if (activeObj.type === 'group' && typeof (activeObj as fabric.Group).forEachObject === 'function') {
+      (activeObj as fabric.Group).forEachObject((child) => {
+        if (props.fill !== undefined) child.set('fill', props.fill);
+        if (props.stroke !== undefined) child.set('stroke', props.stroke);
+        if (props.strokeWidth !== undefined) child.set('strokeWidth', props.strokeWidth);
+        if (props.opacity !== undefined) child.set('opacity', props.opacity);
+      });
+    }
+
     activeObj.setCoords();
     fabricCanvasRef.current.requestRenderAll();
 
@@ -1156,7 +1167,7 @@ export const DesignStudio: React.FC = () => {
         {isLeftSidebarOpen && (
           <div
             onMouseDown={handleLeftDividerMouseDown}
-            className={`w-1.5 hover:w-2 z-30 cursor-col-resize select-none shrink-0 transition-all flex items-center justify-center group ${
+            className={`w-1.5 hover:w-2 z-20 cursor-col-resize select-none shrink-0 transition-all flex items-center justify-center group ${
               isDraggingLeft
                 ? 'bg-emerald-500 w-2'
                 : isDark
@@ -1222,7 +1233,7 @@ export const DesignStudio: React.FC = () => {
         {isRightInspectorOpen && (
           <div
             onMouseDown={handleRightDividerMouseDown}
-            className={`w-1.5 hover:w-2 z-30 cursor-col-resize select-none shrink-0 transition-all flex items-center justify-center group ${
+            className={`w-1.5 hover:w-2 z-20 cursor-col-resize select-none shrink-0 transition-all flex items-center justify-center group ${
               isDraggingRight
                 ? 'bg-emerald-500 w-2'
                 : isDark
