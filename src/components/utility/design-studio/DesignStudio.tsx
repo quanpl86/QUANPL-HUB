@@ -34,11 +34,25 @@ import {
   exportProjectJson,
   loadProjectJson,
   setCanvasBackground,
+  resizeFabricCanvas,
 } from './services/fabric-service';
 import { removeImageBackground } from './services/ai-remover';
 
 const DEFAULT_WIDTH = 1280;
 const DEFAULT_HEIGHT = 720;
+const AUTOSAVE_STORAGE_KEY = 'hub_design_studio_autosave_v2';
+
+interface AutoSaveData {
+  version: '2.0';
+  updatedAt: number;
+  projectName: string;
+  activePresetName: string;
+  canvasWidth: number;
+  canvasHeight: number;
+  canvasBgColor: string;
+  canvasBgGradientStops?: [string, string];
+  fabricJson: Record<string, unknown>;
+}
 
 const DEFAULT_IMAGE_ADJUSTMENTS: ImageAdjustments = {
   brightness: 0,
@@ -63,7 +77,60 @@ export const DesignStudio: React.FC = () => {
   const [canvasWidth, setCanvasWidth] = useState(DEFAULT_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(DEFAULT_HEIGHT);
   const [canvasBgColor, setCanvasBgColor] = useState(isDark ? '#090d16' : '#ffffff');
+  const [canvasBgGradientStops, setCanvasBgGradientStops] = useState<[string, string] | undefined>(undefined);
   const [zoom, setZoom] = useState(0.85);
+
+  // Auto-Save States & Dynamic Refs
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving'>('saved');
+  const [lastSavedTime, setLastSavedTime] = useState<string>('');
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const projectNameRef = useRef(projectName);
+  projectNameRef.current = projectName;
+  const activePresetNameRef = useRef(activePresetName);
+  activePresetNameRef.current = activePresetName;
+  const canvasWidthRef = useRef(canvasWidth);
+  canvasWidthRef.current = canvasWidth;
+  const canvasHeightRef = useRef(canvasHeight);
+  canvasHeightRef.current = canvasHeight;
+  const canvasBgColorRef = useRef(canvasBgColor);
+  canvasBgColorRef.current = canvasBgColor;
+  const canvasBgGradientStopsRef = useRef(canvasBgGradientStops);
+  canvasBgGradientStopsRef.current = canvasBgGradientStops;
+
+  // Debounced Auto-Save to LocalStorage
+  const scheduleAutoSave = useCallback(() => {
+    if (!fabricCanvasRef.current) return;
+    setAutoSaveStatus('saving');
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+    autoSaveTimerRef.current = setTimeout(() => {
+      if (!fabricCanvasRef.current) return;
+      try {
+        const canvas = fabricCanvasRef.current;
+        const data: AutoSaveData = {
+          version: '2.0',
+          updatedAt: Date.now(),
+          projectName: projectNameRef.current,
+          activePresetName: activePresetNameRef.current,
+          canvasWidth: canvasWidthRef.current,
+          canvasHeight: canvasHeightRef.current,
+          canvasBgColor: canvasBgColorRef.current,
+          canvasBgGradientStops: canvasBgGradientStopsRef.current,
+          fabricJson: canvas.toObject() as Record<string, unknown>,
+        };
+        localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(data));
+        setAutoSaveStatus('saved');
+        const d = new Date();
+        const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+        setLastSavedTime(timeStr);
+      } catch (err) {
+        console.warn('Auto-save error:', err);
+        setAutoSaveStatus('saved');
+      }
+    }, 400);
+  }, []);
 
   // Tab & Selection States
   const [activeTab, setActiveTab] = useState<ToolTab>('templates');
@@ -80,7 +147,7 @@ export const DesignStudio: React.FC = () => {
   const [canRedo, setCanRedo] = useState(false);
   const isHistoryActionRef = useRef(false);
 
-  // Save current canvas state to history stack
+  // Save current canvas state to history stack & trigger Auto-Save
   const saveHistory = useCallback(() => {
     if (!fabricCanvasRef.current || isHistoryActionRef.current) return;
     try {
@@ -97,10 +164,13 @@ export const DesignStudio: React.FC = () => {
 
       setCanUndo(historyIndexRef.current > 0);
       setCanRedo(false);
+
+      // Trigger debounced auto-save
+      scheduleAutoSave();
     } catch (e) {
       console.error('History save error:', e);
     }
-  }, []);
+  }, [scheduleAutoSave]);
 
   // AI & Exporting States
   const [isAiProcessing, setIsAiProcessing] = useState(false);
@@ -380,6 +450,7 @@ export const DesignStudio: React.FC = () => {
 
     canvas.on('object:added', () => saveHistory());
     canvas.on('object:removed', () => saveHistory());
+    canvas.on('path:created', () => saveHistory());
 
     // Double click on shape event
     canvas.on('mouse:dblclick', (e) => {
@@ -388,34 +459,74 @@ export const DesignStudio: React.FC = () => {
       }
     });
 
-    // Calculate initial responsive zoom to fit container
-    const initialFit = calculateFitZoom(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    setZoom(initialFit);
+    // Attempt to restore state from LocalStorage Auto-Save
+    let hasRestored = false;
+    try {
+      const savedStr = localStorage.getItem(AUTOSAVE_STORAGE_KEY);
+      if (savedStr) {
+        const saved: AutoSaveData = JSON.parse(savedStr);
+        if (saved && saved.fabricJson) {
+          hasRestored = true;
+          if (saved.projectName) setProjectName(saved.projectName);
+          if (saved.activePresetName) setActivePresetName(saved.activePresetName);
 
-    // Initial default heading with ample width and NO grapheme splitting
-    addText(canvas, 'TIÊU ĐỀ BÀI HỌC STEM', {
-      top: 180,
-      width: 800,
-      fontSize: 54,
-      fontWeight: 'bold',
-      fill: '#10b981',
-      splitByGrapheme: false,
-    });
-    addText(canvas, 'Nhấp đúp chuột để chỉnh sửa văn bản hoặc chọn ảnh để tách nền AI', {
-      top: 270,
-      width: 760,
-      fontSize: 22,
-      fill: '#94a3b8',
-      splitByGrapheme: false,
-    });
+          const targetW = saved.canvasWidth || DEFAULT_WIDTH;
+          const targetH = saved.canvasHeight || DEFAULT_HEIGHT;
+          setCanvasWidth(targetW);
+          setCanvasHeight(targetH);
 
-    saveHistory();
+          const targetBg = saved.canvasBgColor || (isDark ? '#090d16' : '#ffffff');
+          setCanvasBgColor(targetBg);
+          if (saved.canvasBgGradientStops) {
+            setCanvasBgGradientStops(saved.canvasBgGradientStops);
+          }
+
+          resizeFabricCanvas(canvas, targetW, targetH, targetBg, saved.canvasBgGradientStops);
+
+          canvas.loadFromJSON(saved.fabricJson).then(() => {
+            canvas.calcOffset();
+            canvas.requestRenderAll();
+            const fit = calculateFitZoom(targetW, targetH);
+            setZoom(fit);
+            saveHistory();
+            toast.success('Đã tự động khôi phục thiết kế từ phiên làm việc trước!', { id: 'autosave-restore' });
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load auto-save:', e);
+    }
+
+    if (!hasRestored) {
+      // Calculate initial responsive zoom to fit container
+      const initialFit = calculateFitZoom(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+      setZoom(initialFit);
+
+      // Initial default heading with ample width and NO grapheme splitting
+      addText(canvas, 'TIÊU ĐỀ BÀI HỌC STEM', {
+        top: 180,
+        width: 800,
+        fontSize: 54,
+        fontWeight: 'bold',
+        fill: '#10b981',
+        splitByGrapheme: false,
+      });
+      addText(canvas, 'Nhấp đúp chuột để chỉnh sửa văn bản hoặc chọn ảnh để tách nền AI', {
+        top: 270,
+        width: 760,
+        fontSize: 22,
+        fill: '#94a3b8',
+        splitByGrapheme: false,
+      });
+
+      saveHistory();
+    }
 
     return () => {
       canvas.dispose();
       fabricCanvasRef.current = null;
     };
-  }, [syncSelectionState, saveHistory, handleShapeDoubleClick, calculateFitZoom]);
+  }, [syncSelectionState, saveHistory, handleShapeDoubleClick, calculateFitZoom, isDark]);
 
   // Window Paste listener (Ctrl+V image) & Keyboard Shortcuts
   useEffect(() => {
@@ -488,8 +599,7 @@ export const DesignStudio: React.FC = () => {
     setCanvasHeight(height);
     if (presetName) setActivePresetName(presetName);
 
-    fabricCanvasRef.current.setDimensions({ width, height });
-    fabricCanvasRef.current.requestRenderAll();
+    resizeFabricCanvas(fabricCanvasRef.current, width, height, canvasBgColor, canvasBgGradientStops);
 
     const newFit = calculateFitZoom(width, height);
     setZoom(newFit);
@@ -502,6 +612,7 @@ export const DesignStudio: React.FC = () => {
   const handleCanvasBgColorChange = (color: string, gradientStops?: [string, string]) => {
     if (!fabricCanvasRef.current) return;
     setCanvasBgColor(color);
+    setCanvasBgGradientStops(gradientStops);
     setCanvasBackground(fabricCanvasRef.current, color, gradientStops);
     saveHistory();
     if (color === 'transparent') {
@@ -591,12 +702,12 @@ export const DesignStudio: React.FC = () => {
     }
   };
 
-  // Apply Layout
+  // Apply Layout (Preserves current background & adapts dynamically to canvas dimensions)
   const handleApplyLayout = (layout: DesignLayout) => {
     if (!fabricCanvasRef.current) return;
-    applyLayoutToCanvas(fabricCanvasRef.current, layout);
+    applyLayoutToCanvas(fabricCanvasRef.current, layout, canvasBgColor, canvasBgGradientStops);
     saveHistory();
-    toast.success(`Đã áp dụng bố cục: ${layout.name}`);
+    toast.success(`Đã áp dụng bố cục: ${layout.name} (Bảo toàn màu nền)`);
   };
 
   // Upload and Add Image Handler
@@ -605,6 +716,7 @@ export const DesignStudio: React.FC = () => {
     try {
       const url = URL.createObjectURL(file);
       await addImageFromUrl(fabricCanvasRef.current, url);
+      saveHistory();
       toast.success('Đã tải ảnh lên canvas');
     } catch (e) {
       console.error('Image load error:', e);
@@ -612,22 +724,25 @@ export const DesignStudio: React.FC = () => {
     }
   };
 
-  // Select Template Handler
+  // Select Template Handler (Synchronizes dimensions, background, and objects)
   const handleSelectTemplate = async (template: DesignTemplate) => {
     if (!fabricCanvasRef.current) return;
     try {
       fabricCanvasRef.current.clear();
       setCanvasWidth(template.dimensions.width);
       setCanvasHeight(template.dimensions.height);
-      fabricCanvasRef.current.setDimensions(template.dimensions);
 
       const targetBg = (template.data.background as string) || (isDark ? '#090d16' : '#ffffff');
       setCanvasBgColor(targetBg);
-      fabricCanvasRef.current.backgroundColor = targetBg;
+      setCanvasBgGradientStops(undefined);
+
+      resizeFabricCanvas(fabricCanvasRef.current, template.dimensions.width, template.dimensions.height, targetBg);
 
       await fabricCanvasRef.current.loadFromJSON(template.data);
+      fabricCanvasRef.current.calcOffset();
       fabricCanvasRef.current.requestRenderAll();
       setProjectName(template.name);
+      setActivePresetName(template.name);
 
       // Auto-fit zoom so newly selected template is immediately balanced & centered in screen
       const newFit = calculateFitZoom(template.dimensions.width, template.dimensions.height);
@@ -655,6 +770,7 @@ export const DesignStudio: React.FC = () => {
 
       const url = URL.createObjectURL(transparentBlob);
       await addImageFromUrl(fabricCanvasRef.current, url);
+      saveHistory();
       toast.success('✨ Đã tách nền AI thành công và đưa vào canvas!');
     } catch (e) {
       console.error('AI removal error:', e);
@@ -742,11 +858,12 @@ export const DesignStudio: React.FC = () => {
     if (type === 'fabricimage' || type === 'image') {
       await applyImageAdjustments(activeObj as fabric.FabricImage, adjustments);
       fabricCanvasRef.current.requestRenderAll();
+      saveHistory();
     }
   };
 
   const handleResetImageAdjustments = async () => {
-    handleApplyImageAdjustments(DEFAULT_IMAGE_ADJUSTMENTS);
+    await handleApplyImageAdjustments(DEFAULT_IMAGE_ADJUSTMENTS);
   };
 
   // Layer & Transform actions
@@ -816,6 +933,48 @@ export const DesignStudio: React.FC = () => {
     }
   };
 
+  // Create New Project (Reset state & clean autosave)
+  const handleNewProject = () => {
+    if (!fabricCanvasRef.current) return;
+    const confirmNew = window.confirm('Bạn có chắc muốn tạo dự án mới? Toàn bộ nội dung hiện tại sẽ được làm mới.');
+    if (!confirmNew) return;
+
+    try {
+      localStorage.removeItem(AUTOSAVE_STORAGE_KEY);
+      fabricCanvasRef.current.clear();
+
+      setProjectName('Thiết kế STEM chưa đặt tên');
+      setActivePresetName('YouTube Thumbnail (16:9)');
+      setCanvasWidth(DEFAULT_WIDTH);
+      setCanvasHeight(DEFAULT_HEIGHT);
+
+      const defaultBg = isDark ? '#090d16' : '#ffffff';
+      setCanvasBgColor(defaultBg);
+      setCanvasBgGradientStops(undefined);
+
+      resizeFabricCanvas(fabricCanvasRef.current, DEFAULT_WIDTH, DEFAULT_HEIGHT, defaultBg);
+
+      addText(fabricCanvasRef.current, 'BẮT ĐẦU DỰ ÁN MỚI', {
+        top: 220,
+        width: 800,
+        fontSize: 50,
+        fontWeight: 'bold',
+        fill: '#10b981',
+        splitByGrapheme: false,
+      });
+
+      const fit = calculateFitZoom(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+      setZoom(fit);
+
+      historyRef.current = [];
+      historyIndexRef.current = -1;
+      saveHistory();
+      toast.success('Đã tạo dự án mới thành công!');
+    } catch (e) {
+      console.error('New project error:', e);
+    }
+  };
+
   // Save Project as JSON (.hubdesign)
   const handleSaveProject = () => {
     if (!fabricCanvasRef.current) return;
@@ -851,6 +1010,14 @@ export const DesignStudio: React.FC = () => {
       if (meta?.dimensions) {
         setCanvasWidth(meta.dimensions.width);
         setCanvasHeight(meta.dimensions.height);
+        resizeFabricCanvas(
+          fabricCanvasRef.current,
+          meta.dimensions.width,
+          meta.dimensions.height,
+          meta.backgroundColor || canvasBgColor
+        );
+        const fit = calculateFitZoom(meta.dimensions.width, meta.dimensions.height);
+        setZoom(fit);
       }
       if (meta?.backgroundColor) {
         setCanvasBgColor(meta.backgroundColor);
@@ -911,7 +1078,10 @@ export const DesignStudio: React.FC = () => {
       {/* 1. TOP BAR */}
       <DesignStudioTopBar
         projectName={projectName}
-        onProjectNameChange={setProjectName}
+        onProjectNameChange={(name) => {
+          setProjectName(name);
+          scheduleAutoSave();
+        }}
         canUndo={canUndo}
         canRedo={canRedo}
         onUndo={handleUndo}
@@ -942,6 +1112,9 @@ export const DesignStudio: React.FC = () => {
         onToggleRightInspector={() => setIsRightInspectorOpen((prev) => !prev)}
         isFocusMode={isFocusMode}
         onToggleFocusMode={handleToggleFocusMode}
+        autoSaveStatus={autoSaveStatus}
+        lastSavedTime={lastSavedTime}
+        onNewProject={handleNewProject}
       />
 
       {/* 2. MAIN 3-ZONE STUDIO WORKSPACE */}

@@ -584,13 +584,63 @@ export function addTextInsideShape(
 }
 
 /**
- * Apply a structured Layout to the Canvas
+ * Fully synchronize and resize Fabric Canvas dimensions across all buffer, wrapper, and DOM elements
+ */
+export function resizeFabricCanvas(
+  canvas: fabric.Canvas,
+  width: number,
+  height: number,
+  bgColor?: string,
+  gradientStops?: [string, string]
+): void {
+  canvas.setDimensions({ width, height });
+
+  if (canvas.wrapperEl) {
+    canvas.wrapperEl.style.width = `${width}px`;
+    canvas.wrapperEl.style.height = `${height}px`;
+  }
+  if (canvas.lowerCanvasEl) {
+    canvas.lowerCanvasEl.width = width;
+    canvas.lowerCanvasEl.height = height;
+    canvas.lowerCanvasEl.style.width = `${width}px`;
+    canvas.lowerCanvasEl.style.height = `${height}px`;
+  }
+  if (canvas.upperCanvasEl) {
+    canvas.upperCanvasEl.width = width;
+    canvas.upperCanvasEl.height = height;
+    canvas.upperCanvasEl.style.width = `${width}px`;
+    canvas.upperCanvasEl.style.height = `${height}px`;
+  }
+
+  if (bgColor) {
+    setCanvasBackground(canvas, bgColor, gradientStops);
+  }
+
+  canvas.calcOffset();
+  canvas.requestRenderAll();
+}
+
+/**
+ * Apply a structured Layout to the Canvas while preserving background & canvas dimensions
  */
 export function applyLayoutToCanvas(
   canvas: fabric.Canvas,
-  layout: DesignLayout
+  layout: DesignLayout,
+  currentBgColor?: string,
+  gradientStops?: [string, string]
 ): void {
+  // Capture current background before clear
+  const prevBg = canvas.backgroundColor;
+
   canvas.clear();
+
+  // Preserve background!
+  if (currentBgColor) {
+    setCanvasBackground(canvas, currentBgColor, gradientStops);
+  } else if (prevBg) {
+    canvas.backgroundColor = prevBg;
+  }
+
   const canvasW = canvas.width || 1280;
   const canvasH = canvas.height || 720;
 
@@ -599,10 +649,10 @@ export function applyLayoutToCanvas(
   const scaleY = canvasH / 720;
 
   layout.boxes.forEach((box) => {
-    const left = box.left * scaleX;
-    const top = box.top * scaleY;
-    const width = box.width * scaleX;
-    const height = box.height * scaleY;
+    const left = Math.round(box.left * scaleX);
+    const top = Math.round(box.top * scaleY);
+    const width = Math.round(box.width * scaleX);
+    const height = Math.round(box.height * scaleY);
 
     // Background frame
     const rect = new fabric.Rect({
@@ -622,8 +672,8 @@ export function applyLayoutToCanvas(
     const label = new fabric.Textbox(box.label, {
       left: left + 20,
       top: top + height / 2 - 14,
-      width: width - 40,
-      fontSize: Math.max(14, Math.min(20, Math.round(width / 24))),
+      width: Math.max(60, width - 40),
+      fontSize: Math.max(14, Math.min(22, Math.round(width / 20))),
       fontFamily: 'Inter',
       fontWeight: 'bold',
       fill: box.stroke,
@@ -636,6 +686,7 @@ export function applyLayoutToCanvas(
     canvas.add(label);
   });
 
+  canvas.calcOffset();
   canvas.requestRenderAll();
 }
 
@@ -943,20 +994,21 @@ export async function loadProjectJson(
   canvas.clear();
 
   if (hubDesign.meta?.dimensions) {
-    canvas.setDimensions({
-      width: hubDesign.meta.dimensions.width,
-      height: hubDesign.meta.dimensions.height,
-    });
-  }
-
-  if (hubDesign.meta?.backgroundColor) {
-    canvas.backgroundColor = hubDesign.meta.backgroundColor;
+    resizeFabricCanvas(
+      canvas,
+      hubDesign.meta.dimensions.width,
+      hubDesign.meta.dimensions.height,
+      hubDesign.meta.backgroundColor
+    );
+  } else if (hubDesign.meta?.backgroundColor) {
+    setCanvasBackground(canvas, hubDesign.meta.backgroundColor);
   }
 
   if (hubDesign.fabricJson) {
     await canvas.loadFromJSON(hubDesign.fabricJson);
   }
 
+  canvas.calcOffset();
   canvas.requestRenderAll();
   return hubDesign.meta;
 }

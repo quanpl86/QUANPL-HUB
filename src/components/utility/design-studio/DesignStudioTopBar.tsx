@@ -20,6 +20,8 @@ import {
   PanelRight,
   Expand,
   Shrink,
+  Plus,
+  RefreshCw,
 } from 'lucide-react';
 import { CANVAS_PRESETS } from './templates/preset-templates';
 
@@ -53,6 +55,9 @@ interface TopBarProps {
   onToggleRightInspector: () => void;
   isFocusMode: boolean;
   onToggleFocusMode: () => void;
+  autoSaveStatus?: 'saved' | 'saving';
+  lastSavedTime?: string;
+  onNewProject?: () => void;
 }
 
 export const DesignStudioTopBar: React.FC<TopBarProps> = ({
@@ -85,6 +90,9 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
   onToggleRightInspector,
   isFocusMode,
   onToggleFocusMode,
+  autoSaveStatus = 'saved',
+  lastSavedTime,
+  onNewProject,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
@@ -209,6 +217,25 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
             <Edit2 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         )}
+
+        {/* Auto-Save Indicator */}
+        <div className="hidden lg:flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono select-none transition-colors border-emerald-500/20 bg-emerald-500/5">
+          {autoSaveStatus === 'saving' ? (
+            <span className="flex items-center gap-1 text-amber-500 font-medium">
+              <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+              <span>Đang lưu...</span>
+            </span>
+          ) : (
+            <span
+              className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium"
+              title={lastSavedTime ? `Đã tự động lưu vào trình duyệt lúc ${lastSavedTime}` : 'Đã tự động lưu'}
+            >
+              <Check className="w-3 h-3 stroke-[2.5]" />
+              <span>Tự động lưu</span>
+              {lastSavedTime && <span className="opacity-60 text-[9px]">({lastSavedTime})</span>}
+            </span>
+          )}
+        </div>
 
         {/* Canvas Size Selector & Custom Size */}
         <div className="relative">
@@ -506,6 +533,21 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
           accept=".json,.hubdesign"
           className="hidden"
         />
+
+        {onNewProject && (
+          <button
+            onClick={onNewProject}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition ${
+              isDark
+                ? 'text-slate-300 hover:bg-slate-900 border-slate-800 hover:text-emerald-400'
+                : 'text-slate-700 hover:bg-slate-100 border-slate-200 hover:text-emerald-600'
+            }`}
+            title="Tạo dự án mới từ trang trắng"
+          >
+            <Plus className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="hidden md:inline">Tạo mới</span>
+          </button>
+        )}
 
         <button
           onClick={() => fileInputRef.current?.click()}
