@@ -11,20 +11,19 @@ import {
   Sparkles,
   Upload,
   Plus,
-  Square,
-  Circle,
-  Triangle,
-  Minus,
   Wand2,
   CheckCircle2,
   Loader2,
   Palette,
   ChevronLeft,
+  PenTool,
+  Paintbrush,
 } from 'lucide-react';
-import { ToolTab, DesignTemplate, DesignLayout, StickerItem } from '@/types/design-studio';
+import { ToolTab, DesignTemplate, DesignLayout, StickerItem, ShapeType } from '@/types/design-studio';
 import { PRESET_TEMPLATES } from './templates/preset-templates';
 import { DESIGN_LAYOUTS, LUCIDE_ICONS, STEM_BADGES } from './templates/stickers-badges';
 import { QUICK_BACKGROUNDS, SOLID_PALETTES, GRADIENT_PRESETS } from './templates/background-presets';
+import { QUICK_VECTOR_SHAPES } from './templates/vector-shapes';
 
 interface SidebarProps {
   width: number;
@@ -32,7 +31,7 @@ interface SidebarProps {
   activeTab: ToolTab;
   onTabChange: (tab: ToolTab) => void;
   onAddText: (type: 'title' | 'subtitle' | 'body' | 'neon') => void;
-  onAddShape: (type: 'rect' | 'circle' | 'triangle' | 'line') => void;
+  onAddShape: (type: ShapeType) => void;
   onUploadImage: (file: File) => void;
   onSelectTemplate: (template: DesignTemplate) => void;
   onApplyLayout: (layout: DesignLayout) => void;
@@ -43,6 +42,12 @@ interface SidebarProps {
   isDark: boolean;
   canvasBgColor: string;
   onCanvasBgColorChange: (color: string, gradientStops?: [string, string]) => void;
+  isDrawingMode?: boolean;
+  onToggleDrawingMode?: (enabled: boolean) => void;
+  drawingColor?: string;
+  onDrawingColorChange?: (color: string) => void;
+  drawingWidth?: number;
+  onDrawingWidthChange?: (width: number) => void;
 }
 
 export const DesignStudioSidebar: React.FC<SidebarProps> = ({
@@ -62,11 +67,19 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   isDark,
   canvasBgColor,
   onCanvasBgColorChange,
+  isDrawingMode = false,
+  onToggleDrawingMode,
+  drawingColor = '#10b981',
+  onDrawingColorChange,
+  drawingWidth = 4,
+  onDrawingWidthChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const aiFileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [stickerFilter, setStickerFilter] = useState<'all' | 'lucide' | 'badge'>('all');
+  const [shapeCategory, setShapeCategory] = useState<'all' | 'basic' | 'polygon' | 'arrows' | 'callouts' | 'lines'>('all');
+  const [vectorCategory, setVectorCategory] = useState<'all' | 'flowchart' | 'stem' | 'arrows' | 'badges'>('all');
 
   const tabs: Array<{ id: ToolTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: 'templates', label: 'Mẫu', icon: LayoutTemplate },
@@ -425,56 +438,241 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* TAB 4: SHAPES */}
+        {/* TAB 4: SHAPES & QUICK VECTORS */}
         {activeTab === 'shapes' && (
           <div className="space-y-4">
             <div>
-              <h3 className={`font-semibold text-sm ${headingColor}`}>Hình Khối & Vector</h3>
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Hình Khối, Vector & Bút Vẽ</h3>
               <p className={`text-[11px] mt-0.5 ${subtextColor}`}>
-                Thêm hình học làm khung. <strong>Nhấp đúp vào hình</strong> để gõ chữ trực tiếp vào giữa!
+                Thêm khối hình, vector kỹ thuật hoặc vẽ tự do. <strong>Nhấp đúp vào hình</strong> để gõ chữ vào giữa!
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => onAddShape('rect')}
-                className={`p-3 rounded-xl border hover:border-emerald-500/40 flex flex-col items-center gap-2 group transition ${cardBg}`}
-              >
-                <div className="w-10 h-8 rounded bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
-                  <Square className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            {/* 1. FREEHAND VECTOR PEN / BRUSH TOOL */}
+            <div className={`p-3 rounded-xl border space-y-2.5 transition ${
+              isDrawingMode
+                ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20'
+                : cardBg
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-semibold text-xs text-emerald-600 dark:text-emerald-400">
+                  <PenTool className="w-4 h-4" />
+                  <span>Bút Vẽ Vector Tự Do</span>
                 </div>
-                <span className={`text-[11px] font-medium group-hover:text-emerald-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Hình chữ nhật</span>
-              </button>
+                <button
+                  onClick={() => onToggleDrawingMode?.(!isDrawingMode)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition flex items-center gap-1 ${
+                    isDrawingMode
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : isDark
+                      ? 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+                      : 'bg-white text-slate-800 hover:bg-slate-200 border border-slate-300'
+                  }`}
+                >
+                  <Paintbrush className="w-3.5 h-3.5" />
+                  <span>{isDrawingMode ? 'Đang vẽ (Tắt)' : 'Bật vẽ bút'}</span>
+                </button>
+              </div>
 
-              <button
-                onClick={() => onAddShape('circle')}
-                className={`p-3 rounded-xl border hover:border-sky-500/40 flex flex-col items-center gap-2 group transition ${cardBg}`}
-              >
-                <div className="w-10 h-10 rounded-full bg-sky-500/20 border border-sky-500 flex items-center justify-center">
-                  <Circle className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                </div>
-                <span className={`text-[11px] font-medium group-hover:text-sky-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Hình tròn</span>
-              </button>
+              {isDrawingMode && (
+                <div className="space-y-2 pt-1 border-t border-emerald-500/20">
+                  {/* Brush Color Swatches */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400 font-medium">Màu nét vẽ:</span>
+                    <div className="flex items-center gap-1.5">
+                      {['#10b981', '#38bdf8', '#f59e0b', '#ef4444', '#a855f7', '#ffffff', '#000000'].map((col) => (
+                        <button
+                          key={col}
+                          onClick={() => onDrawingColorChange?.(col)}
+                          style={{ backgroundColor: col }}
+                          className={`w-5 h-5 rounded-full border transition ${
+                            drawingColor === col ? 'scale-125 ring-2 ring-emerald-400' : 'hover:scale-110'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
-              <button
-                onClick={() => onAddShape('triangle')}
-                className={`p-3 rounded-xl border hover:border-amber-500/40 flex flex-col items-center gap-2 group transition ${cardBg}`}
-              >
-                <div className="w-10 h-8 flex items-center justify-center">
-                  <Triangle className="w-6 h-6 text-amber-500" />
+                  {/* Brush Stroke Width */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400 font-medium">Độ đậm nét:</span>
+                    <div className="flex items-center gap-1">
+                      {[2, 4, 8, 14].map((sz) => (
+                        <button
+                          key={sz}
+                          onClick={() => onDrawingWidthChange?.(sz)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono transition ${
+                            drawingWidth === sz
+                              ? 'bg-emerald-600 text-white font-bold'
+                              : isDark
+                              ? 'bg-slate-800 text-slate-300'
+                              : 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {sz}px
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 italic">
+                    💡 Rê chuột vẽ tự do trên canvas. Tắt bút vẽ để chỉnh sửa và di chuyển hình vẽ.
+                  </p>
                 </div>
-                <span className={`text-[11px] font-medium group-hover:text-amber-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Hình tam giác</span>
-              </button>
+              )}
+            </div>
 
-              <button
-                onClick={() => onAddShape('line')}
-                className={`p-3 rounded-xl border hover:border-slate-400 flex flex-col items-center gap-2 group transition ${cardBg}`}
-              >
-                <div className="w-10 h-8 flex items-center justify-center">
-                  <Minus className="w-6 h-6 text-slate-500" />
+            {/* 2. DIVERSE SHAPES LIBRARY (21 SHAPES) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Khối Hình Học Đa Dạng
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">21 hình</span>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className={`flex flex-wrap gap-1 p-1 rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-100'}`}>
+                {[
+                  { id: 'all', label: 'Tất cả' },
+                  { id: 'basic', label: 'Cơ bản' },
+                  { id: 'polygon', label: 'Đa giác' },
+                  { id: 'arrows', label: 'Mũi tên' },
+                  { id: 'callouts', label: 'Thoại' },
+                  { id: 'lines', label: 'Đường kẻ' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setShapeCategory(cat.id as typeof shapeCategory)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
+                      shapeCategory === cat.id
+                        ? isDark
+                          ? 'bg-slate-800 text-emerald-400 shadow-xs'
+                          : 'bg-white text-emerald-600 shadow-xs'
+                        : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Shapes Grid */}
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-2 max-h-72 overflow-y-auto pr-0.5">
+                {[
+                  { id: 'rect' as ShapeType, name: 'Chữ nhật', iconPath: 'M 4 4 H 20 V 20 H 4 Z', cat: 'basic', color: '#10b981' },
+                  { id: 'rounded-rect' as ShapeType, name: 'Bo góc mềm', iconPath: 'M 7 4 H 17 A 3 3 0 0 1 20 7 V 17 A 3 3 0 0 1 17 20 H 7 A 3 3 0 0 1 4 17 V 7 A 3 3 0 0 1 7 4 Z', cat: 'basic', color: '#10b981' },
+                  { id: 'circle' as ShapeType, name: 'Hình tròn', iconPath: 'M 12 3 A 9 9 0 1 0 12 21 A 9 9 0 1 0 12 3 Z', cat: 'basic', color: '#38bdf8' },
+                  { id: 'ellipse' as ShapeType, name: 'Bầu dục', iconPath: 'M 12 6 C 17 6 21 8.5 21 12 C 21 15.5 17 18 12 18 C 7 18 3 15.5 3 12 C 3 8.5 7 6 12 6 Z', cat: 'basic', color: '#6366f1' },
+                  { id: 'triangle' as ShapeType, name: 'Tam giác', iconPath: 'M 12 3 L 21 19 H 3 Z', cat: 'basic', color: '#f59e0b' },
+                  { id: 'diamond' as ShapeType, name: 'Hình thoi', iconPath: 'M 12 3 L 21 12 L 12 21 L 3 12 Z', cat: 'basic', color: '#ec4899' },
+                  { id: 'star' as ShapeType, name: 'Ngôi sao', iconPath: 'M 12 2 L 15 8 L 22 9 L 17 14 L 18 21 L 12 17 L 6 21 L 7 14 L 2 9 L 9 8 Z', cat: 'basic', color: '#fbbf24' },
+                  { id: 'heart' as ShapeType, name: 'Trái tim', iconPath: 'M 12 21 C 12 21 3 14 3 8.5 A 5.5 5.5 0 0 1 12 5 A 5.5 5.5 0 0 1 21 8.5 C 21 14 12 21 12 21 Z', cat: 'basic', color: '#f43f5e' },
+                  { id: 'hexagon' as ShapeType, name: 'Lục giác', iconPath: 'M 7 3 H 17 L 22 12 L 17 21 H 7 L 2 12 Z', cat: 'polygon', color: '#06b6d4' },
+                  { id: 'pentagon' as ShapeType, name: 'Ngũ giác', iconPath: 'M 12 2 L 22 9 L 18 21 H 6 L 2 9 Z', cat: 'polygon', color: '#8b5cf6' },
+                  { id: 'octagon' as ShapeType, name: 'Bát giác', iconPath: 'M 8 2 H 16 L 22 8 V 16 L 16 22 H 8 L 2 16 V 8 Z', cat: 'polygon', color: '#14b8a6' },
+                  { id: 'cross' as ShapeType, name: 'Chữ thập (+)', iconPath: 'M 9 2 H 15 V 9 H 22 V 15 H 15 V 22 H 9 V 15 H 2 V 9 H 9 Z', cat: 'polygon', color: '#ef4444' },
+                  { id: 'arrow-right' as ShapeType, name: 'Mũi tên phải', iconPath: 'M 3 9 H 14 V 5 L 21 12 L 14 19 V 15 H 3 Z', cat: 'arrows', color: '#10b981' },
+                  { id: 'arrow-left' as ShapeType, name: 'Mũi tên trái', iconPath: 'M 21 9 H 10 V 5 L 3 12 L 10 19 V 15 H 21 Z', cat: 'arrows', color: '#10b981' },
+                  { id: 'arrow-double' as ShapeType, name: 'Mũi tên 2 đầu', iconPath: 'M 7 6 L 2 12 L 7 18 V 14 H 17 V 18 L 22 12 L 17 6 V 10 H 7 Z', cat: 'arrows', color: '#0284c7' },
+                  { id: 'speech-bubble' as ShapeType, name: 'Bong bóng thoại', iconPath: 'M 4 4 H 20 V 16 H 9 L 5 20 V 16 H 4 Z', cat: 'callouts', color: '#3b82f6' },
+                  { id: 'thought-bubble' as ShapeType, name: 'Đám mây', iconPath: 'M 6 18 A 4 4 0 0 1 4 14 A 5 5 0 0 1 9 9 A 6 6 0 0 1 18 9 A 4 4 0 0 1 20 14 A 4 4 0 0 1 17 18 Z', cat: 'callouts', color: '#8b5cf6' },
+                  { id: 'lightning' as ShapeType, name: 'Tia chớp', iconPath: 'M 13 2 L 4 13 H 11 L 9 22 L 20 10 H 13 Z', cat: 'callouts', color: '#eab308' },
+                  { id: 'badge-ribbon' as ShapeType, name: 'Ruy băng', iconPath: 'M 3 4 H 19 L 21 10 L 19 16 H 3 L 6 10 Z', cat: 'callouts', color: '#e11d48' },
+                  { id: 'line' as ShapeType, name: 'Đường thẳng', iconPath: 'M 3 12 H 21', cat: 'lines', color: '#94a3b8' },
+                  { id: 'dashed-line' as ShapeType, name: 'Nét đứt', iconPath: 'M 3 12 H 7 M 10 12 H 14 M 17 12 H 21', cat: 'lines', color: '#38bdf8' },
+                  { id: 'arrow-line' as ShapeType, name: 'Đường mũi tên', iconPath: 'M 3 12 H 18 M 14 8 L 19 12 L 14 16', cat: 'lines', color: '#10b981' },
+                ]
+                  .filter((s) => shapeCategory === 'all' || s.cat === shapeCategory)
+                  .map((shape) => (
+                    <button
+                      key={shape.id}
+                      onClick={() => onAddShape(shape.id)}
+                      className={`p-2.5 rounded-xl border hover:border-emerald-500/50 flex flex-col items-center justify-center gap-1.5 group transition text-center min-w-0 ${cardBg}`}
+                      title={shape.name}
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition shrink-0">
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="w-6 h-6"
+                          fill={shape.cat === 'lines' ? 'none' : shape.color}
+                          stroke={shape.color}
+                          strokeWidth={shape.cat === 'lines' ? 2.5 : 1}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d={shape.iconPath} />
+                        </svg>
+                      </div>
+                      <span className={`text-[10px] font-medium leading-tight truncate w-full group-hover:text-emerald-500 ${
+                        isDark ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
+                        {shape.name}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            {/* 3. QUICK VECTOR LIBRARY (FLOWCHART, STEM, ARROWS, BADGES) */}
+            <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className={`text-xs font-semibold ${headingColor}`}>Kho Vector Đồ Họa Vẽ Nhanh</h4>
+                  <p className={`text-[10px] ${subtextColor}`}>Bấm để chèn ngay vector đồ họa chuyên nghiệp</p>
                 </div>
-                <span className={`text-[11px] font-medium group-hover:text-slate-900 dark:group-hover:text-white ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Đường kẻ ngang</span>
-              </button>
+                <span className="text-[10px] text-emerald-500 font-mono font-semibold">
+                  {QUICK_VECTOR_SHAPES.length} mẫu
+                </span>
+              </div>
+
+              {/* Vector Filter Pills */}
+              <div className={`flex flex-wrap gap-1 p-1 rounded-lg ${isDark ? 'bg-slate-900' : 'bg-slate-100'}`}>
+                {[
+                  { id: 'all', label: 'Tất cả' },
+                  { id: 'flowchart', label: 'Sơ đồ luồng' },
+                  { id: 'stem', label: 'STEM & Tech' },
+                  { id: 'arrows', label: 'Mũi tên' },
+                  { id: 'badges', label: 'Huy hiệu' },
+                ].map((vcat) => (
+                  <button
+                    key={vcat.id}
+                    onClick={() => setVectorCategory(vcat.id as typeof vectorCategory)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
+                      vectorCategory === vcat.id
+                        ? isDark
+                          ? 'bg-slate-800 text-emerald-400 shadow-xs'
+                          : 'bg-white text-emerald-600 shadow-xs'
+                        : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {vcat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Quick Vectors Grid */}
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2 max-h-72 overflow-y-auto pr-0.5">
+                {QUICK_VECTOR_SHAPES
+                  .filter((v) => vectorCategory === 'all' || v.category === vectorCategory)
+                  .map((vector) => (
+                    <button
+                      key={vector.id}
+                      onClick={() => onAddSvgSticker(vector.svg)}
+                      className={`p-2.5 rounded-xl border hover:border-emerald-500/50 flex flex-col items-center justify-center gap-1.5 group transition text-center min-w-0 ${cardBg}`}
+                      title={vector.name}
+                    >
+                      <div
+                        className="w-12 h-10 flex items-center justify-center group-hover:scale-110 transition shrink-0"
+                        dangerouslySetInnerHTML={{ __html: vector.svg }}
+                      />
+                      <span className={`text-[10px] font-medium leading-tight truncate w-full group-hover:text-emerald-500 ${
+                        isDark ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
+                        {vector.name}
+                      </span>
+                    </button>
+                  ))}
+              </div>
             </div>
           </div>
         )}

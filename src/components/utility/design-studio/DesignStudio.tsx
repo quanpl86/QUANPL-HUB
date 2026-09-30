@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
 import { toast } from 'sonner';
-import { ToolTab, ImageAdjustments, DesignTemplate, DesignLayout, HubDesignFile } from '@/types/design-studio';
+import { ToolTab, ImageAdjustments, DesignTemplate, DesignLayout, HubDesignFile, ShapeType } from '@/types/design-studio';
 import { PanelLeft, PanelRight } from 'lucide-react';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { DesignStudioTopBar } from './DesignStudioTopBar';
@@ -13,10 +13,8 @@ import { DesignStudioInspector } from './DesignStudioInspector';
 import {
   configureFabricDefaults,
   addText,
-  addRect,
-  addCircle,
-  addTriangle,
-  addLine,
+  addShape,
+  setCanvasDrawingMode,
   addSvgIcon,
   addTextInsideShape,
   applyLayoutToCanvas,
@@ -82,6 +80,28 @@ export const DesignStudio: React.FC = () => {
   const [canRedo, setCanRedo] = useState(false);
   const isHistoryActionRef = useRef(false);
 
+  // Save current canvas state to history stack
+  const saveHistory = useCallback(() => {
+    if (!fabricCanvasRef.current || isHistoryActionRef.current) return;
+    try {
+      const jsonStr = JSON.stringify(fabricCanvasRef.current.toObject());
+      const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
+      newHistory.push(jsonStr);
+
+      if (newHistory.length > 30) {
+        newHistory.shift();
+      }
+
+      historyRef.current = newHistory;
+      historyIndexRef.current = newHistory.length - 1;
+
+      setCanUndo(historyIndexRef.current > 0);
+      setCanRedo(false);
+    } catch (e) {
+      console.error('History save error:', e);
+    }
+  }, []);
+
   // AI & Exporting States
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiProgressMessage, setAiProgressMessage] = useState('');
@@ -97,6 +117,38 @@ export const DesignStudio: React.FC = () => {
 
   // Focus Mode (Chế độ tập trung - Toàn màn hình)
   const [isFocusMode, setIsFocusMode] = useState(false);
+
+  // Freehand Vector Drawing Brush States
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [drawingColor, setDrawingColor] = useState('#10b981');
+  const [drawingWidth, setDrawingWidth] = useState(4);
+
+  const handleToggleDrawingMode = useCallback((enabled: boolean) => {
+    setIsDrawingMode(enabled);
+    if (fabricCanvasRef.current) {
+      setCanvasDrawingMode(fabricCanvasRef.current, enabled, drawingColor, drawingWidth);
+      if (enabled) {
+        toast.info('Đã bật Bút Vẽ Vector. Rê chuột trên canvas để vẽ tự do!');
+      } else {
+        toast.info('Đã tắt Bút Vẽ. Nét vẽ là một layer vector có thể chọn và di chuyển.');
+        saveHistory();
+      }
+    }
+  }, [drawingColor, drawingWidth, saveHistory]);
+
+  const handleDrawingColorChange = useCallback((color: string) => {
+    setDrawingColor(color);
+    if (fabricCanvasRef.current?.freeDrawingBrush) {
+      fabricCanvasRef.current.freeDrawingBrush.color = color;
+    }
+  }, []);
+
+  const handleDrawingWidthChange = useCallback((width: number) => {
+    setDrawingWidth(width);
+    if (fabricCanvasRef.current?.freeDrawingBrush) {
+      fabricCanvasRef.current.freeDrawingBrush.width = width;
+    }
+  }, []);
 
   const handleToggleFocusMode = useCallback(() => {
     setIsFocusMode((prev) => {
@@ -210,28 +262,6 @@ export const DesignStudio: React.FC = () => {
     }, 150);
     return () => clearTimeout(timer);
   }, [isFocusMode, calculateFitZoom, canvasWidth, canvasHeight]);
-
-  // Save current canvas state to history stack
-  const saveHistory = useCallback(() => {
-    if (!fabricCanvasRef.current || isHistoryActionRef.current) return;
-    try {
-      const jsonStr = JSON.stringify(fabricCanvasRef.current.toObject());
-      const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
-      newHistory.push(jsonStr);
-
-      if (newHistory.length > 30) {
-        newHistory.shift();
-      }
-
-      historyRef.current = newHistory;
-      historyIndexRef.current = newHistory.length - 1;
-
-      setCanUndo(historyIndexRef.current > 0);
-      setCanRedo(false);
-    } catch (e) {
-      console.error('History save error:', e);
-    }
-  }, []);
 
   // Sync active selection state
   const syncSelectionState = useCallback((target: fabric.FabricObject | null) => {
@@ -532,26 +562,11 @@ export const DesignStudio: React.FC = () => {
     toast.success('Đã thêm chữ vào canvas');
   };
 
-  // Add Shape Handler
-  const handleAddShape = (type: 'rect' | 'circle' | 'triangle' | 'line') => {
+  // Add Shape Handler (All 21+ vector shapes)
+  const handleAddShape = (type: ShapeType) => {
     if (!fabricCanvasRef.current) return;
-    switch (type) {
-      case 'rect':
-        addRect(fabricCanvasRef.current);
-        break;
-      case 'circle':
-        addCircle(fabricCanvasRef.current);
-        break;
-      case 'triangle':
-        addTriangle(fabricCanvasRef.current);
-        break;
-      case 'line':
-        addLine(fabricCanvasRef.current);
-        break;
-      default:
-        addRect(fabricCanvasRef.current);
-        break;
-    }
+    addShape(fabricCanvasRef.current, type);
+    saveHistory();
     toast.success('Đã thêm hình vào canvas (Nhấp đúp để gõ chữ vào trong)');
   };
 
@@ -955,6 +970,12 @@ export const DesignStudio: React.FC = () => {
             isDark={isDark}
             canvasBgColor={canvasBgColor}
             onCanvasBgColorChange={handleCanvasBgColorChange}
+            isDrawingMode={isDrawingMode}
+            onToggleDrawingMode={handleToggleDrawingMode}
+            drawingColor={drawingColor}
+            onDrawingColorChange={handleDrawingColorChange}
+            drawingWidth={drawingWidth}
+            onDrawingWidthChange={handleDrawingWidthChange}
           />
         )}
 

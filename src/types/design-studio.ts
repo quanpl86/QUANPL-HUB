@@ -74,3 +74,35 @@ export interface StickerItem {
   category: 'lucide' | 'badge' | 'stem' | 'ribbon';
   svg: string;
 }
+
+export type ShapeType =
+  | 'rect'
+  | 'rounded-rect'
+  | 'circle'
+  | 'ellipse'
+  | 'triangle'
+  | 'diamond'
+  | 'star'
+  | 'heart'
+  | 'hexagon'
+  | 'pentagon'
+  | 'octagon'
+  | 'arrow-right'
+  | 'arrow-left'
+  | 'arrow-double'
+  | 'speech-bubble'
+  | 'thought-bubble'
+  | 'lightning'
+  | 'badge-ribbon'
+  | 'cross'
+  | 'line'
+  | 'dashed-line'
+  | 'arrow-line';
+
+export interface VectorShapeItem {
+  id: string;
+  name: string;
+  category: 'flowchart' | 'stem' | 'arrows' | 'badges';
+  svg: string;
+}
+

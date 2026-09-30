@@ -1,5 +1,5 @@
 import * as fabric from 'fabric';
-import { ImageAdjustments, HubDesignFile, DesignProjectMeta, DesignLayout } from '@/types/design-studio';
+import { ImageAdjustments, HubDesignFile, DesignProjectMeta, DesignLayout, ShapeType } from '@/types/design-studio';
 import jsPDF from 'jspdf';
 
 /**
@@ -70,6 +70,339 @@ export function addText(
   canvas.setActiveObject(textbox);
   canvas.requestRenderAll();
   return textbox;
+}
+
+/**
+ * Set Canvas Freehand Vector Drawing Mode
+ */
+export function setCanvasDrawingMode(
+  canvas: fabric.Canvas,
+  isDrawing: boolean,
+  color = '#10b981',
+  width = 4
+): void {
+  canvas.isDrawingMode = isDrawing;
+  if (isDrawing) {
+    if (!canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+    }
+    canvas.freeDrawingBrush.color = color;
+    canvas.freeDrawingBrush.width = width;
+  }
+}
+
+/**
+ * Add Diverse Vector Shapes to Canvas
+ */
+export function addShape(
+  canvas: fabric.Canvas,
+  type: ShapeType,
+  options: Record<string, unknown> = {}
+): fabric.FabricObject {
+  const canvasW = canvas.width || 800;
+  const canvasH = canvas.height || 600;
+  const cx = canvasW / 2;
+  const cy = canvasH / 2;
+
+  let obj: fabric.FabricObject;
+
+  switch (type) {
+    case 'rect':
+      obj = new fabric.Rect({
+        left: cx - 120,
+        top: cy - 90,
+        width: 240,
+        height: 180,
+        fill: '#10b981',
+        rx: 0,
+        ry: 0,
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        ...options,
+      });
+      break;
+
+    case 'rounded-rect':
+      obj = new fabric.Rect({
+        left: cx - 120,
+        top: cy - 90,
+        width: 240,
+        height: 180,
+        fill: '#10b981',
+        rx: 28,
+        ry: 28,
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        ...options,
+      });
+      break;
+
+    case 'circle':
+      obj = new fabric.Circle({
+        left: cx - 90,
+        top: cy - 90,
+        radius: 90,
+        fill: '#38bdf8',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        ...options,
+      });
+      break;
+
+    case 'ellipse':
+      obj = new fabric.Ellipse({
+        left: cx - 120,
+        top: cy - 80,
+        rx: 120,
+        ry: 80,
+        fill: '#6366f1',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        ...options,
+      });
+      break;
+
+    case 'triangle':
+      obj = new fabric.Triangle({
+        left: cx - 90,
+        top: cy - 80,
+        width: 180,
+        height: 160,
+        fill: '#f59e0b',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        ...options,
+      });
+      break;
+
+    case 'diamond':
+      obj = new fabric.Path('M 100 0 L 200 100 L 100 200 L 0 100 Z', {
+        left: cx - 90,
+        top: cy - 90,
+        fill: '#ec4899',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'star':
+      obj = new fabric.Path('M 100 0 L 125 70 L 200 70 L 140 115 L 160 185 L 100 145 L 40 185 L 60 115 L 0 70 L 75 70 Z', {
+        left: cx - 90,
+        top: cy - 90,
+        fill: '#fbbf24',
+        stroke: '#f59e0b',
+        strokeWidth: 2,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'heart':
+      obj = new fabric.Path('M 100 40 A 30 30 0 0 0 40 100 C 40 150 100 190 100 190 C 100 190 160 150 160 100 A 30 30 0 0 0 100 40 Z', {
+        left: cx - 85,
+        top: cy - 80,
+        fill: '#f43f5e',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        ...options,
+      });
+      break;
+
+    case 'hexagon':
+      obj = new fabric.Path('M 50 0 L 150 0 L 200 86.6 L 150 173.2 L 50 173.2 L 0 86.6 Z', {
+        left: cx - 90,
+        top: cy - 80,
+        fill: '#06b6d4',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'pentagon':
+      obj = new fabric.Path('M 100 0 L 195 69 L 159 181 L 41 181 L 5 69 Z', {
+        left: cx - 90,
+        top: cy - 80,
+        fill: '#8b5cf6',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'octagon':
+      obj = new fabric.Path('M 58 0 L 142 0 L 200 58 L 200 142 L 142 200 L 58 200 L 0 142 L 0 58 Z', {
+        left: cx - 90,
+        top: cy - 90,
+        fill: '#14b8a6',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'arrow-right':
+      obj = new fabric.Path('M 0 60 L 120 60 L 120 20 L 200 100 L 120 180 L 120 140 L 0 140 Z', {
+        left: cx - 100,
+        top: cy - 60,
+        fill: '#10b981',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 1,
+        scaleY: 0.8,
+        ...options,
+      });
+      break;
+
+    case 'arrow-left':
+      obj = new fabric.Path('M 200 60 L 80 60 L 80 20 L 0 100 L 80 180 L 80 140 L 200 140 Z', {
+        left: cx - 100,
+        top: cy - 60,
+        fill: '#10b981',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 1,
+        scaleY: 0.8,
+        ...options,
+      });
+      break;
+
+    case 'arrow-double':
+      obj = new fabric.Path('M 70 20 L 0 100 L 70 180 L 70 140 L 130 140 L 130 180 L 200 100 L 130 20 L 130 60 L 70 60 Z', {
+        left: cx - 100,
+        top: cy - 60,
+        fill: '#0284c7',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 1,
+        scaleY: 0.8,
+        ...options,
+      });
+      break;
+
+    case 'speech-bubble':
+      obj = new fabric.Path('M 20 20 C 10 20 0 30 0 40 L 0 130 C 0 140 10 150 20 150 L 50 150 L 30 190 L 90 150 L 180 150 C 190 150 200 140 200 130 L 200 40 C 200 30 190 20 180 20 Z', {
+        left: cx - 90,
+        top: cy - 80,
+        fill: '#3b82f6',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 1,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'thought-bubble':
+      obj = new fabric.Path('M 50 130 A 30 30 0 0 1 70 80 A 45 45 0 0 1 140 70 A 35 35 0 0 1 180 110 A 30 30 0 0 1 170 145 A 25 25 0 0 1 130 155 L 70 155 A 25 25 0 0 1 50 130 Z', {
+        left: cx - 90,
+        top: cy - 80,
+        fill: '#8b5cf6',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 1.2,
+        scaleY: 1.1,
+        ...options,
+      });
+      break;
+
+    case 'lightning':
+      obj = new fabric.Path('M 110 0 L 20 110 L 90 110 L 70 200 L 170 80 L 100 80 Z', {
+        left: cx - 70,
+        top: cy - 90,
+        fill: '#eab308',
+        stroke: '#ca8a04',
+        strokeWidth: 1,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'badge-ribbon':
+      obj = new fabric.Path('M 0 0 L 160 0 L 200 50 L 160 100 L 0 100 L 30 50 Z', {
+        left: cx - 100,
+        top: cy - 50,
+        fill: '#e11d48',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 1.1,
+        scaleY: 0.9,
+        ...options,
+      });
+      break;
+
+    case 'cross':
+      obj = new fabric.Path('M 70 0 L 130 0 L 130 70 L 200 70 L 200 130 L 130 130 L 130 200 L 70 200 L 70 130 L 0 130 L 0 70 L 70 70 Z', {
+        left: cx - 80,
+        top: cy - 80,
+        fill: '#ef4444',
+        stroke: '#ffffff',
+        strokeWidth: 0,
+        scaleX: 0.8,
+        scaleY: 0.8,
+        ...options,
+      });
+      break;
+
+    case 'line':
+      obj = new fabric.Line([cx - 150, cy, cx + 150, cy], {
+        stroke: '#e2e8f0',
+        strokeWidth: 4,
+        ...options,
+      });
+      break;
+
+    case 'dashed-line':
+      obj = new fabric.Line([cx - 150, cy, cx + 150, cy], {
+        stroke: '#38bdf8',
+        strokeWidth: 4,
+        strokeDashArray: [12, 8],
+        ...options,
+      });
+      break;
+
+    case 'arrow-line':
+      obj = new fabric.Path('M 0 10 L 260 10 L 250 0 M 260 10 L 250 20', {
+        left: cx - 130,
+        top: cy - 10,
+        fill: '',
+        stroke: '#10b981',
+        strokeWidth: 4,
+        strokeLineCap: 'round',
+        strokeLineJoin: 'round',
+        ...options,
+      });
+      break;
+
+    default:
+      obj = new fabric.Rect({
+        left: cx - 120,
+        top: cy - 90,
+        width: 240,
+        height: 180,
+        fill: '#10b981',
+        ...options,
+      });
+      break;
+  }
+
+  canvas.add(obj);
+  canvas.setActiveObject(obj);
+  canvas.requestRenderAll();
+  return obj;
 }
 
 /**
