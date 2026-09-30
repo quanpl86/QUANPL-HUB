@@ -34,6 +34,7 @@ import {
   exportCanvasAsPDF,
   exportProjectJson,
   loadProjectJson,
+  setCanvasBackground,
 } from './services/fabric-service';
 import { removeImageBackground } from './services/ai-remover';
 
@@ -352,13 +353,19 @@ export const DesignStudio: React.FC = () => {
     toast.success(`Đã đổi kích thước canvas: ${width} × ${height} px`);
   };
 
-  // Canvas Background Color Handler
-  const handleCanvasBgColorChange = (color: string) => {
+  // Canvas Background Color Handler (Supports Solid, Transparent, Gradients)
+  const handleCanvasBgColorChange = (color: string, gradientStops?: [string, string]) => {
     if (!fabricCanvasRef.current) return;
     setCanvasBgColor(color);
-    fabricCanvasRef.current.backgroundColor = color;
-    fabricCanvasRef.current.requestRenderAll();
+    setCanvasBackground(fabricCanvasRef.current, color, gradientStops);
     saveHistory();
+    if (color === 'transparent') {
+      toast.success('Đã đổi nền canvas sang TRONG SUỐT (Transparent)');
+    } else if (gradientStops) {
+      toast.success('Đã áp dụng nền Gradient chuyển sắc');
+    } else {
+      toast.success(`Đã đổi màu nền canvas: ${color}`);
+    }
   };
 
   // Add Text Handler
@@ -792,11 +799,14 @@ export const DesignStudio: React.FC = () => {
         isExporting={isExporting}
         activePresetName={activePresetName}
         isDark={isDark}
+        canvasBgColor={canvasBgColor}
+        onCanvasBgColorChange={handleCanvasBgColorChange}
+        onOpenBackgroundTab={() => setActiveTab('background')}
       />
 
       {/* 2. MAIN 3-ZONE STUDIO WORKSPACE */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* LEFT SIDEBAR (Templates, Layouts, Text, Shapes, Stickers, Uploads, AI Tools) */}
+        {/* LEFT SIDEBAR (Templates, Layouts, Background, Text, Shapes, Stickers, Uploads, AI Tools) */}
         <DesignStudioSidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -810,6 +820,8 @@ export const DesignStudio: React.FC = () => {
           isAiProcessing={isAiProcessing}
           aiProgressMessage={aiProgressMessage}
           isDark={isDark}
+          canvasBgColor={canvasBgColor}
+          onCanvasBgColorChange={handleCanvasBgColorChange}
         />
 
         {/* CENTER CANVAS WORKSPACE */}
@@ -820,6 +832,7 @@ export const DesignStudio: React.FC = () => {
           zoom={zoom}
           onDropImage={handleUploadImage}
           isDark={isDark}
+          canvasBgColor={canvasBgColor}
         />
 
         {/* RIGHT INSPECTOR PANEL (Photo Editor Sliders, AI 1-Click Rembg, Typography, Styles) */}

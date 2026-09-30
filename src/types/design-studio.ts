@@ -1,4 +1,4 @@
-export type ToolTab = 'templates' | 'layouts' | 'text' | 'shapes' | 'stickers' | 'images' | 'ai';
+export type ToolTab = 'templates' | 'layouts' | 'background' | 'text' | 'shapes' | 'stickers' | 'images' | 'ai';
 
 export interface CanvasDimensions {
   width: number;

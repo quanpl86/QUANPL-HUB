@@ -29,12 +29,13 @@ import {
   Type,
 } from 'lucide-react';
 import { ImageAdjustments } from '@/types/design-studio';
+import { GRADIENT_PRESETS } from './templates/background-presets';
 
 interface InspectorProps {
   selectedObject: Record<string, unknown> | null;
   selectedType: string | null;
   canvasBgColor: string;
-  onCanvasBgColorChange: (color: string) => void;
+  onCanvasBgColorChange: (color: string, gradientStops?: [string, string]) => void;
   onUpdateTextProps: (props: Record<string, unknown>) => void;
   onUpdateShapeProps: (props: Record<string, unknown>) => void;
   onAddTextToShape: () => void;
@@ -120,7 +121,7 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
   // 1. CHƯA CHỌN VẬT THỂ: HIỂN THỊ THUỘC TÍNH CANVAS
   if (!selectedObject || !selectedType) {
     return (
-      <aside className={`w-72 border-l p-4 overflow-y-auto shrink-0 select-none z-20 space-y-5 text-xs transition-colors ${panelBg}`}>
+      <aside className={`w-72 border-l p-4 overflow-y-auto shrink-0 select-none z-20 space-y-4 text-xs transition-colors ${panelBg}`}>
         <div>
           <h3 className={`font-semibold text-sm flex items-center gap-1.5 ${headingColor}`}>
             <Palette className="w-4 h-4 text-emerald-500" />
@@ -129,9 +130,54 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
           <p className={`text-[11px] mt-0.5 ${subtextColor}`}>Bấm vào bất kỳ vật thể nào trên canvas để chỉnh sửa thuộc tính</p>
         </div>
 
-        {/* Canvas Background Color */}
+        {/* Quick transparent & basic color options */}
+        <div className="space-y-1.5">
+          <label className={`text-[11px] font-medium ${labelColor}`}>Kiểu nền cơ bản</label>
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              onClick={() => onCanvasBgColorChange('transparent')}
+              className={`py-2 px-1.5 rounded-lg border text-[11px] font-medium flex flex-col items-center gap-1 transition ${
+                canvasBgColor === 'transparent' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 ring-2 ring-emerald-500/20' : btnBg
+              }`}
+              title="Nền Trong Suốt (PNG Alpha)"
+            >
+              <div
+                className="w-5 h-5 rounded border border-black/20"
+                style={{
+                  backgroundImage: 'linear-gradient(45deg, #94a3b8 25%, transparent 25%), linear-gradient(-45deg, #94a3b8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #94a3b8 75%), linear-gradient(-45deg, transparent 75%, #94a3b8 75%)',
+                  backgroundSize: '4px 4px',
+                }}
+              />
+              <span className="text-[10px]">Trong suốt</span>
+            </button>
+
+            <button
+              onClick={() => onCanvasBgColorChange('#ffffff')}
+              className={`py-2 px-1.5 rounded-lg border text-[11px] font-medium flex flex-col items-center gap-1 transition ${
+                canvasBgColor === '#ffffff' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 ring-2 ring-emerald-500/20' : btnBg
+              }`}
+              title="Nền Trắng"
+            >
+              <div className="w-5 h-5 rounded border border-slate-300 bg-white shadow-2xs" />
+              <span className="text-[10px]">Trắng</span>
+            </button>
+
+            <button
+              onClick={() => onCanvasBgColorChange('#090d16')}
+              className={`py-2 px-1.5 rounded-lg border text-[11px] font-medium flex flex-col items-center gap-1 transition ${
+                canvasBgColor === '#090d16' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 ring-2 ring-emerald-500/20' : btnBg
+              }`}
+              title="Nền Đen Cyber"
+            >
+              <div className="w-5 h-5 rounded border border-slate-700 bg-[#090d16] shadow-2xs" />
+              <span className="text-[10px]">Đen Cyber</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Canvas Background Color Picker */}
         <div className="space-y-2">
-          <label className={`text-[11px] font-medium ${labelColor}`}>Màu nền thiết kế</label>
+          <label className={`text-[11px] font-medium ${labelColor}`}>Màu đơn sắc tùy chọn</label>
           <div className="flex items-center gap-2">
             <input
               type="color"
@@ -154,9 +200,31 @@ export const DesignStudioInspector: React.FC<InspectorProps> = ({
                 onClick={() => onCanvasBgColorChange(c)}
                 style={{ backgroundColor: c }}
                 className={`w-6 h-6 rounded-md border transition ${
-                  canvasBgColor === c ? 'border-emerald-500 scale-110 shadow-sm' : isDark ? 'border-slate-800 hover:scale-105' : 'border-slate-300 hover:scale-105'
+                  canvasBgColor === c ? 'border-emerald-500 scale-110 shadow-sm ring-2 ring-emerald-500/40' : isDark ? 'border-slate-800 hover:scale-105' : 'border-slate-300 hover:scale-105'
                 }`}
               />
+            ))}
+          </div>
+        </div>
+
+        {/* Gradient Presets */}
+        <div className="space-y-1.5 pt-1">
+          <label className={`text-[11px] font-medium ${labelColor}`}>Màu Gradient chuyển sắc</label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {GRADIENT_PRESETS.slice(0, 6).map((g) => (
+              <button
+                key={g.id}
+                onClick={() => onCanvasBgColorChange(g.value, g.gradientStops)}
+                className={`p-1.5 rounded-lg border flex items-center gap-1.5 transition text-left ${
+                  canvasBgColor === g.value ? 'border-emerald-500 ring-2 ring-emerald-500/30' : btnBg
+                }`}
+              >
+                <div
+                  className="w-5 h-5 rounded shrink-0 border border-white/20"
+                  style={{ background: `linear-gradient(135deg, ${g.gradientStops?.[0]}, ${g.gradientStops?.[1]})` }}
+                />
+                <span className="text-[10px] truncate">{g.name}</span>
+              </button>
             ))}
           </div>
         </div>

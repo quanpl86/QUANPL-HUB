@@ -479,6 +479,46 @@ export function deleteObject(canvas: fabric.Canvas, object: fabric.FabricObject)
 }
 
 /**
+ * Set Canvas Background (Solid, Transparent, or Gradient)
+ */
+export function setCanvasBackground(
+  canvas: fabric.Canvas,
+  color: string,
+  gradientStops?: [string, string]
+) {
+  if (color === 'transparent' || color === '') {
+    canvas.backgroundColor = '';
+    canvas.requestRenderAll();
+    return;
+  }
+
+  if (gradientStops && gradientStops.length === 2) {
+    const width = canvas.width || 1280;
+    const height = canvas.height || 720;
+    const gradient = new fabric.Gradient({
+      type: 'linear',
+      gradientUnits: 'pixels',
+      coords: {
+        x1: 0,
+        y1: 0,
+        x2: width,
+        y2: height,
+      },
+      colorStops: [
+        { offset: 0, color: gradientStops[0] },
+        { offset: 1, color: gradientStops[1] },
+      ],
+    });
+    canvas.backgroundColor = gradient;
+    canvas.requestRenderAll();
+    return;
+  }
+
+  canvas.backgroundColor = color;
+  canvas.requestRenderAll();
+}
+
+/**
  * Export canvas to image (PNG, JPEG, WebP)
  */
 export function exportCanvasAsImage(
@@ -487,6 +527,19 @@ export function exportCanvasAsImage(
   quality = 0.95,
   multiplier = 1
 ): string {
+  const originalBg = canvas.backgroundColor;
+  const isTransparent = !originalBg || originalBg === 'transparent' || originalBg === '';
+
+  // JPEG cannot handle transparent alpha channels, temporarily use white background
+  if (format === 'jpeg' && isTransparent) {
+    canvas.backgroundColor = '#ffffff';
+    canvas.requestRenderAll();
+    const dataUrl = canvas.toDataURL({ format, quality, multiplier });
+    canvas.backgroundColor = '';
+    canvas.requestRenderAll();
+    return dataUrl;
+  }
+
   return canvas.toDataURL({
     format,
     quality,

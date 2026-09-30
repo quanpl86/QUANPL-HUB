@@ -9,6 +9,7 @@ interface CanvasProps {
   zoom: number;
   onDropImage: (file: File) => void;
   isDark: boolean;
+  canvasBgColor: string;
 }
 
 export const DesignStudioCanvas: React.FC<CanvasProps> = ({
@@ -18,6 +19,7 @@ export const DesignStudioCanvas: React.FC<CanvasProps> = ({
   zoom,
   onDropImage,
   isDark,
+  canvasBgColor,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +37,7 @@ export const DesignStudioCanvas: React.FC<CanvasProps> = ({
 
   const scaledW = Math.round(canvasWidth * zoom);
   const scaledH = Math.round(canvasHeight * zoom);
+  const isTransparent = canvasBgColor === 'transparent' || !canvasBgColor;
 
   return (
     <main
@@ -54,7 +57,7 @@ export const DesignStudioCanvas: React.FC<CanvasProps> = ({
       {/* Centered Canvas Container (margin: auto guarantees safe-centering without negative overflow clipping) */}
       <div className="m-auto flex items-center justify-center p-4 shrink-0">
         <div
-          className={`relative rounded-sm transition-all duration-75 ${
+          className={`relative rounded-sm transition-all duration-75 overflow-hidden ${
             isDark
               ? 'shadow-2xl shadow-black/80 ring-1 ring-slate-800'
               : 'shadow-2xl shadow-slate-500/30 ring-1 ring-slate-300'
@@ -62,6 +65,14 @@ export const DesignStudioCanvas: React.FC<CanvasProps> = ({
           style={{
             width: scaledW,
             height: scaledH,
+            backgroundImage: isTransparent
+              ? isDark
+                ? 'linear-gradient(45deg, #1e293b 25%, transparent 25%), linear-gradient(-45deg, #1e293b 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1e293b 75%), linear-gradient(-45deg, transparent 75%, #1e293b 75%)'
+                : 'linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)'
+              : undefined,
+            backgroundColor: isTransparent ? (isDark ? '#0f172a' : '#f8fafc') : undefined,
+            backgroundSize: isTransparent ? '16px 16px' : undefined,
+            backgroundPosition: isTransparent ? '0 0, 0 8px, 8px -8px, -8px 0px' : undefined,
           }}
         >
           <div

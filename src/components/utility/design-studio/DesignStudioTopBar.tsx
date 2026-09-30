@@ -40,6 +40,9 @@ interface TopBarProps {
   isExporting: boolean;
   activePresetName: string;
   isDark: boolean;
+  canvasBgColor: string;
+  onCanvasBgColorChange: (color: string, gradientStops?: [string, string]) => void;
+  onOpenBackgroundTab?: () => void;
 }
 
 export const DesignStudioTopBar: React.FC<TopBarProps> = ({
@@ -63,10 +66,14 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
   isExporting,
   activePresetName,
   isDark,
+  canvasBgColor,
+  onCanvasBgColorChange,
+  onOpenBackgroundTab,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(projectName);
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
+  const [showBgMenu, setShowBgMenu] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -269,6 +276,136 @@ export const DesignStudioTopBar: React.FC<TopBarProps> = ({
                 >
                   Áp dụng kích thước mới
                 </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Quick Canvas Background Color Button */}
+        <div className="relative">
+          <button
+            onClick={() => setShowBgMenu(!showBgMenu)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] transition ${
+              isDark
+                ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-slate-300'
+            }`}
+            title="Đổi màu nền Canvas nhanh"
+          >
+            <div
+              className="w-3.5 h-3.5 rounded border border-black/20 shadow-xs shrink-0"
+              style={{
+                backgroundColor: canvasBgColor === 'transparent' ? 'transparent' : canvasBgColor.startsWith('gradient:') ? undefined : canvasBgColor,
+                backgroundImage: canvasBgColor === 'transparent'
+                  ? 'linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)'
+                  : canvasBgColor.startsWith('gradient:')
+                  ? `linear-gradient(135deg, ${canvasBgColor.split(':')[1]}, ${canvasBgColor.split(':')[2]})`
+                  : undefined,
+                backgroundSize: canvasBgColor === 'transparent' ? '6px 6px' : undefined,
+              }}
+            />
+            <span className="font-medium truncate max-w-[85px]">
+              {canvasBgColor === 'transparent' ? 'Trong suốt' : canvasBgColor.startsWith('gradient:') ? 'Gradient' : canvasBgColor}
+            </span>
+            <ChevronDown className="w-3 h-3 opacity-60" />
+          </button>
+
+          {showBgMenu && (
+            <div className={`absolute top-full left-0 mt-1 w-64 border rounded-xl shadow-2xl p-3 z-50 space-y-2.5 ${dropdownBg}`}>
+              <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <span>Màu nền Canvas</span>
+                <button
+                  onClick={() => {
+                    setShowBgMenu(false);
+                    onOpenBackgroundTab?.();
+                  }}
+                  className="text-emerald-600 dark:text-emerald-400 hover:underline normal-case text-[10px]"
+                >
+                  Tab Nền →
+                </button>
+              </div>
+
+              {/* Quick transparent & basic buttons */}
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  onClick={() => {
+                    onCanvasBgColorChange('transparent');
+                    setShowBgMenu(false);
+                  }}
+                  className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium flex flex-col items-center gap-1 transition ${
+                    canvasBgColor === 'transparent' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600' : isDark ? 'border-slate-800 bg-slate-800 hover:bg-slate-700 text-slate-300' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+                  }`}
+                  title="Nền trong suốt"
+                >
+                  <div
+                    className="w-4 h-4 rounded border border-black/20"
+                    style={{
+                      backgroundImage: 'linear-gradient(45deg, #94a3b8 25%, transparent 25%), linear-gradient(-45deg, #94a3b8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #94a3b8 75%), linear-gradient(-45deg, transparent 75%, #94a3b8 75%)',
+                      backgroundSize: '4px 4px',
+                    }}
+                  />
+                  <span>Trong suốt</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onCanvasBgColorChange('#ffffff');
+                    setShowBgMenu(false);
+                  }}
+                  className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium flex flex-col items-center gap-1 transition ${
+                    canvasBgColor === '#ffffff' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600' : isDark ? 'border-slate-800 bg-slate-800 hover:bg-slate-700 text-slate-300' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+                  }`}
+                  title="Nền Trắng"
+                >
+                  <div className="w-4 h-4 rounded border border-slate-300 bg-white" />
+                  <span>Trắng</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    onCanvasBgColorChange('#090d16');
+                    setShowBgMenu(false);
+                  }}
+                  className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium flex flex-col items-center gap-1 transition ${
+                    canvasBgColor === '#090d16' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600' : isDark ? 'border-slate-800 bg-slate-800 hover:bg-slate-700 text-slate-300' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+                  }`}
+                  title="Nền Đen Cyber"
+                >
+                  <div className="w-4 h-4 rounded border border-slate-700 bg-[#090d16]" />
+                  <span>Đen Cyber</span>
+                </button>
+              </div>
+
+              {/* Custom Color Input */}
+              <div className="flex items-center gap-2 pt-1 border-t border-slate-200 dark:border-slate-800">
+                <input
+                  type="color"
+                  value={canvasBgColor.startsWith('#') ? canvasBgColor : '#0f172a'}
+                  onChange={(e) => onCanvasBgColorChange(e.target.value)}
+                  className={`w-7 h-7 rounded border cursor-pointer p-0.5 ${isDark ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-white'}`}
+                />
+                <input
+                  type="text"
+                  value={canvasBgColor}
+                  onChange={(e) => onCanvasBgColorChange(e.target.value)}
+                  placeholder="#hex..."
+                  className={`flex-1 border rounded px-2 py-1 text-xs font-mono focus:outline-none ${isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                />
+              </div>
+
+              {/* Quick Color Swatches */}
+              <div className="grid grid-cols-6 gap-1 pt-1">
+                {['#f8fafc', '#f1f5f9', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899', '#f43f5e', '#f97316', '#f59e0b', '#1e293b'].map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => {
+                      onCanvasBgColorChange(c);
+                      setShowBgMenu(false);
+                    }}
+                    style={{ backgroundColor: c }}
+                    className="w-6 h-6 rounded border border-slate-300 dark:border-slate-700 hover:scale-110 transition shadow-2xs"
+                  />
+                ))}
               </div>
             </div>
           )}

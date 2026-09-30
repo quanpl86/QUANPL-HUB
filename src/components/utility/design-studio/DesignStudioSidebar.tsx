@@ -18,10 +18,12 @@ import {
   Wand2,
   CheckCircle2,
   Loader2,
+  Palette,
 } from 'lucide-react';
 import { ToolTab, DesignTemplate, DesignLayout, StickerItem } from '@/types/design-studio';
 import { PRESET_TEMPLATES } from './templates/preset-templates';
 import { DESIGN_LAYOUTS, LUCIDE_ICONS, STEM_BADGES } from './templates/stickers-badges';
+import { QUICK_BACKGROUNDS, SOLID_PALETTES, GRADIENT_PRESETS } from './templates/background-presets';
 
 interface SidebarProps {
   activeTab: ToolTab;
@@ -36,6 +38,8 @@ interface SidebarProps {
   isAiProcessing: boolean;
   aiProgressMessage: string;
   isDark: boolean;
+  canvasBgColor: string;
+  onCanvasBgColorChange: (color: string, gradientStops?: [string, string]) => void;
 }
 
 export const DesignStudioSidebar: React.FC<SidebarProps> = ({
@@ -51,6 +55,8 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   isAiProcessing,
   aiProgressMessage,
   isDark,
+  canvasBgColor,
+  onCanvasBgColorChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const aiFileInputRef = useRef<HTMLInputElement>(null);
@@ -60,6 +66,7 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
   const tabs: Array<{ id: ToolTab; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: 'templates', label: 'Mẫu', icon: LayoutTemplate },
     { id: 'layouts', label: 'Bố cục', icon: Grid },
+    { id: 'background', label: 'Nền', icon: Palette },
     { id: 'text', label: 'Văn bản', icon: Type },
     { id: 'shapes', label: 'Hình học', icon: Shapes },
     { id: 'stickers', label: 'Huy hiệu', icon: Award },
@@ -190,7 +197,153 @@ export const DesignStudioSidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* TAB 3: TEXT */}
+        {/* TAB 3: BACKGROUND (CÀI ĐẶT NỀN CANVAS) */}
+        {activeTab === 'background' && (
+          <div className="space-y-4">
+            <div>
+              <h3 className={`font-semibold text-sm ${headingColor}`}>Cài Đặt Nền Canvas</h3>
+              <p className={`text-[11px] mt-0.5 ${subtextColor}`}>
+                Tùy biến nền trong suốt, màu đơn sắc hoặc gradient chuyển sắc
+              </p>
+            </div>
+
+            {/* Quick Background Presets */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                Kiểu nền thông dụng
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {QUICK_BACKGROUNDS.map((item) => {
+                  const isSelected = canvasBgColor === item.value;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => onCanvasBgColorChange(item.value)}
+                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 transition text-left group ${
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-500/10'
+                          : cardBg
+                      }`}
+                    >
+                      <div
+                        className="w-7 h-7 rounded-lg border border-black/20 shrink-0 shadow-xs"
+                        style={{
+                          backgroundColor: item.value === 'transparent' ? 'transparent' : item.value,
+                          backgroundImage: item.value === 'transparent'
+                            ? 'linear-gradient(45deg, #94a3b8 25%, transparent 25%), linear-gradient(-45deg, #94a3b8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #94a3b8 75%), linear-gradient(-45deg, transparent 75%, #94a3b8 75%)'
+                            : undefined,
+                          backgroundSize: item.value === 'transparent' ? '6px 6px' : undefined,
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className={`text-xs font-semibold truncate ${
+                          isSelected ? 'text-emerald-600 dark:text-emerald-400' : headingColor
+                        }`}>
+                          {item.name}
+                        </div>
+                        <div className="text-[9px] text-slate-500 truncate">
+                          {item.id === 'transparent' ? 'PNG trong suốt' : item.value}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Color Input */}
+            <div className={`p-3 rounded-xl border space-y-2 ${cardBg}`}>
+              <label className={`text-[11px] font-semibold block ${headingColor}`}>
+                Màu tùy chỉnh (Hex Code)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={canvasBgColor.startsWith('#') ? canvasBgColor : '#0f172a'}
+                  onChange={(e) => onCanvasBgColorChange(e.target.value)}
+                  className={`w-9 h-9 rounded-lg border cursor-pointer p-0.5 ${
+                    isDark ? 'border-slate-700 bg-slate-800' : 'border-slate-300 bg-white'
+                  }`}
+                />
+                <input
+                  type="text"
+                  value={canvasBgColor}
+                  onChange={(e) => onCanvasBgColorChange(e.target.value)}
+                  placeholder="#000000"
+                  className={`flex-1 border rounded-lg px-2.5 py-1.5 text-xs font-mono focus:outline-none ${
+                    isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Gradient Presets */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                Màu Gradient Chuyển Sắc (Đa Chiều)
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {GRADIENT_PRESETS.map((grad) => {
+                  const isSelected = canvasBgColor === grad.value;
+                  return (
+                    <button
+                      key={grad.id}
+                      onClick={() => onCanvasBgColorChange(grad.value, grad.gradientStops)}
+                      className={`p-2 rounded-xl border flex items-center gap-2 transition text-left group ${
+                        isSelected
+                          ? 'border-emerald-500 ring-2 ring-emerald-500/30'
+                          : cardBg
+                      }`}
+                    >
+                      <div
+                        className="w-7 h-7 rounded-lg border border-white/20 shrink-0 shadow-sm"
+                        style={{
+                          background: `linear-gradient(135deg, ${grad.gradientStops?.[0]}, ${grad.gradientStops?.[1]})`,
+                        }}
+                      />
+                      <span className={`text-[11px] font-medium truncate ${
+                        isSelected ? 'text-emerald-600 dark:text-emerald-400' : headingColor
+                      }`}>
+                        {grad.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Curated Solid Palettes */}
+            <div className="space-y-3 pt-1">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                Bảng màu đơn sắc chọn lọc
+              </label>
+              {SOLID_PALETTES.map((palette) => (
+                <div key={palette.group} className="space-y-1">
+                  <div className="text-[10px] text-slate-500 font-medium">{palette.group}</div>
+                  <div className="grid grid-cols-11 gap-1">
+                    {palette.colors.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => onCanvasBgColorChange(c)}
+                        style={{ backgroundColor: c }}
+                        className={`w-6 h-6 rounded-md border transition ${
+                          canvasBgColor === c
+                            ? 'border-emerald-500 scale-110 shadow-sm ring-2 ring-emerald-500/40'
+                            : isDark
+                            ? 'border-slate-800 hover:scale-105'
+                            : 'border-slate-300 hover:scale-105'
+                        }`}
+                        title={c}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: TEXT */}
         {activeTab === 'text' && (
           <div className="space-y-4">
             <div>
