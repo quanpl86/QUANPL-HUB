@@ -6,6 +6,15 @@ import { parseHtmlWithToc } from '@/lib/toc-parser';
 import { renderMathInHtml } from '@/lib/math-renderer';
 import { calculateReadingMinutes } from '@/lib/content/article-card';
 
+export function normalizeArticleHeadingLevels(content: string): string {
+  // The page template already owns the single document H1 (post.title).
+  // Legacy/editor-authored body HTML may still contain H1 tags; demote them
+  // to H2 so article pages expose one primary H1 without discarding content.
+  return content
+    .replace(/<h1(\s[^>]*)?>/gi, '<h2$1>')
+    .replace(/<\/h1>/gi, '</h2>');
+}
+
 const loadPreparedArticle = unstable_cache(
   async (slug: string) => {
     const { data: post, error } = await getSupabaseAdmin()
@@ -18,7 +27,7 @@ const loadPreparedArticle = unstable_cache(
     if (error) throw error;
     if (!post) return null;
 
-    const content = post.content || '';
+    const content = normalizeArticleHeadingLevels(post.content || '');
     const { toc, html } = parseHtmlWithToc(renderMathInHtml(content));
     const faqRegex = /<details[^>]*class="[^"]*faq-block[^"]*"[^>]*>[\s\S]*?<summary[^>]*>([\s\S]*?)<\/summary>[\s\S]*?<div[^>]*class="[^"]*faq-answer[^"]*"[^>]*>([\s\S]*?)<\/div>[\s\S]*?<\/details>/g;
     const faqs = [];
