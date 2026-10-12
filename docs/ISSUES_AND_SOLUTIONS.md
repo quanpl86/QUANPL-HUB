@@ -139,3 +139,38 @@
   Keep local QC + production QC as mandatory deployment gate for technical SEO changes.
 - Owner: KingDragonHub Growth
 - Last updated: 2026-09-27
+
+
+## ISSUE-006: GSC non-indexed cohort mixes strategic URLs with stale/legacy URLs
+- Status: In Progress
+- Priority: P0
+- Symptoms:
+  - GSC reports 18 not-indexed URLs across redirect/discovered/crawled-not-indexed reasons;
+  - some URLs are valuable strategic articles, while others are legacy slugs or missing posts.
+- Evidence:
+  - live GSC drilldown on 2026-10-12: 10 discovered-not-indexed; 4 crawled-not-indexed shown in drilldown;
+  - legacy NotebookLM slug renders no current article while canonical replacement exists;
+  - DragonMind legacy URL has a current Second Brain STEM replacement;
+  - multiple removed article URLs render no current article content.
+- Root Cause:
+  - historical URLs remain known to Google after content/slug lifecycle changes;
+  - compliance pages were included in sitemap despite low search value;
+  - article body content can contain H1 tags in addition to the template H1;
+  - crawl priority is being spent across mixed strategic/non-strategic URLs.
+- Diagnosis:
+  Separate the cohort into strategic-index targets, public/noindex compliance pages, legacy URLs with canonical replacements, and removed URLs that should stay 404.
+- Fix:
+  - permanent redirect only where a close canonical replacement is confirmed;
+  - explicit noindex for missing post metadata;
+  - noindex privacy/terms and remove them from sitemap;
+  - normalize article body H1 to H2;
+  - strengthen author metadata and strategic internal links.
+- Verification:
+  - build/test PASS;
+  - production redirect/status/meta/sitemap/H1 verification;
+  - GSC URL Inspection for strategic targets;
+  - D+3/D+7 re-check.
+- Prevention:
+  Maintain a URL lifecycle map for renamed/deleted content; never add low-value compliance URLs to strategic indexing targets.
+- Owner: KingDragonHub Growth
+- Last updated: 2026-10-12
