@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { normalizeArticleHeadingLevels } from "../src/lib/content/public-article.ts";
+import { normalizeArticleHeadingLevels } from "../src/lib/content/heading-normalizer.ts";
 
 test("demotes body H1 tags to H2 while preserving attributes", () => {
   const html = '<h1 id="intro" class="hero">Intro</h1><p>Body</p><h2>Existing</h2>';
