@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/author/quanpl86`,
-      lastModified: new Date('2026-09-20T00:00:00.000Z'),
+      lastModified: new Date('2026-10-12T00:00:00.000Z'),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
@@ -67,18 +67,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date('2026-09-25T00:00:00.000Z'),
       changeFrequency: 'monthly',
       priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/lop-control-center/privacy/`,
-      lastModified: new Date('2026-09-25T00:00:00.000Z'),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/lop-control-center/terms/`,
-      lastModified: new Date('2026-09-25T00:00:00.000Z'),
-      changeFrequency: 'monthly',
-      priority: 0.5,
     },
   ];
 
