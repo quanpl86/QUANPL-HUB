@@ -86,3 +86,17 @@
   - Homepage, Hub và Cluster Nav đọc từ cùng một nguồn dữ liệu sau migration.
 - Reason:
   Bảo toàn khả năng diễn giải của EXP-003, giảm lỗi do tag tự do và tách rõ taxonomy thư viện khỏi kiến trúc topical authority/SEO-AIO.
+
+
+## D-010 — Phân loại URL lifecycle trước khi xử lý non-indexing
+- Date: 2026-10-12
+- Status: Active
+- Decision:
+  Không coi mọi URL trong GSC `Not indexed` là lỗi cần ép index. Mỗi URL phải được phân loại thành:
+  1. strategic/valuable → tăng crawl priority, quality, authority và request inspection khi phù hợp;
+  2. compliance/public utility → có thể public nhưng noindex nếu không có search intent;
+  3. legacy URL có replacement tương đương → 301 về canonical replacement;
+  4. removed/no replacement → giữ 404/410 semantics, không redirect đại trà về homepage/category.
+  Ngoài ra article template phải giữ một H1 duy nhất; body H1 được chuẩn hóa xuống H2.
+- Reason:
+  GSC checkpoint 2026-10-12 cho thấy cohort non-indexed trộn strategic pages với stale slugs và compliance pages. Ép index tất cả sẽ làm méo crawl priority và không giải quyết root cause.
