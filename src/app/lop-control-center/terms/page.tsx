@@ -13,6 +13,10 @@ import {
 export const metadata: Metadata = {
   title: 'Terms of Service – LOP Control Center',
   description: 'Điều khoản dịch vụ và quy định sử dụng hệ thống LOP Control Center cho quản lý và tự động hóa vận hành giáo dục.',
+  robots: {
+    index: false,
+    follow: true,
+  },
   alternates: {
     canonical: 'https://kingdragonhub.com/lop-control-center/terms/',
   },
