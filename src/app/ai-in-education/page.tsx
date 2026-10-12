@@ -74,6 +74,12 @@ const ADDITIONAL_CLUSTER_RESOURCES = [
     badge: 'Cấp Tiểu học',
   },
   {
+    slug: 'co-nen-day-ai-cho-hoc-sinh-tieu-hoc-goc-nhin-thuc-chien-n4d0d',
+    title: 'Có nên dạy AI cho học sinh tiểu học? Góc nhìn thực chiến',
+    description: 'Phân tích mục tiêu, giới hạn độ tuổi, an toàn và cách xây nền AI literacy cho học sinh tiểu học.',
+    badge: 'AI Literacy K-5',
+  },
+  {
     slug: 'notebooklm-xay-dung-bo-nao-thu-hai-cho-giao-duc-stem-po4ow',
     title: 'NotebookLM: Xây Dựng "Bộ Não Thứ Hai" Cho Giáo Dục STEM',
     description: 'Ứng dụng AI tổng hợp tài liệu, thiết kế giáo án và kiến tạo kho học liệu cá nhân hóa.',
