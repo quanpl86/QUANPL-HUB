@@ -306,3 +306,31 @@ Inspection quota at checkpoint: **1849 remaining / 2000 daily**.
 - WRO / Có nên dạy AI tiểu học / Scratch / MCP sample pages: **1 H1 each** after body-heading normalization.
 - `/ai-in-education`: contains direct link to `co-nen-day-ai-cho-hoc-sinh-tieu-hoc-goc-nhin-thuc-chien-n4d0d`.
 - Next measurement gate: GSC URL Inspection + Page Indexing refresh at D+3 / D+7. Do not interpret GSC coverage immediately because its report is lagging.
+
+
+## 17. GSC post-deploy follow-up — 2026-10-12
+
+### URL Inspection
+| URL | Current GSC status | Live test / action |
+|---|---|---|
+| `/ai-in-education` | **INDEXED / URL nằm trên Google** | Last crawl 2026-09-27 |
+| `/posts/cong-nghe-giao-duc-tuong-lai-7-xu-huong-lon-den-2035` | **INDEXED / URL nằm trên Google** | No request needed |
+| `/posts/co-nen-day-ai-cho-hoc-sinh-tieu-hoc-goc-nhin-thuc-chien-n4d0d` | CRAWLED-NOT-INDEXED | Live test: page can be indexed; Request Indexing attempted but Google returned server-side submission error |
+| `/posts/ai-tieu-hoc-lo-trinh-trien-khai-chuong-trinh-chinh-khoa-hieu-qua-g7p7l` | CRAWLED-NOT-INDEXED | Live fetch successful + allowed to index; Request Indexing attempted but Google returned server-side submission error |
+| `/author/quanpl86` | Not indexed / Google has not identified URL | Metadata/crawl-path fix now live; monitor |
+| WRO Innovation Project | DISCOVERED-NOT-INDEXED | No crawl date |
+| MCP Blog-Hub | DISCOVERED-NOT-INDEXED | No crawl date |
+| Scratch Computational Thinking | DISCOVERED-NOT-INDEXED | No crawl date |
+| current NotebookLM canonical | DISCOVERED-NOT-INDEXED | No crawl date |
+
+### Sitemap
+- `https://kingdragonhub.com/sitemap.xml` re-submitted in GSC on 2026-10-12.
+- GSC confirmation: **“Đã gửi sơ đồ trang web thành công”**.
+- GSC displayed status: **Thành công**.
+- Submission date: 2026-10-12.
+- GSC displayed **30 discovered pages** immediately after submission; production sitemap currently contains **31 URLs**. Treat this as normal processing lag until refreshed.
+
+### Interpretation
+- GSC Page Indexing summary is lagging: at least the Hub and the 2035 EdTech article are already indexed even though older issue cohorts still show stale states.
+- For the two live-tested strategic URLs, there is no current technical indexability blocker. The failed Request Indexing action is a Google-side submission error, not evidence that the pages are invalid.
+- Next step is crawl/authority monitoring, not repeated manual submission attempts.

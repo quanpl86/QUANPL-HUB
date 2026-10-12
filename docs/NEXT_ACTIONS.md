@@ -99,4 +99,5 @@ Không mở rộng mạnh lịch viết bài mới cho đến khi:
 - [x] Tăng crawl path từ AI Education Hub tới bài “Có nên dạy AI cho học sinh tiểu học?”.
 - [x] Build/test branch + Deploy Preview PASS; production merge commit `7fe0565` và Netlify Production PASS 2026-10-12.
 - [x] Production re-check PASS: 2 legacy redirects đúng đích; Privacy/Terms = `noindex, follow`; sitemap 31 URL và không còn Privacy/Terms; author metadata cụ thể; article mẫu chỉ còn 1 H1; Hub có link tới bài AI tiểu học.
-- [ ] Dùng GSC URL Inspection cho strategic URLs sau khi Google thấy production mới; theo dõi lại D+3 / D+7.
+- [x] GSC follow-up 2026-10-12: Hub và bài “Công nghệ giáo dục tương lai 2035” xác nhận đã index; “Có nên dạy AI tiểu học” + “AI tiểu học lộ trình chính khóa” live-test đều indexable nhưng Request Indexing lỗi phía Google; sitemap resubmit thành công.
+- [ ] Theo dõi crawler/index refresh D+3 / D+7; không lặp Request Indexing liên tục khi Google đang báo lỗi gửi yêu cầu.

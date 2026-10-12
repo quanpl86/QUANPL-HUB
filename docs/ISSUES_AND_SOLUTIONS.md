@@ -200,3 +200,26 @@
   pin supported Node engine and add scheduled dependency/security audit.
 - Owner: KingDragonHub Engineering
 - Last updated: 2026-10-12
+
+
+## ISSUE-008: GSC Request Indexing trả lỗi gửi yêu cầu dù Live Test PASS
+- Status: Monitoring
+- Priority: P1
+- Symptoms:
+  - Request Indexing cho hai strategic URLs trả “Chúng tôi gặp sự cố khi gửi yêu cầu lập chỉ mục của bạn. Vui lòng thử lại sau.”
+- Evidence:
+  - 2026-10-12 URL Inspection:
+    - “Có nên dạy AI cho học sinh tiểu học?” = live test indexable;
+    - “AI tiểu học — lộ trình chính khóa” = fetch thành công, allowed to index = Có.
+- Root Cause:
+  Chưa có evidence cho thấy lỗi site; UI cho thấy lỗi ở bước gửi yêu cầu của Google Search Console.
+- Diagnosis:
+  Không coi đây là technical SEO failure. Theo dõi crawl tự nhiên sau sitemap/internal-link update và tránh retry liên tục.
+- Fix:
+  Sitemap đã resubmit thành công; crawl path đã tăng; chờ GSC refresh rồi kiểm lại D+3/D+7.
+- Verification:
+  URL chuyển sang indexed hoặc xuất hiện crawl date mới.
+- Prevention:
+  Manual Request Indexing chỉ là accelerator, không phải dependency của publishing/indexing workflow.
+- Owner: KingDragonHub Growth
+- Last updated: 2026-10-12
