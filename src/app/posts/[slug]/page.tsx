@@ -22,7 +22,15 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const prepared = await getPreparedPublicArticle(slug);
   const post = prepared?.post;
 
-  if (!post) return { title: 'Post Not Found' };
+  if (!post) {
+    return {
+      title: 'Post Not Found',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
 
   return {
     title: post.meta_title || post.title,
