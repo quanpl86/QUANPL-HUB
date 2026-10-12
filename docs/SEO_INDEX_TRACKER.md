@@ -243,3 +243,51 @@ Inspection quota at checkpoint: **1849 remaining / 2000 daily**.
   - Taxonomy = bài thuộc lĩnh vực/chủ đề gì.
   - Topic Cluster = bài hỗ trợ Hub/Pillar nào.
 - Sau Checkpoint 2 mới triển khai Dynamic Hub Management bằng Supabase structured metadata + Hub Membership; tag không phải source of truth.
+
+
+## 15. GSC live checkpoint — 2026-10-12
+
+### Coverage summary
+- Indexed: **52**
+- Not indexed: **18**
+- Reasons shown in Page Indexing:
+  - Page with redirect: **3**
+  - Discovered - currently not indexed: **10**
+  - Crawled - currently not indexed: report tổng từng hiển thị **5**; drilldown trực tiếp hiện hiển thị **4**.
+- Report last-updated date shown by GSC: **2026-10-03/04** depending view; treat as lagging snapshot.
+
+### Discovered - currently not indexed (10)
+1. /author/quanpl86
+2. /lop-control-center/privacy/
+3. /lop-control-center/terms/
+4. /posts/chien-thuat-dot-pha-bang-du-an-sang-tao-wro-innovation-project-3n6l3
+5. /posts/co-nen-day-ai-cho-hoc-sinh-tieu-hoc-goc-nhin-thuc-chien-n4d0d
+6. /posts/cyber-security-protecting-digital-dna
+7. /posts/giai-ma-cuoc-thi-world-greenmech-2026-r4m-vuon-thuc-vat-thong-minh-ai-gc0l2
+8. /posts/model-context-protocol-tu-dong-hoa-van-hanh-blog-hub-bang-mcp-mqvji
+9. /posts/notebooklm-xay-dung-bo-nao-thu-cho-giao-duc-stem-po4ow
+10. /posts/phat-trien-tu-duy-may-tinh-cho-hoc-sinh-tieu-hoc-bang-scratch-vtv23
+
+### Crawled - currently not indexed (4 shown in drilldown)
+1. /posts/cong-nghe-giao-duc-tuong-lai-7-xu-huong-lon-den-2035 — last crawl 2026-10-05
+2. /posts/ai-tieu-hoc-lo-trinh-trien-khai-chuong-trinh-chinh-khoa-hieu-qua-g7p7l — last crawl 2026-09-27
+3. /posts/toi-da-bien-dragonmind-thanh-bai-rac-tri-thuc-nhu-the-nao-bai-hoc-sau-10-tuan-xay-second-brain-ikkk9 — last crawl 2026-09-27
+4. /posts/robot-huong-dan-vien-bao-tang-thong-minh-giao-thoa-giua-tri-tue-nhan-tao-va-di-san-van-hoa-ai-btsyf — last crawl 2026-09-27
+
+### Diagnosis
+- Strategic valid URLs exist in both DISCOVERED and CRAWLED-NOT-INDEXED groups.
+- Several legacy/stale URLs render no current article; they must not be treated as indexing targets.
+- The old NotebookLM slug is a legacy typo/variant; canonical live slug is `notebooklm-xay-dung-bo-nao-thu-hai-cho-giao-duc-stem-po4ow`.
+- DragonMind stale URL has a close canonical replacement in the current Second Brain STEM article.
+- Privacy/Terms are public compliance pages, not strategic search assets.
+- Public `robots.txt` allows crawl; current live sitemap observed with 33 URLs.
+
+### Fix batch prepared
+- 301 legacy NotebookLM → current canonical.
+- 301 DragonMind legacy → current Second Brain STEM article.
+- Explicit noindex for missing post routes.
+- Privacy/Terms noindex + remove from sitemap.
+- Single-H1 normalization for article body.
+- Author metadata strengthening.
+- Additional AI Education Hub link to the elementary-AI article.
+- Status: **implemented on branch, pending build/merge/production verification**.
