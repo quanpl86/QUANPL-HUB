@@ -82,3 +82,21 @@ Không mở rộng mạnh lịch viết bài mới cho đến khi:
 ### Freeze rule đến hết Checkpoint 2
 - Không đổi 6 pillar URL, thứ tự, anchor text chính, schema hoặc network internal-link của AI Education Hub trước 2026-10-04, trừ lỗi kỹ thuật/factual bắt buộc.
 - Có thể thiết kế original assets ở trạng thái ready-to-publish nhưng chưa nhúng vào các URL thuộc EXP-003 trước Checkpoint 2 nếu không cần thiết.
+
+
+## P0 Index Hygiene — 2026-10-12
+- [x] Đọc trực tiếp GSC Page Indexing bằng browser profile đã đăng nhập.
+- [x] Xác định 10 URL `Discovered - currently not indexed`.
+- [x] Xác định 4 URL `Crawled - currently not indexed` trong drilldown hiện tại; report tổng từng hiển thị 5, cần theo dõi refresh.
+- [x] Xác nhận robots.txt không chặn crawl công khai.
+- [x] Xác nhận sitemap live hiện có 33 URL.
+- [x] Thêm permanent redirect cho legacy NotebookLM slug → canonical slug hiện tại.
+- [x] Thêm permanent redirect cho legacy DragonMind/Second Brain slug → bài Second Brain STEM hiện tại.
+- [x] Missing post routes: explicit noindex.
+- [x] Privacy/Terms: giữ public nhưng noindex; loại khỏi sitemap.
+- [x] Chuẩn hóa body H1 → H2 để page template giữ đúng một H1.
+- [x] Tăng metadata cho author entity.
+- [x] Tăng crawl path từ AI Education Hub tới bài “Có nên dạy AI cho học sinh tiểu học?”.
+- [ ] Build/test branch và production verification sau merge/deploy.
+- [ ] Sau deploy: re-check legacy redirects, 404/noindex, sitemap count, author metadata, H1 count.
+- [ ] Sau verification: dùng GSC URL Inspection cho strategic URLs và theo dõi lại D+3 / D+7.

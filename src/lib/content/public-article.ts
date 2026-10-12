@@ -5,6 +5,7 @@ import { sanitize } from '@/lib/sanitize';
 import { parseHtmlWithToc } from '@/lib/toc-parser';
 import { renderMathInHtml } from '@/lib/math-renderer';
 import { calculateReadingMinutes } from '@/lib/content/article-card';
+import { normalizeArticleHeadingLevels } from '@/lib/content/heading-normalizer';
 
 const loadPreparedArticle = unstable_cache(
   async (slug: string) => {
@@ -18,7 +19,7 @@ const loadPreparedArticle = unstable_cache(
     if (error) throw error;
     if (!post) return null;
 
-    const content = post.content || '';
+    const content = normalizeArticleHeadingLevels(post.content || '');
     const { toc, html } = parseHtmlWithToc(renderMathInHtml(content));
     const faqRegex = /<details[^>]*class="[^"]*faq-block[^"]*"[^>]*>[\s\S]*?<summary[^>]*>([\s\S]*?)<\/summary>[\s\S]*?<div[^>]*class="[^"]*faq-answer[^"]*"[^>]*>([\s\S]*?)<\/div>[\s\S]*?<\/details>/g;
     const faqs = [];

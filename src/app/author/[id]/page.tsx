@@ -11,11 +11,31 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   if (id !== 'quanpl86') return { title: 'Author Not Found' };
 
+  const canonical = `https://kingdragonhub.com/author/${id}`;
+  const title = 'Phan Long Quân - Kiến trúc sư hệ thống & Chuyên gia giáo dục STEM';
+  const description = 'Chuyên gia Kiến trúc Hệ thống & Nhà giáo dục STEM. Người xây dựng KING DRAGON HUB và định hình phương pháp giảng dạy công nghệ cho thế hệ trẻ.';
+
   return {
-    title: 'Phan Long Quân - Kiến trúc sư hệ thống & Chuyên gia giáo dục STEM',
-    description: 'Chuyên gia Kiến trúc Hệ thống & Nhà giáo dục STEM. Người xây dựng KING DRAGON HUB và định hình phương pháp giảng dạy công nghệ cho thế hệ trẻ.',
+    title,
+    description,
+    authors: [{ name: 'Phan Long Quân', url: canonical }],
+    robots: {
+      index: true,
+      follow: true,
+    },
     alternates: {
-      canonical: `https://kingdragonhub.com/author/${id}`,
+      canonical,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
     },
   };
 }

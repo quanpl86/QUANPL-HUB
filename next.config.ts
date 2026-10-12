@@ -36,6 +36,17 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // SEO hygiene: preserve equity for legacy article URLs that have a clear canonical replacement.
+      {
+        source: '/posts/notebooklm-xay-dung-bo-nao-thu-cho-giao-duc-stem-po4ow',
+        destination: '/posts/notebooklm-xay-dung-bo-nao-thu-hai-cho-giao-duc-stem-po4ow',
+        permanent: true,
+      },
+      {
+        source: '/posts/toi-da-bien-dragonmind-thanh-bai-rac-tri-thuc-nhu-the-nao-bai-hoc-sau-10-tuan-xay-second-brain-ikkk9',
+        destination: '/posts/second-brain-stem-vai-tro-khong-the-thay-the-cua-con-nguoi-trong-kiem-chung-tri-thuc-kii9v',
+        permanent: true,
+      },
       // 1. Hub chung LOP
       {
         source: '/lop',
