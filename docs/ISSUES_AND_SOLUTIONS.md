@@ -142,7 +142,7 @@
 
 
 ## ISSUE-006: GSC non-indexed cohort mixes strategic URLs with stale/legacy URLs
-- Status: In Progress
+- Status: Mitigated / Monitoring
 - Priority: P0
 - Symptoms:
   - GSC reports 18 not-indexed URLs across redirect/discovered/crawled-not-indexed reasons;
@@ -166,11 +166,37 @@
   - normalize article body H1 to H2;
   - strengthen author metadata and strategic internal links.
 - Verification:
-  - build/test PASS;
-  - production redirect/status/meta/sitemap/H1 verification;
-  - GSC URL Inspection for strategic targets;
+  - Deploy Preview PASS;
+  - production commit `7fe0565` / Netlify deploy `6acc644c9008ec0008cb3549` PASS;
+  - redirects, legal noindex, sitemap 31 URLs, author metadata, single-H1 and Hub link verified on production;
+  - GSC URL Inspection for strategic targets remains pending crawler refresh;
   - D+3/D+7 re-check.
 - Prevention:
   Maintain a URL lifecycle map for renamed/deleted content; never add low-value compliance URLs to strategic indexing targets.
 - Owner: KingDragonHub Growth
+- Last updated: 2026-10-12
+
+
+## ISSUE-007: Netlify runtime/dependency security debt
+- Status: Open
+- Priority: P1
+- Symptoms:
+  - production/preview builds run Node 20.20.2 while several installed packages declare Node 22+ requirements;
+  - npm audit during 2026-10-12 build reported 39 vulnerabilities: 2 low, 10 moderate, 22 high, 5 critical.
+- Evidence:
+  - Netlify deploy logs for production deploy `6acc644c9008ec0008cb3549`.
+- Root Cause:
+  - deployment runtime version lags package engine requirements;
+  - dependency graph has unresolved advisories.
+- Diagnosis:
+  Audit whether affected packages are runtime or dev-only, identify reachable advisories, and test Node 22 compatibility before changing production.
+- Fix:
+  - do not run blind `npm audit fix --force`;
+  - prepare Node 22 migration/test branch;
+  - run dependency/advisory triage and upgrade only with regression tests.
+- Verification:
+  build/test on Node 22; critical/high reachable advisories reduced/resolved; production regression PASS.
+- Prevention:
+  pin supported Node engine and add scheduled dependency/security audit.
+- Owner: KingDragonHub Engineering
 - Last updated: 2026-10-12

@@ -290,4 +290,19 @@ Inspection quota at checkpoint: **1849 remaining / 2000 daily**.
 - Single-H1 normalization for article body.
 - Author metadata strengthening.
 - Additional AI Education Hub link to the elementary-AI article.
-- Status: **implemented on branch, pending build/merge/production verification**.
+- Status: **PRODUCTION PASS 2026-10-12** — merged as `7fe0565`; Netlify production build compiled, TypeScript passed, generated 52/52 static pages, deploy live. Verification confirmed both legacy redirects, legal-page noindex, sitemap reduced to 31 URLs, author metadata, one-H1 rendering, and AI Education Hub crawl link.
+
+
+## 16. Production checkpoint — P0 Index Hygiene 2026-10-12
+
+- GitHub merge commit: `7fe0565e97d0d27453c1644bafe90637ba5b9c3e`.
+- Netlify production deploy: `6acc644c9008ec0008cb3549`.
+- Build: compile PASS; TypeScript PASS; static generation **52/52 PASS**; secret scan reported no secrets in repo/build output; site live.
+- Legacy NotebookLM URL redirects to current `...bo-nao-thu-hai...` article.
+- Legacy DragonMind URL redirects to current Second Brain STEM article.
+- Privacy + Terms: `noindex, follow`; removed from sitemap.
+- Sitemap after deploy: **31 URLs**.
+- Author page: specific title/description, canonical, `index, follow`, profile OpenGraph.
+- WRO / Có nên dạy AI tiểu học / Scratch / MCP sample pages: **1 H1 each** after body-heading normalization.
+- `/ai-in-education`: contains direct link to `co-nen-day-ai-cho-hoc-sinh-tieu-hoc-goc-nhin-thuc-chien-n4d0d`.
+- Next measurement gate: GSC URL Inspection + Page Indexing refresh at D+3 / D+7. Do not interpret GSC coverage immediately because its report is lagging.

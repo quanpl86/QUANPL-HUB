@@ -97,6 +97,6 @@ Không mở rộng mạnh lịch viết bài mới cho đến khi:
 - [x] Chuẩn hóa body H1 → H2 để page template giữ đúng một H1.
 - [x] Tăng metadata cho author entity.
 - [x] Tăng crawl path từ AI Education Hub tới bài “Có nên dạy AI cho học sinh tiểu học?”.
-- [ ] Build/test branch và production verification sau merge/deploy.
-- [ ] Sau deploy: re-check legacy redirects, 404/noindex, sitemap count, author metadata, H1 count.
-- [ ] Sau verification: dùng GSC URL Inspection cho strategic URLs và theo dõi lại D+3 / D+7.
+- [x] Build/test branch + Deploy Preview PASS; production merge commit `7fe0565` và Netlify Production PASS 2026-10-12.
+- [x] Production re-check PASS: 2 legacy redirects đúng đích; Privacy/Terms = `noindex, follow`; sitemap 31 URL và không còn Privacy/Terms; author metadata cụ thể; article mẫu chỉ còn 1 H1; Hub có link tới bài AI tiểu học.
+- [ ] Dùng GSC URL Inspection cho strategic URLs sau khi Google thấy production mới; theo dõi lại D+3 / D+7.
