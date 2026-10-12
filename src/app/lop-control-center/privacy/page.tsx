@@ -16,6 +16,10 @@ import {
 export const metadata: Metadata = {
   title: 'Privacy Policy – LOP Control Center',
   description: 'Chính sách quyền riêng tư của LOP Control Center, cam kết bảo mật và minh bạch về quyền truy cập dữ liệu Google Workspace tuân thủ Google API Services User Data Policy.',
+  robots: {
+    index: false,
+    follow: true,
+  },
   alternates: {
     canonical: 'https://kingdragonhub.com/lop-control-center/privacy/',
   },
